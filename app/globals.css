@@ -1,0 +1,592 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  color: #000000;
+  background: #ffffff;
+}
+
+/* TipTap Editor Styles */
+.ProseMirror {
+  outline: none;
+  min-height: 500px;
+  padding: 2rem;
+  padding-left: 3rem; /* Space for drag handle */
+  font-size: 16px;
+  line-height: 1.6;
+  color: #374151;
+  position: relative;
+}
+
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #9ca3af;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.ProseMirror h1 {
+  font-size: 2em;
+  font-weight: 700;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5em;
+  font-weight: 600;
+  margin-top: 0.8em;
+  margin-bottom: 0.4em;
+  line-height: 1.3;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25em;
+  font-weight: 600;
+  margin-top: 0.6em;
+  margin-bottom: 0.3em;
+  line-height: 1.4;
+}
+
+.ProseMirror ul, .ProseMirror ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+  list-style-position: outside;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ul ul {
+  list-style-type: circle;
+}
+
+.ProseMirror ul ul ul {
+  list-style-type: square;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror ol ol {
+  list-style-type: lower-alpha;
+}
+
+.ProseMirror ol ol ol {
+  list-style-type: lower-roman;
+}
+
+.ProseMirror li {
+  margin: 0.25em 0;
+  display: list-item;
+}
+
+.ProseMirror li p {
+  margin: 0;
+  display: inline;
+}
+
+/* Highlight styles */
+.ProseMirror mark {
+  background-color: #fef08a;
+  border-radius: 0.25rem;
+  padding: 0.1em 0.2em;
+}
+
+.ProseMirror mark[data-color] {
+  background-color: var(--highlight-color);
+}
+
+.ProseMirror blockquote {
+  border-left: 3px solid #e5e7eb;
+  padding-left: 1em;
+  margin: 1em 0;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.ProseMirror code {
+  background: #f3f4f6;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  font-family: 'Courier New', monospace;
+}
+
+.ProseMirror pre {
+  background: #f3f4f6;
+  padding: 1em;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.ProseMirror pre code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Image styles */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+  display: block;
+}
+
+/* Link styles */
+.ProseMirror a {
+  color: #3b82f6;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror a:hover {
+  color: #2563eb;
+}
+
+
+/* Drag Handle Styles */
+.custom-drag-handle {
+  position: absolute;
+  left: -24px;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-drag-handle:hover {
+  opacity: 1;
+}
+
+.custom-drag-handle:active {
+  cursor: grabbing;
+}
+
+.ProseMirror > * {
+  position: relative;
+}
+
+.ProseMirror > *:hover .custom-drag-handle {
+  opacity: 1;
+}
+
+/* Block Menu Styles */
+.block-menu {
+  position: absolute;
+  left: -24px;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.ProseMirror > *:hover .block-menu {
+  opacity: 1;
+}
+
+.block-menu-button {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition: background-color 0.2s;
+}
+
+.dark .block-menu-button {
+  background-color: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+.block-menu-button:hover {
+  background-color: #f3f4f6;
+}
+
+.dark .block-menu-button:hover {
+  background-color: #374151;
+}
+
+.block-menu-add {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.block-menu-options {
+  font-size: 12px;
+  padding-bottom: 2px;
+}
+
+/* Image Wrapper Styles */
+.image-wrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.image-wrapper img {
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.image-wrapper img:hover {
+  opacity: 0.9;
+}
+
+.image-wrapper[data-type="image"] {
+  display: block;
+  width: 100%;
+}
+
+/* Editor Image Styles */
+.ProseMirror img.editor-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+  display: block;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.ProseMirror img.editor-image:hover {
+  opacity: 0.9;
+}
+
+/* Bubble Menu Styles */
+.bubble-menu {
+  z-index: 50;
+}
+
+.bubble-menu .tippy-box {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.bubble-menu .tippy-content {
+  padding: 0;
+}
+
+.bubble-menu .tippy-box[data-placement^='top'] > .tippy-arrow::before {
+  border-top-color: white;
+}
+
+
+/* Floating Menu Styles */
+.floating-menu {
+  z-index: 50;
+}
+
+/* Invisible Characters */
+.ProseMirror .invisible-character {
+  color: #9ca3af;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ProseMirror .invisible-character.space::before {
+  content: '·';
+}
+
+.ProseMirror .invisible-character.paragraph::before {
+  content: '¶';
+}
+
+.ProseMirror .invisible-character.hard-break::before {
+  content: '↩';
+}
+
+/* Drag Handle Container */
+.drag-handle-wrapper {
+  position: absolute;
+  left: -24px;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.custom-drag-handle {
+  position: absolute;
+  left: -2rem;
+  top: 0;
+  width: 1.5rem;
+  height: 100%;
+  min-height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.2s;
+  user-select: none;
+  z-index: 10;
+  padding: 0.25rem;
+}
+
+.ProseMirror > * {
+  position: relative;
+}
+
+.ProseMirror > *:hover .custom-drag-handle {
+  opacity: 1;
+}
+
+.custom-drag-handle:hover {
+  opacity: 1 !important;
+}
+
+.custom-drag-handle:active {
+  cursor: grabbing;
+  opacity: 1 !important;
+}
+
+/* Make drag handle more visible when dragging */
+.ProseMirror.dragging .custom-drag-handle,
+.ProseMirror.dragging > *:hover .custom-drag-handle {
+  opacity: 1 !important;
+}
+
+.drag-handle-button {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition: background-color 0.2s;
+}
+
+.dark .drag-handle-button {
+  background-color: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+.drag-handle-button:hover {
+  background-color: #f3f4f6;
+}
+
+.dark .drag-handle-button:hover {
+  background-color: #374151;
+}
+
+.drag-handle-add {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.drag-handle-options {
+  font-size: 12px;
+  padding-bottom: 2px;
+}
+
+/* Focus extension styles */
+.ProseMirror.has-focus {
+  outline: none;
+}
+
+/* Dropcursor styles */
+.ProseMirror-dropcursor {
+  position: absolute;
+  pointer-events: none;
+  color: #3b82f6;
+}
+
+/* Gapcursor styles */
+.ProseMirror-gapcursor {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+}
+
+.ProseMirror-gapcursor:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -2px;
+  width: 20px;
+  border-top: 1px solid #3b82f6;
+}
+
+/* Details / Collapsible styles */
+.ProseMirror details {
+  margin: 1em 0;
+  padding: 0.5em;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+}
+
+
+.ProseMirror details summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.5em;
+  user-select: none;
+  list-style: none;
+  position: relative;
+  padding-left: 1.5em;
+}
+
+.ProseMirror details summary::-webkit-details-marker {
+  display: none;
+}
+
+.ProseMirror details summary::before {
+  content: '▶';
+  position: absolute;
+  left: 0.5em;
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.ProseMirror details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.ProseMirror details[open] summary {
+  margin-bottom: 0.5em;
+}
+
+.ProseMirror details[data-type="detailsContent"] {
+  padding: 0.5em;
+  margin-top: 0.5em;
+}
+
+.ProseMirror details:hover {
+  border-color: #3b82f6;
+}
+
+
+/* Task List styles */
+.ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li[data-type="taskItem"] {
+  display: flex;
+  align-items: flex-start;
+  margin: 0.5em 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li[data-type="taskItem"] > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.ProseMirror ul[data-type="taskList"] li[data-type="taskItem"] label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.ProseMirror ul[data-type="taskList"] li[data-type="taskItem"] input[type="checkbox"] {
+  cursor: pointer;
+  width: 1.2em;
+  height: 1.2em;
+  margin-top: 0.2em;
+  flex-shrink: 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li[data-type="taskItem"] label > div {
+  flex: 1;
+}
+
+/* YouTube embed styles */
+.ProseMirror iframe[data-youtube-video] {
+  border: none;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+  max-width: 100%;
+}
+
+/* Emoji styles */
+.ProseMirror span[data-type="emoji"] {
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  font-stretch: normal;
+  line-height: 1;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-size: 1.2em;
+  vertical-align: middle;
+}
+
+@keyframes ProseMirror-cursor-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+.ProseMirror-focused .ProseMirror-gapcursor {
+  display: block;
+}
+
+/* Typography improvements */
+.ProseMirror {
+  font-feature-settings: "kern" 1, "liga" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Global button styles - Vercel-like */
+button {
+  font-family: inherit;
+}
+
+/* Input styles - Vercel-like */
+input[type="text"],
+input[type="search"] {
+  font-family: inherit;
+}
+
+/* Remove dark mode styles - using light theme only */
+
