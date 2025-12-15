@@ -72,6 +72,7 @@ export default function DocumentPage() {
   const snapshotIntervalRef = useRef(null)
   const lastSnapshotContentRef = useRef(null)
   const lastSavedContentRef = useRef(null) // Track last saved content to prevent duplicate saves
+  const pendingContentRef = useRef(null) // Store content to load when editor is ready
   const { showToast } = useToast()
   
   const {
