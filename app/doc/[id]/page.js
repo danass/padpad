@@ -622,7 +622,46 @@ export default function DocumentPage() {
     }
     
     loadDocument()
-  }, [documentId, editor, router])
+  }, [documentId, router])
+  
+  // Load pending content when editor becomes ready
+  useEffect(() => {
+    if (editor && pendingContentRef.current) {
+      // Use multiple retries with increasing delays to ensure editor is ready
+      const trySetContent = (attempt = 0) => {
+        if (attempt > 5) {
+          console.error('Failed to set editor content after multiple attempts')
+          pendingContentRef.current = null
+          return
+        }
+        
+        try {
+          const content = pendingContentRef.current
+          if (!content) return
+          
+          // Check if editor has a valid state
+          if (editor.state && editor.state.doc) {
+            editor.commands.setContent(content)
+            lastSnapshotContentRef.current = JSON.stringify(content)
+            pendingContentRef.current = null
+          } else {
+            // Retry after delay
+            setTimeout(() => trySetContent(attempt + 1), 50 * (attempt + 1))
+          }
+        } catch (error) {
+          console.error(`Error setting pending editor content (attempt ${attempt}):`, error)
+          if (attempt < 5) {
+            setTimeout(() => trySetContent(attempt + 1), 50 * (attempt + 1))
+          } else {
+            pendingContentRef.current = null
+          }
+        }
+      }
+      
+      // Start trying immediately, then retry if needed
+      trySetContent(0)
+    }
+  }, [editor])
   
   // Save title
   const handleTitleSave = async () => {
