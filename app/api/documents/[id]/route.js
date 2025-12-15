@@ -63,7 +63,11 @@ export async function GET(request, { params }) {
          ORDER BY version ASC`,
         [id, snapshot.created_at]
       )
-      events = eventsResult.rows
+      // Parse payload if it's a string
+      events = eventsResult.rows.map(event => ({
+        ...event,
+        payload: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload
+      }))
     } else {
       const eventsResult = await sql.query(
         `SELECT * FROM document_events 
@@ -71,7 +75,11 @@ export async function GET(request, { params }) {
          ORDER BY version ASC`,
         [id]
       )
-      events = eventsResult.rows
+      // Parse payload if it's a string
+      events = eventsResult.rows.map(event => ({
+        ...event,
+        payload: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload
+      }))
     }
     
     return Response.json({
