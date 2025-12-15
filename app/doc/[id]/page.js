@@ -600,16 +600,27 @@ export default function DocumentPage() {
           }
         }
         
-        // Set editor content
-        if (editor && content) {
+        // Always store content to load when editor is ready
+        pendingContentRef.current = content
+        
+        // Try to set content immediately if editor is ready
+        if (editor && content && editor.state && editor.state.doc) {
           try {
-            editor.commands.setContent(content)
-            // Store initial content for snapshot comparison
-            lastSnapshotContentRef.current = JSON.stringify(content)
+            const currentEditorContent = editor.getJSON()
+            // Only set if editor is empty or content is different
+            const isEmpty = !currentEditorContent || 
+                           (currentEditorContent.type === 'doc' && 
+                            (!currentEditorContent.content || currentEditorContent.content.length === 0))
+            const isDifferent = JSON.stringify(currentEditorContent) !== JSON.stringify(content)
+            
+            if (isEmpty || isDifferent) {
+              editor.commands.setContent(content)
+              lastSnapshotContentRef.current = JSON.stringify(content)
+              pendingContentRef.current = null // Clear pending content
+            }
           } catch (error) {
             console.error('Error setting editor content:', error)
-            // Fallback to empty content
-            editor.commands.setContent({ type: 'doc', content: [] })
+            // Content will be loaded by the useEffect retry logic
           }
         }
         
