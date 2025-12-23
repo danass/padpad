@@ -182,11 +182,23 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
     )
   }
   
+  const emptyCount = snapshots.filter(s => s.isEmpty).length
+  
   return (
     <div className="fixed inset-y-0 right-0 w-96 bg-white border-l border-gray-200 shadow-lg z-50 overflow-y-auto">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Historique</h2>
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold text-gray-900">Historique</h2>
+            {emptyCount > 0 && (
+              <button
+                onClick={handleDeleteAllEmpty}
+                className="mt-2 text-xs text-red-600 hover:text-red-700 underline"
+              >
+                Delete {emptyCount} empty snapshot{emptyCount > 1 ? 's' : ''}
+              </button>
+            )}
+          </div>
           <button 
             onClick={onClose} 
             className="text-gray-500 hover:text-gray-900 p-1 rounded-md hover:bg-gray-100 transition-colors"
@@ -209,19 +221,44 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
           {snapshots.map((snapshot) => (
             <div
               key={snapshot.id}
-              className={`p-3 border border-blue-200 bg-blue-50/50 hover:bg-blue-100 rounded-md transition-colors cursor-pointer ${
-                restoring === snapshot.id ? 'opacity-50' : ''
+              className={`p-3 border rounded-md transition-colors ${
+                restoring === snapshot.id
+                  ? 'border-blue-500 bg-blue-50 opacity-50'
+                  : snapshot.isEmpty
+                  ? 'border-red-200 bg-red-50'
+                  : 'border-blue-200 bg-blue-50/50 hover:bg-blue-100'
               }`}
-              onClick={() => handleRestore(snapshot)}
             >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Save className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-semibold">Snapshot</span>
+              <div className="flex items-start justify-between mb-2">
+                <div 
+                  className="flex-1 cursor-pointer"
+                  onClick={() => handleRestore(snapshot)}
+                >
+                  <div className="flex items-center gap-2">
+                    <Save className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-semibold">Snapshot</span>
+                    {snapshot.isEmpty && (
+                      <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded">
+                        Empty
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-gray-500 mt-1 block">
+                    {format(new Date(snapshot.created_at), 'd MMM, HH:mm')}
+                  </span>
                 </div>
-                <span className="text-xs text-gray-500">
-                  {format(new Date(snapshot.created_at), 'd MMM, HH:mm')}
-                </span>
+                <button
+                  onClick={(e) => handleDelete(snapshot, e)}
+                  disabled={deleting === snapshot.id}
+                  className="text-gray-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors disabled:opacity-50 ml-2"
+                  title="Delete snapshot"
+                >
+                  {deleting === snapshot.id ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                </button>
               </div>
               
               <div className="mt-2">
