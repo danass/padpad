@@ -723,9 +723,14 @@ export default function DocumentPage() {
             
             if (isEmpty || isDifferent) {
               // Use same method as handleRestore
-              editor.commands.setContent(content)
-              setCurrentContent(content)
-              lastSnapshotContentRef.current = contentStr
+              // Wrap in queueMicrotask to avoid flushSync error
+              queueMicrotask(() => {
+                requestAnimationFrame(() => {
+                  editor.commands.setContent(content)
+                  setCurrentContent(content)
+                  lastSnapshotContentRef.current = contentStr
+                })
+              })
               pendingContentRef.current = null // Clear pending content
               setPendingContentReady(false)
             } else {
@@ -806,9 +811,14 @@ export default function DocumentPage() {
           // Only set if different
           if (contentStr !== currentEditorContentStr) {
             // Use the exact same method as handleRestore
-            editor.commands.setContent(content)
-            setCurrentContent(content)
-            lastSnapshotContentRef.current = contentStr
+            // Wrap in queueMicrotask to avoid flushSync error
+            queueMicrotask(() => {
+              requestAnimationFrame(() => {
+                editor.commands.setContent(content)
+                setCurrentContent(content)
+                lastSnapshotContentRef.current = contentStr
+              })
+            })
             
             pendingContentRef.current = null
             setPendingContentReady(false)
