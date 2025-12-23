@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import DocumentList from '../../components/drive/DocumentList'
 import FolderTree from '../../components/drive/FolderTree'
@@ -18,10 +18,6 @@ export default function DrivePage() {
   const [newFolderName, setNewFolderName] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState(null)
-  
-  useEffect(() => {
-    loadData()
-  }, [])
   
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -52,7 +48,26 @@ export default function DrivePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+  
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+  
+  const handleSearchResults = useCallback((results) => {
+    setSearchResults(results)
+    if (results) {
+      // Combine documents and folders from search
+      const allItems = [
+        ...(results.folders || []).map(f => ({ ...f, type: 'folder' })),
+        ...(results.documents || []).map(d => ({ ...d, type: 'document' }))
+      ]
+      setDocuments(allItems)
+    } else {
+      // Reset to normal view - reload data
+      loadData()
+    }
+  }, [loadData])
   
   async function createDocument() {
     setCreatingDoc(true)
