@@ -64,11 +64,12 @@ export default function DrivePage() {
         ...(results.documents || []).map(d => ({ ...d, type: 'document' }))
       ]
       setDocuments(allItems)
+      setFolders([]) // Clear folders when showing search results
     } else {
       // Reset to normal view - reload data
       loadData()
     }
-  }, [loadData, searchResults])
+  }, [loadData])
   
   const createDocument = useCallback(async () => {
     setCreatingDoc(true)
