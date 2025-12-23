@@ -102,14 +102,22 @@ export default function PublicDocumentPage() {
         
         setTitle(document.title)
         
-        // Set editor content
+        // Set editor content - wrap in queueMicrotask to avoid flushSync error
         if (editor && content) {
-          try {
-            editor.commands.setContent(content)
-          } catch (error) {
-            console.error('Error setting editor content:', error)
-            editor.commands.setContent({ type: 'doc', content: [] })
-          }
+          queueMicrotask(() => {
+            requestAnimationFrame(() => {
+              try {
+                editor.commands.setContent(content)
+              } catch (error) {
+                console.error('Error setting editor content:', error)
+                try {
+                  editor.commands.setContent({ type: 'doc', content: [] })
+                } catch (fallbackError) {
+                  console.error('Error setting fallback content:', fallbackError)
+                }
+              }
+            })
+          })
         }
         
         setLoading(false)
