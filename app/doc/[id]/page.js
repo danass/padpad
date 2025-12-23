@@ -358,6 +358,7 @@ export default function DocumentPage() {
         element: null, // Will be handled by React component
       }),
       FontFamily,
+      FontSize,
       // InvisibleCharacters, // Disabled - user doesn't want invisible characters
       ListKeymap,
       UniqueID.configure({
@@ -1338,7 +1339,7 @@ export default function DocumentPage() {
         
         {/* Editor */}
         <div className="bg-white rounded-md border border-gray-200">
-          {editor && <EditorToolbar editor={editor} />}
+          {editor && <GoogleDocsToolbar editor={editor} />}
           {editor && (
             <div className="border-t border-gray-200 min-h-[500px] focus-within:ring-2 focus-within:ring-black relative">
               <EditorContent editor={editor} />
