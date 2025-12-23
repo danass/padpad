@@ -63,11 +63,14 @@ export default function DrivePage() {
         ...(results.documents || []).map(d => ({ ...d, type: 'document' }))
       ]
       setDocuments(allItems)
+      setFolders([]) // Clear folders when showing search results
     } else {
-      // Reset to normal view - reload data
-      loadData()
+      // Reset to normal view - reload data only if we were showing search results
+      if (searchResults !== null) {
+        loadData()
+      }
     }
-  }, [loadData])
+  }, [loadData, searchResults])
   
   async function createDocument() {
     setCreatingDoc(true)
