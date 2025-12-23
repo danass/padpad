@@ -249,38 +249,51 @@ export default function GoogleDocsToolbar({ editor }) {
         >
           <Minus className="w-4 h-4" />
         </button>
-        <input
-          type="text"
-          value={fontSizeDisplay === 'inherited' ? '' : fontSizeDisplay}
-          onChange={handleFontSizeInput}
-          onFocus={(e) => {
-            if (fontSizeDisplay === 'inherited') {
-              e.target.value = fontSize.toString()
-              setFontSizeDisplay(fontSize.toString())
-            }
-          }}
-          onBlur={(e) => {
-            const value = e.target.value.trim()
-            if (!value || value === '' || value === 'inherited') {
-              setFontSizeDisplay('inherited')
-              editor.chain().focus().unsetFontSize().run()
-            } else {
-              const numValue = parseInt(value)
-              if (!isNaN(numValue) && numValue > 0) {
-                setFontSize(numValue)
-                setFontSizeDisplay(numValue.toString())
-                editor.chain().focus().setFontSize(`${numValue}px`).run()
+        <div className="relative">
+          <input
+            type="number"
+            value={fontSizeDisplay === 'inherited' ? '' : fontSizeDisplay}
+            onChange={handleFontSizeInput}
+            onFocus={(e) => {
+              if (fontSizeDisplay === 'inherited') {
+                e.target.value = fontSize.toString()
+                setFontSizeDisplay(fontSize.toString())
               }
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.target.blur()
-            }
-          }}
-          placeholder="inherited"
-          className="w-16 px-2 py-1.5 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0"
-        />
+            }}
+            onBlur={(e) => {
+              const value = e.target.value.trim()
+              if (!value || value === '' || value === 'inherited') {
+                setFontSizeDisplay('inherited')
+                editor.chain().focus().unsetFontSize().run()
+              } else {
+                const numValue = parseInt(value)
+                if (!isNaN(numValue) && numValue > 0) {
+                  setFontSize(numValue)
+                  setFontSizeDisplay(numValue.toString())
+                  editor.chain().focus().setFontSize(`${numValue}px`).run()
+                }
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.target.blur()
+              }
+            }}
+            placeholder="inherited"
+            min="8"
+            max="400"
+            className="w-16 px-2 py-1.5 pr-6 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0"
+            style={{
+              WebkitAppearance: 'textfield',
+              MozAppearance: 'textfield'
+            }}
+          />
+          {fontSizeDisplay === 'inherited' && (
+            <span className="absolute inset-0 flex items-center justify-center text-xs text-gray-400 pointer-events-none">
+              inherited
+            </span>
+          )}
+        </div>
         <button
           onClick={handleFontSizeIncrease}
           className="px-2 py-1.5 hover:bg-gray-100 text-gray-700"
