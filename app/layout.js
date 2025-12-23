@@ -1,21 +1,21 @@
 import './globals.css'
-import { ToastProvider } from '../components/ui/toast'
-import Header from '../components/layout/Header'
-import SessionProvider from '../components/providers/SessionProvider'
+import { ToastProvider } from '@/components/ui/toast'
+import Header from '@/components/layout/Header'
+import SessionProvider from '@/components/providers/SessionProvider'
 
 export const metadata = {
   title: 'Online Text Pad • Write, Edit & Share in the Cloud',
-  description: 'textpad.cloud — online text pad for writing, editing, formatting, and sharing your text instantly.',
+  description: 'textpad — online text pad for writing, editing, formatting, and sharing your text instantly.',
   keywords: 'text pad, online editor, text editor, cloud editor, document editor, text formatting, share text',
   openGraph: {
     title: 'Online Text Pad • Write, Edit & Share in the Cloud',
-    description: 'textpad.cloud — online text pad for writing, editing, formatting, and sharing your text instantly.',
+    description: 'textpad — online text pad for writing, editing, formatting, and sharing your text instantly.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Online Text Pad • Write, Edit & Share in the Cloud',
-    description: 'textpad.cloud — online text pad for writing, editing, formatting, and sharing your text instantly.',
+    description: 'textpad — online text pad for writing, editing, formatting, and sharing your text instantly.',
   },
 }
 

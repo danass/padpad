@@ -19,11 +19,11 @@ import TextAlign from '@tiptap/extension-text-align'
 import Typography from '@tiptap/extension-typography'
 import FontFamily from '@tiptap/extension-font-family'
 import Emoji from '@tiptap/extension-emoji'
-import { ResizableImage } from '../lib/editor/resizable-image-extension'
-import { Youtube } from '../lib/editor/youtube-extension'
-import { TaskList, TaskItem } from '../lib/editor/task-list-extension'
-import { Details, DetailsSummary, DetailsContent } from '../lib/editor/details-extension'
-import GoogleDocsToolbar from '../components/editor/GoogleDocsToolbar'
+import { ResizableImage } from '@/lib/editor/resizable-image-extension'
+import { Youtube } from '@/lib/editor/youtube-extension'
+import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
+import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
+import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 
 const STORAGE_KEY = 'textpad_cloud_unsaved_pad'
 const STORAGE_TIMESTAMP_KEY = 'textpad_cloud_unsaved_pad_timestamp'
@@ -275,7 +275,7 @@ export default function Home() {
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">textpad.cloud</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">textpad</h1>
             <p className="text-sm text-gray-600">Write, edit, and format your text instantly</p>
           </div>
           <div className="flex items-center gap-3">
@@ -290,9 +290,14 @@ export default function Home() {
             <button
               onClick={handleSave}
               disabled={saving || !editor || !editor.getText().trim()}
-              className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+              className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors fixed bottom-4 right-4 z-50 shadow-lg md:static md:shadow-none"
             >
-              {saving ? 'Saving...' : session ? 'Save Document' : 'Save or Share'}
+              {saving ? 'Saving...' : session ? 'Save Document' : (
+                <>
+                  <span className="md:hidden">Save</span>
+                  <span className="hidden md:inline">Save or Share</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -302,7 +307,7 @@ export default function Home() {
             <div className="mb-4 border-b border-gray-200">
               <GoogleDocsToolbar editor={editor} />
             </div>
-            <div className="prose max-w-none min-h-[500px] p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all">
+            <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8">
               <EditorContent editor={editor} />
             </div>
             <p className="mt-4 text-xs text-gray-500 text-center">

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useToast } from '../../components/ui/toast'
+import { useToast } from '@/components/ui/toast'
 
 function TestamentUrlDisplay() {
   const [testamentSlug, setTestamentSlug] = useState(null)
@@ -398,7 +398,7 @@ export default function SettingsPage() {
               <div className="flex items-center gap-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">textpad.cloud/public/testament/</span>
+                    <span className="text-sm text-gray-500">textpad/public/testament/</span>
                     <input
                       type="text"
                       id="testament-username"

@@ -199,7 +199,7 @@ export default function GoogleDocsToolbar({ editor }) {
   }
 
   return (
-    <div className="flex items-center gap-0.5 p-1 border-b border-gray-200 bg-white overflow-x-auto" style={{ position: 'relative', zIndex: 1 }}>
+    <div className="flex items-center gap-0.5 p-1 border-b border-gray-200 bg-white overflow-x-auto flex-wrap" style={{ position: 'relative', zIndex: 1 }}>
       {/* Font Family */}
       <div className="relative" ref={fontFamilyRef} style={{ zIndex: 1000 }}>
         <button
@@ -666,4 +666,5 @@ export default function GoogleDocsToolbar({ editor }) {
     </div>
   )
 }
+
 

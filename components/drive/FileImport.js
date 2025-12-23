@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useToast } from '../ui/toast'
+import { useToast } from '@/components/ui/toast'
 
 export default function FileImport({ folderId = null }) {
   const [dragging, setDragging] = useState(false)

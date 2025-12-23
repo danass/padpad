@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import DocumentList from '../../../../components/drive/DocumentList'
-import FolderTree from '../../../../components/drive/FolderTree'
+import DocumentList from '@/components/drive/DocumentList'
+import FolderTree from '@/components/drive/FolderTree'
 
 export default function FolderPage() {
   const params = useParams()

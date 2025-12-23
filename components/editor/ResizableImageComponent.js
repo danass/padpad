@@ -7,6 +7,7 @@ import { GripVertical, AlignLeft, AlignCenter, AlignRight, Trash2, Copy } from '
 export default function ResizableImageComponent({ node, updateAttributes, deleteNode, editor, getPos }) {
   const [isResizing, setIsResizing] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
   const [startX, setStartX] = useState(0)
   const [startWidth, setStartWidth] = useState(0)
   const imageRef = useRef(null)
@@ -86,6 +87,17 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
     e.stopPropagation()
     // Don't show menu if editor is not editable (public view)
     if (!editor.isEditable) return
+    // Get click position relative to viewport
+    const clickX = e.clientX
+    const clickY = e.clientY
+    // Ensure menu stays within viewport bounds
+    const menuWidth = 200 // min-w-[200px]
+    const menuHeight = 200 // approximate height
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+    const adjustedX = Math.min(Math.max(menuWidth / 2, clickX), viewportWidth - menuWidth / 2)
+    const adjustedY = Math.min(Math.max(menuHeight / 2, clickY), viewportHeight - menuHeight / 2)
+    setMenuPosition({ x: adjustedX, y: adjustedY })
     setShowMenu(!showMenu)
   }
 
@@ -148,17 +160,18 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
           width: '100%',
         }}
       >
-        <img
-          ref={imageRef}
-          src={src}
-          alt={alt || ''}
-          style={{
-            ...imageStyle,
-            cursor: editor.isEditable ? 'pointer' : 'default'
-          }}
-          onClick={handleImageClick}
-          className="rounded-lg"
-          draggable={false}
+        <div className="relative inline-block">
+          <img
+            ref={imageRef}
+            src={src}
+            alt={alt || ''}
+            style={{
+              ...imageStyle,
+              cursor: editor.isEditable ? 'pointer' : 'default'
+            }}
+            onClick={handleImageClick}
+            className="rounded-lg transition-all group-hover:ring-2 group-hover:ring-blue-400"
+            draggable={false}
           onLoad={(e) => {
             // Set initial dimensions if not set, preserving aspect ratio
             if (!width && !height && e.target.naturalWidth && e.target.naturalWidth > 0) {
@@ -176,17 +189,27 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
             }
           }}
         />
+        {/* Corner indicators on hover */}
+        {editor.isEditable && (
+          <>
+            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-blue-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-tl-lg" />
+            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-blue-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-tr-lg" />
+            <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-blue-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-bl-lg" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-blue-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-br-lg" />
+          </>
+        )}
+        </div>
         
         {/* Resize handle - only show if editor is editable */}
         {editor.isEditable && (
           <div
             ref={resizeHandleRef}
             onMouseDown={handleMouseDown}
-            className={`absolute bottom-0 right-0 w-4 h-4 bg-blue-500 rounded-tl-lg cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity ${
+            className={`absolute top-0 right-0 w-4 h-4 bg-blue-500 rounded-bl-lg cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity ${
               isResizing ? 'opacity-100' : ''
             }`}
           style={{
-            transform: 'translate(50%, 50%)',
+            transform: 'translate(50%, -50%)',
             zIndex: 10,
           }}
         >
@@ -200,12 +223,11 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
         {editor.isEditable && showMenu && (
           <div
             ref={menuRef}
-            className="absolute z-50 bg-white border border-gray-200 rounded-md shadow-lg p-2 min-w-[200px]"
+            className="fixed z-50 bg-white border border-gray-200 rounded-md shadow-lg p-2 min-w-[200px]"
             style={{
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              marginTop: '8px',
+              top: `${menuPosition.y}px`,
+              left: `${menuPosition.x}px`,
+              transform: 'translate(-50%, -50%)',
             }}
           >
             <div className="mb-2">

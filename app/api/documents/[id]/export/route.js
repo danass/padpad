@@ -1,6 +1,6 @@
 import { sql } from '@vercel/postgres'
-import { tipTapToMarkdown } from '../../../../../lib/export/markdown.js'
-import { tipTapToHTML } from '../../../../../lib/export/html.js'
+import { tipTapToMarkdown } from '@/lib/export/markdown.js'
+import { tipTapToHTML } from '@/lib/export/html.js'
 import { getUserId } from '@/lib/auth/getSession'
 import { isAdmin } from '@/lib/auth/isAdmin'
 

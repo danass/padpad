@@ -1,8 +1,8 @@
 import '../globals.css'
-import { ToastProvider } from '../../components/ui/toast'
+import { ToastProvider } from '@/components/ui/toast'
 
 export const metadata = {
-  title: 'textpad.cloud - Public Document',
+  title: 'textpad - Public Document',
   description: 'View a public document',
 }
 

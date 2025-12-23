@@ -116,6 +116,31 @@ export async function DELETE(request, { params }) {
     
     const { id } = await params
     
+    // First, get the folder to find its parent_id
+    const folderResult = await sql.query(
+      'SELECT parent_id FROM folders WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    )
+    
+    if (folderResult.rows.length === 0) {
+      return Response.json({ error: 'Folder not found' }, { status: 404 })
+    }
+    
+    const parentId = folderResult.rows[0].parent_id
+    
+    // Move all documents in this folder to the parent folder (or NULL if root)
+    await sql.query(
+      'UPDATE documents SET folder_id = $1 WHERE folder_id = $2 AND user_id = $3',
+      [parentId, id, userId]
+    )
+    
+    // Move all subfolders to the parent folder (or NULL if root)
+    await sql.query(
+      'UPDATE folders SET parent_id = $1 WHERE parent_id = $2 AND user_id = $3',
+      [parentId, id, userId]
+    )
+    
+    // Now delete the folder
     const result = await sql.query(
       'DELETE FROM folders WHERE id = $1 AND user_id = $2 RETURNING id',
       [id, userId]

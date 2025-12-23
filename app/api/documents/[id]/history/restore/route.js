@@ -1,5 +1,5 @@
 import { sql } from '@vercel/postgres'
-import { getContentAtTime } from '../../../../../../lib/editor/history-replay'
+import { getContentAtTime } from '@/lib/editor/history-replay'
 import { getUserId } from '@/lib/auth/getSession'
 import { isAdmin } from '@/lib/auth/isAdmin'
 

@@ -56,7 +56,7 @@ export default function Header() {
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded"></div>
-              <span className="text-sm font-medium text-gray-900">textpad.cloud</span>
+              <span className="text-sm font-medium text-gray-900">textpad</span>
             </Link>
             {session && isDrive && (
               <Link

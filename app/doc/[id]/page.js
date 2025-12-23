@@ -28,13 +28,13 @@ import InvisibleCharacters from '@tiptap/extension-invisible-characters'
 import ListKeymap from '@tiptap/extension-list-keymap'
 import UniqueID from '@tiptap/extension-unique-id'
 import Emoji from '@tiptap/extension-emoji'
-import { Youtube } from '../../../lib/editor/youtube-extension'
-import { TaskList, TaskItem } from '../../../lib/editor/task-list-extension'
+import { Youtube } from '@/lib/editor/youtube-extension'
+import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 // Collaboration requires Y.js and WebSocket provider - commented out for now
 // import Collaboration from '@tiptap/extension-collaboration'
 // import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
 // import * as Y from 'yjs'
-import { ResizableImage } from '../../../lib/editor/resizable-image-extension'
+import { ResizableImage } from '@/lib/editor/resizable-image-extension'
 import {
   DraggableParagraph,
   DraggableHeading,
@@ -42,20 +42,20 @@ import {
   DraggableOrderedList,
   DraggableBlockquote,
   DraggableCodeBlock,
-} from '../../../lib/editor/draggable-nodes'
-import { Details, DetailsSummary, DetailsContent } from '../../../lib/editor/details-extension'
-import { FontSize } from '../../../lib/editor/font-size-extension'
-import EditorToolbar from '../../../components/editor/EditorToolbar'
-import GoogleDocsToolbar from '../../../components/editor/GoogleDocsToolbar'
-import HistoryPanel from '../../../components/editor/HistoryPanel'
-import SlashMenu from '../../../components/editor/SlashMenu'
-import BubbleMenu from '../../../components/editor/BubbleMenu'
-import FloatingMenu from '../../../components/editor/FloatingMenu'
-import InsertBlockMenu from '../../../components/editor/InsertBlockMenu'
-import { useEditorStore } from '../../../store/editorStore'
-import { useToast } from '../../../components/ui/toast'
-import { replayHistory } from '../../../lib/editor/history-replay'
-import { calculateDiff } from '../../../lib/editor/prosemirror-diff'
+} from '@/lib/editor/draggable-nodes'
+import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
+import { FontSize } from '@/lib/editor/font-size-extension'
+import EditorToolbar from '@/components/editor/EditorToolbar'
+import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
+import HistoryPanel from '@/components/editor/HistoryPanel'
+import SlashMenu from '@/components/editor/SlashMenu'
+import BubbleMenu from '@/components/editor/BubbleMenu'
+import FloatingMenu from '@/components/editor/FloatingMenu'
+import InsertBlockMenu from '@/components/editor/InsertBlockMenu'
+import { useEditorStore } from '@/store/editorStore'
+import { useToast } from '@/components/ui/toast'
+import { replayHistory } from '@/lib/editor/history-replay'
+import { calculateDiff } from '@/lib/editor/prosemirror-diff'
 
 export default function DocumentPage() {
   const params = useParams()
@@ -78,6 +78,7 @@ export default function DocumentPage() {
   const lastSnapshotContentRef = useRef(null)
   const lastSavedContentRef = useRef(null) // Track last saved content to prevent duplicate saves
   const pendingContentRef = useRef(null) // Store content to load when editor is ready
+  const isDocumentDeletedRef = useRef(false) // Track if document was deleted
   const { showToast } = useToast()
   
   const {
@@ -90,7 +91,7 @@ export default function DocumentPage() {
   
   // Debounced autosave - increased debounce time and prevent multiple saves
   const handleAutosave = useCallback(async (content) => {
-    if (!documentId || saving) return
+    if (!documentId || saving || isDocumentDeletedRef.current) return
     
     // Check if content actually changed
     const contentStr = JSON.stringify(content)
@@ -131,8 +132,15 @@ export default function DocumentPage() {
         })
         
         if (!eventResponse.ok) {
-          // If 404 or 401, user doesn't have access - redirect to drive
+          // If 404 or 401, user doesn't have access or document was deleted
           if (eventResponse.status === 404 || eventResponse.status === 401) {
+            // Mark as deleted to prevent further autosave attempts
+            isDocumentDeletedRef.current = true
+            // Clear any pending autosaves
+            if (autosaveTimeoutRef.current) {
+              clearTimeout(autosaveTimeoutRef.current)
+              autosaveTimeoutRef.current = null
+            }
             // Close tab and redirect
             window.dispatchEvent(new CustomEvent('documentDeleted', {
               detail: { documentId }
@@ -140,7 +148,10 @@ export default function DocumentPage() {
             router.push('/drive')
             return
           }
-          throw new Error('Failed to save event')
+          // For other errors, don't throw - just log and continue
+          console.error('Failed to save event:', eventResponse.status, eventResponse.statusText)
+          setSaving(false)
+          return
         }
         
         // Mark as saved and update last saved content
@@ -676,10 +687,14 @@ export default function DocumentPage() {
       } else {
         throw new Error('Failed to save')
       }
-    } catch (err) {
-      console.error('Error saving document:', err)
-      showToast('Failed to save: ' + err.message, 'error')
-    }
+      } catch (err) {
+        // Don't show error if document was deleted
+        if (isDocumentDeletedRef.current) {
+          return
+        }
+        console.error('Error saving document:', err)
+        showToast('Failed to save: ' + err.message, 'error')
+      }
   }
   
   // Load document
@@ -870,6 +885,37 @@ export default function DocumentPage() {
     
     loadDocument()
   }, [documentId, router])
+  
+  // Listen for document deletion to stop autosave
+  useEffect(() => {
+    const handleDocumentDeleted = (event) => {
+      const { documentId: deletedId } = event.detail
+      if (deletedId === documentId) {
+        // Mark as deleted to prevent further autosave attempts
+        isDocumentDeletedRef.current = true
+        // Clear any pending autosaves
+        if (autosaveTimeoutRef.current) {
+          clearTimeout(autosaveTimeoutRef.current)
+          autosaveTimeoutRef.current = null
+        }
+        // Clear snapshot interval
+        if (snapshotIntervalRef.current) {
+          clearInterval(snapshotIntervalRef.current)
+          snapshotIntervalRef.current = null
+        }
+      }
+    }
+    
+    window.addEventListener('documentDeleted', handleDocumentDeleted)
+    return () => {
+      window.removeEventListener('documentDeleted', handleDocumentDeleted)
+    }
+  }, [documentId])
+  
+  // Reset deleted flag when documentId changes
+  useEffect(() => {
+    isDocumentDeletedRef.current = false
+  }, [documentId])
   
   // State to trigger useEffect when pendingContentRef changes
   const [pendingContentReady, setPendingContentReady] = useState(false)

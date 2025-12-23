@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import DocumentList from '../../components/drive/DocumentList'
-import FolderTree from '../../components/drive/FolderTree'
-import SearchBar from '../../components/drive/SearchBar'
-import { useToast } from '../../components/ui/toast'
+import DocumentList from '@/components/drive/DocumentList'
+import FolderTree from '@/components/drive/FolderTree'
+import SearchBar from '@/components/drive/SearchBar'
+import { useToast } from '@/components/ui/toast'
 
 export default function DrivePage() {
   const router = useRouter()
