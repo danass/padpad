@@ -258,11 +258,7 @@ export default function GoogleDocsToolbar({ editor }) {
           placeholder="inherited"
           min="8"
           max="400"
-          className="w-16 px-2 py-1.5 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-          style={{
-            WebkitAppearance: 'textfield',
-            MozAppearance: 'textfield'
-          }}
+          className="w-16 px-2 py-1.5 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0"
         />
         <button
           onClick={handleFontSizeIncrease}
