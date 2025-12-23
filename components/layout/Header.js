@@ -60,12 +60,22 @@ export default function Header() {
                 Admin
               </Link>
             )}
-            {session?.user?.image && (
-              <img 
-                src={session.user.image} 
-                alt={session.user.name || 'User'} 
-                className="w-8 h-8 rounded-full"
-              />
+            {session && (
+              <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-gray-200">
+                {session.user?.image ? (
+                  <img 
+                    src={session.user.image} 
+                    alt={session.user.name || 'User'} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img 
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(session.user?.email || session.user?.name || 'user')}`}
+                    alt={session.user?.name || 'User'} 
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
             )}
             {session && (
               <button
