@@ -26,24 +26,24 @@ export default function EditorToolbar({ editor }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 p-1.5 border-b border-gray-200 bg-white">
+    <div className="flex flex-wrap items-center gap-0.5 p-1 sm:p-1.5 border-b border-gray-200 bg-white overflow-x-auto">
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
-        className={`p-1.5 rounded-md transition-all ${
+        className={`p-1.5 sm:p-2 rounded-md transition-all ${
           editor.isActive('bold')
             ? 'bg-gray-100 text-gray-900'
             : 'hover:bg-gray-100 text-gray-700'
         } disabled:opacity-50 active:scale-95`}
         title="Bold (Ctrl+B)"
       >
-        <Bold className="w-4 h-4" />
+        <Bold className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
       </button>
       
       <button
         onClick={() => editor.chain().focus().toggleItalic().run()}
         disabled={!editor.can().chain().focus().toggleItalic().run()}
-        className={`p-1.5 rounded-md transition-all disabled:opacity-50 ${
+        className={`p-1.5 sm:p-2 rounded-md transition-all disabled:opacity-50 ${
           editor.isActive('italic')
             ? 'bg-gray-100 text-gray-900'
             : 'hover:bg-gray-100 text-gray-700'
@@ -56,7 +56,7 @@ export default function EditorToolbar({ editor }) {
       <button
         onClick={() => editor.chain().focus().toggleStrike().run()}
         disabled={!editor.can().chain().focus().toggleStrike().run()}
-        className={`p-1.5 rounded-md transition-all disabled:opacity-50 ${
+        className={`p-1.5 sm:p-2 rounded-md transition-all disabled:opacity-50 ${
           editor.isActive('strike')
             ? 'bg-gray-100 text-gray-900'
             : 'hover:bg-gray-100 text-gray-700'
