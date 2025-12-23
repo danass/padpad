@@ -12,6 +12,8 @@ export default function MigratePage() {
   const [adminResult, setAdminResult] = useState(null)
   const [adminsExist, setAdminsExist] = useState(false)
   const [checkingAdmins, setCheckingAdmins] = useState(true)
+  const [dbNeedsMigration, setDbNeedsMigration] = useState(true)
+  const [checkingDb, setCheckingDb] = useState(true)
   
   const runMigration = async () => {
     setLoading(true)
@@ -93,8 +95,24 @@ export default function MigratePage() {
     }
   }
 
+  const checkDbSetup = async () => {
+    try {
+      const response = await fetch('/api/migrate/check')
+      if (response.ok) {
+        const data = await response.json()
+        setDbNeedsMigration(data.needsMigration)
+      }
+    } catch (error) {
+      console.error('Error checking database setup:', error)
+      setDbNeedsMigration(true) // Default to showing message if check fails
+    } finally {
+      setCheckingDb(false)
+    }
+  }
+
   useEffect(() => {
     checkAdminsExist()
+    checkDbSetup()
   }, [])
   
   return (
@@ -102,10 +120,18 @@ export default function MigratePage() {
       <div className="max-w-2xl w-full bg-white border border-gray-200 rounded-md shadow-lg p-8">
         <h1 className="text-3xl font-bold mb-6 text-gray-900">Database Migration</h1>
         
-        <p className="mb-6 text-gray-600">
-          This will create all necessary database tables, indexes, and functions.
-          Safe to run multiple times - it will skip existing objects.
-        </p>
+        {!checkingDb && dbNeedsMigration && (
+          <p className="mb-6 text-gray-600">
+            This will create all necessary database tables, indexes, and functions.
+            Safe to run multiple times - it will skip existing objects.
+          </p>
+        )}
+        
+        {!checkingDb && !dbNeedsMigration && (
+          <p className="mb-6 text-green-600">
+            ✓ Database is already set up. You can still run migrations to ensure all tables and indexes are up to date.
+          </p>
+        )}
         
         <div className="space-y-4 mb-6">
           <div>
