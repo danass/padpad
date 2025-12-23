@@ -469,7 +469,28 @@ export default function DocumentPage() {
       
       try {
         const currentContent = editor.getJSON()
-        const currentContentStr = JSON.stringify(currentContent)
+        
+        // Normalize JSON for comparison (same as API)
+        const normalizeJSON = (obj) => {
+          if (obj === null || typeof obj !== 'object') {
+            return obj
+          }
+          if (Array.isArray(obj)) {
+            return obj.map(normalizeJSON).sort((a, b) => {
+              const aStr = JSON.stringify(a)
+              const bStr = JSON.stringify(b)
+              return aStr < bStr ? -1 : aStr > bStr ? 1 : 0
+            })
+          }
+          const sorted = {}
+          Object.keys(obj).sort().forEach(key => {
+            sorted[key] = normalizeJSON(obj[key])
+          })
+          return sorted
+        }
+        
+        const normalizedCurrent = normalizeJSON(currentContent)
+        const currentContentStr = JSON.stringify(normalizedCurrent)
         
         // Double-check content actually changed
         if (lastSnapshotContentRef.current !== currentContentStr) {
@@ -489,6 +510,7 @@ export default function DocumentPage() {
             } else {
               // Snapshot was skipped because content is identical
               hasChangesRef.current = false
+              lastSnapshotContentRef.current = currentContentStr // Update ref even if skipped
             }
           } else if (snapshotResponse.status === 404 || snapshotResponse.status === 401) {
             // User doesn't have access - redirect to drive
@@ -662,12 +684,36 @@ export default function DocumentPage() {
         pendingContentRef.current = content
         setPendingContentReady(true) // Trigger useEffect
         
+        // Normalize JSON for comparison
+        const normalizeJSON = (obj) => {
+          if (obj === null || typeof obj !== 'object') {
+            return obj
+          }
+          if (Array.isArray(obj)) {
+            return obj.map(normalizeJSON).sort((a, b) => {
+              const aStr = JSON.stringify(a)
+              const bStr = JSON.stringify(b)
+              return aStr < bStr ? -1 : aStr > bStr ? 1 : 0
+            })
+          }
+          const sorted = {}
+          Object.keys(obj).sort().forEach(key => {
+            sorted[key] = normalizeJSON(obj[key])
+          })
+          return sorted
+        }
+        
+        // Initialize lastSnapshotContentRef with normalized content
+        const normalizedContent = normalizeJSON(content)
+        lastSnapshotContentRef.current = JSON.stringify(normalizedContent)
+        
         // Try to set content immediately if editor is ready (same as handleRestore)
         if (editor && content && editor.state && editor.state.doc) {
           try {
             const currentEditorContent = editor.getJSON()
-            const currentEditorContentStr = JSON.stringify(currentEditorContent)
-            const contentStr = JSON.stringify(content)
+            const normalizedCurrent = normalizeJSON(currentEditorContent)
+            const currentEditorContentStr = JSON.stringify(normalizedCurrent)
+            const contentStr = JSON.stringify(normalizedContent)
             
             // Only set if editor is empty or content is different
             const isEmpty = !currentEditorContent || 
@@ -732,9 +778,30 @@ export default function DocumentPage() {
         
         // Check if editor has a valid state (same check as handleRestore)
         if (editor.state && editor.state.doc) {
-          const contentStr = JSON.stringify(content)
+          // Normalize JSON for comparison
+          const normalizeJSON = (obj) => {
+            if (obj === null || typeof obj !== 'object') {
+              return obj
+            }
+            if (Array.isArray(obj)) {
+              return obj.map(normalizeJSON).sort((a, b) => {
+                const aStr = JSON.stringify(a)
+                const bStr = JSON.stringify(b)
+                return aStr < bStr ? -1 : aStr > bStr ? 1 : 0
+              })
+            }
+            const sorted = {}
+            Object.keys(obj).sort().forEach(key => {
+              sorted[key] = normalizeJSON(obj[key])
+            })
+            return sorted
+          }
+          
+          const normalizedContent = normalizeJSON(content)
+          const contentStr = JSON.stringify(normalizedContent)
           const currentEditorContent = editor.getJSON()
-          const currentEditorContentStr = JSON.stringify(currentEditorContent)
+          const normalizedCurrent = normalizeJSON(currentEditorContent)
+          const currentEditorContentStr = JSON.stringify(normalizedCurrent)
           
           // Only set if different
           if (contentStr !== currentEditorContentStr) {

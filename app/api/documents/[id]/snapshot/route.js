@@ -92,9 +92,32 @@ export async function POST(request, { params }) {
         }
       }
       
-      // Compare JSON content (deep comparison via stringify)
-      const currentContentStr = JSON.stringify(content_json)
-      const lastContentStr = JSON.stringify(lastContentJson)
+      // Normalize both JSON objects for comparison (deep sort and stringify)
+      const normalizeJSON = (obj) => {
+        if (obj === null || typeof obj !== 'object') {
+          return obj
+        }
+        
+        if (Array.isArray(obj)) {
+          return obj.map(normalizeJSON).sort((a, b) => {
+            const aStr = JSON.stringify(a)
+            const bStr = JSON.stringify(b)
+            return aStr < bStr ? -1 : aStr > bStr ? 1 : 0
+          })
+        }
+        
+        const sorted = {}
+        Object.keys(obj).sort().forEach(key => {
+          sorted[key] = normalizeJSON(obj[key])
+        })
+        return sorted
+      }
+      
+      // Normalize and compare
+      const normalizedCurrent = normalizeJSON(content_json)
+      const normalizedLast = normalizeJSON(lastContentJson)
+      const currentContentStr = JSON.stringify(normalizedCurrent)
+      const lastContentStr = JSON.stringify(normalizedLast)
       
       if (currentContentStr === lastContentStr) {
         // Content is identical, don't create a new snapshot
