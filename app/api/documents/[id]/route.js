@@ -25,13 +25,27 @@ export async function GET(request, { params }) {
     const document = docResult.rows[0]
     
     // If document has no user_id, assign it to current user (migration for old documents)
+    // Use atomic UPDATE with WHERE user_id IS NULL to prevent race conditions
     if (!document.user_id) {
-      await sql.query(
-        'UPDATE documents SET user_id = $1 WHERE id = $2',
+      const updateResult = await sql.query(
+        'UPDATE documents SET user_id = $1 WHERE id = $2 AND user_id IS NULL RETURNING user_id',
         [userId, id]
       )
-      document.user_id = userId
-    } else if (document.user_id !== userId && !admin) {
+      if (updateResult.rows.length > 0) {
+        document.user_id = updateResult.rows[0].user_id
+      } else {
+        // Another user already claimed it, re-fetch to get current owner
+        const recheck = await sql.query(
+          'SELECT user_id FROM documents WHERE id = $1',
+          [id]
+        )
+        if (recheck.rows.length > 0) {
+          document.user_id = recheck.rows[0].user_id
+        }
+      }
+    }
+    
+    if (document.user_id && document.user_id !== userId && !admin) {
       // Document belongs to another user - only admins can access
       return Response.json({ error: 'Document not found' }, { status: 404 })
     }
