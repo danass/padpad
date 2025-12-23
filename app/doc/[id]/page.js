@@ -590,18 +590,65 @@ export default function DocumentPage() {
           reconstructedContentPreview: JSON.stringify(content).substring(0, 200)
         })
         
-        // If content is empty, try to get latest snapshot directly
+        // If content is empty, try to get latest snapshot with actual content
         if (!content || content.type !== 'doc' || !content.content || content.content.length === 0) {
-          console.warn('Content is empty after replayHistory, trying direct snapshot fetch')
+          console.warn('Content is empty after replayHistory, trying to find snapshot with content')
           
-          // Try to fetch latest snapshot directly
+          // Try to fetch all snapshots and find one with content
           try {
             const snapshotResponse = await fetch(`/api/documents/${documentId}/history`)
             if (snapshotResponse.ok) {
               const historyData = await snapshotResponse.json()
               const snapshots = historyData.snapshots || []
-              if (snapshots.length > 0) {
-                // Get most recent snapshot
+              
+              console.log('Fetched snapshots from history:', {
+                snapshotsCount: snapshots.length,
+                snapshotIds: snapshots.map(s => s.id)
+              })
+              
+              // Try to find a snapshot with actual content (not just empty paragraph)
+              for (const snap of snapshots) {
+                if (snap.content_json) {
+                  let snapContent = snap.content_json
+                  if (typeof snapContent === 'string') {
+                    try {
+                      snapContent = JSON.parse(snapContent)
+                    } catch (e) {
+                      console.error('Error parsing snapshot:', e)
+                      continue
+                    }
+                  }
+                  
+                  // Check if this snapshot has real content (not just empty paragraph)
+                  if (snapContent && snapContent.type === 'doc' && 
+                      snapContent.content && Array.isArray(snapContent.content)) {
+                    // Check if content has actual text or nodes with content
+                    const hasRealContent = snapContent.content.some(node => {
+                      // Check if node has text content
+                      if (node.type === 'paragraph' || node.type === 'heading') {
+                        return node.content && Array.isArray(node.content) && 
+                               node.content.some(child => child.type === 'text' && child.text && child.text.trim().length > 0)
+                      }
+                      // For other node types, just check if they exist
+                      return true
+                    })
+                    
+                    if (hasRealContent || snapContent.content.length > 1) {
+                      console.log('Found snapshot with real content:', {
+                        snapshotId: snap.id,
+                        createdAt: snap.created_at,
+                        contentLength: snapContent.content.length
+                      })
+                      content = snapContent
+                      break
+                    }
+                  }
+                }
+              }
+              
+              // If still no content, use the most recent snapshot anyway
+              if ((!content || content.type !== 'doc' || !content.content || content.content.length === 0) && 
+                  snapshots.length > 0) {
                 const latestSnapshot = snapshots[0]
                 if (latestSnapshot.content_json) {
                   let latestContent = latestSnapshot.content_json
@@ -612,10 +659,8 @@ export default function DocumentPage() {
                       console.error('Error parsing latest snapshot:', e)
                     }
                   }
-                  if (latestContent && latestContent.type === 'doc' && 
-                      latestContent.content && Array.isArray(latestContent.content) && 
-                      latestContent.content.length > 0) {
-                    console.log('Found content in latest snapshot, using it')
+                  if (latestContent && latestContent.type === 'doc') {
+                    console.log('Using latest snapshot even if it appears empty')
                     content = latestContent
                   }
                 }
