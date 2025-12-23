@@ -95,13 +95,21 @@ export default function GoogleDocsToolbar({ editor }) {
       const sizeAttr = editor.getAttributes('textStyle')?.fontSize
       if (sizeAttr) {
         const sizeNum = parseInt(sizeAttr.replace('px', ''))
-        setFontSize(sizeNum)
-        setFontSizeDisplay(sizeNum.toString())
+        if (!isNaN(sizeNum)) {
+          setFontSize(sizeNum)
+          setFontSizeDisplay(sizeNum.toString())
+        } else {
+          setFontSizeDisplay('inherited')
+          setFontSize(11)
+        }
       } else {
         setFontSizeDisplay('inherited')
         setFontSize(11) // Default for editing
       }
     }
+    
+    // Initial update
+    updateFontSize()
     
     editor.on('selectionUpdate', updateFontSize)
     editor.on('transaction', updateFontSize)
@@ -148,16 +156,9 @@ export default function GoogleDocsToolbar({ editor }) {
 
   const handleFontSizeInput = (e) => {
     const value = e.target.value
-    if (value === '' || value === 'inherited') {
-      setFontSizeDisplay('inherited')
-      editor.chain().focus().unsetFontSize().run()
-      return
-    }
-    const numValue = parseInt(value)
-    if (!isNaN(numValue) && numValue > 0) {
-      setFontSize(numValue)
-      setFontSizeDisplay(numValue.toString())
-      editor.chain().focus().setFontSize(`${numValue}px`).run()
+    // Allow typing numbers and empty string
+    if (value === '' || /^\d*$/.test(value)) {
+      setFontSizeDisplay(value)
     }
   }
 
@@ -249,23 +250,35 @@ export default function GoogleDocsToolbar({ editor }) {
           <Minus className="w-4 h-4" />
         </button>
         <input
-          type="number"
-          value={fontSizeDisplay === 'inherited' ? '' : fontSize}
+          type="text"
+          value={fontSizeDisplay === 'inherited' ? '' : fontSizeDisplay}
           onChange={handleFontSizeInput}
           onFocus={(e) => {
             if (fontSizeDisplay === 'inherited') {
               e.target.value = fontSize.toString()
+              setFontSizeDisplay(fontSize.toString())
             }
           }}
           onBlur={(e) => {
-            if (!e.target.value || e.target.value === '') {
+            const value = e.target.value.trim()
+            if (!value || value === '' || value === 'inherited') {
               setFontSizeDisplay('inherited')
               editor.chain().focus().unsetFontSize().run()
+            } else {
+              const numValue = parseInt(value)
+              if (!isNaN(numValue) && numValue > 0) {
+                setFontSize(numValue)
+                setFontSizeDisplay(numValue.toString())
+                editor.chain().focus().setFontSize(`${numValue}px`).run()
+              }
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.target.blur()
             }
           }}
           placeholder="inherited"
-          min="8"
-          max="400"
           className="w-16 px-2 py-1.5 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0"
         />
         <button
