@@ -52,7 +52,8 @@ export default function DrivePage() {
   
   useEffect(() => {
     loadData()
-  }, [loadData])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   
   const handleSearchResults = useCallback((results) => {
     setSearchResults(results)
@@ -63,14 +64,11 @@ export default function DrivePage() {
         ...(results.documents || []).map(d => ({ ...d, type: 'document' }))
       ]
       setDocuments(allItems)
-      setFolders([]) // Clear folders when showing search results
     } else {
-      // Reset to normal view - reload data only if we were showing search results
-      if (searchResults !== null) {
-        loadData()
-      }
+      // Reset to normal view - reload data
+      loadData()
     }
-  }, [loadData, searchResults])
+  }, [loadData])
   
   async function createDocument() {
     setCreatingDoc(true)
@@ -95,9 +93,9 @@ export default function DrivePage() {
     } finally {
       setCreatingDoc(false)
     }
-  }
+  }, [router, showToast])
   
-  async function createFolder(name, parentId = null) {
+  const createFolder = useCallback(async (name, parentId = null) => {
     if (!name || !name.trim()) return
     
     setCreatingFolder(true)
