@@ -704,56 +704,96 @@ export default function DocumentPage() {
   
   // Load pending content when editor becomes ready
   useEffect(() => {
-    if (editor && pendingContentRef.current) {
-      // Use multiple retries with increasing delays to ensure editor is ready
-      const trySetContent = (attempt = 0) => {
-        if (attempt > 10) {
-          console.error('Failed to set editor content after multiple attempts', {
-            pendingContent: pendingContentRef.current,
-            editorState: editor.state ? 'exists' : 'missing',
-            editorDoc: editor.state?.doc ? 'exists' : 'missing'
-          })
-          pendingContentRef.current = null
+    if (!editor) {
+      console.log('Editor not available yet in useEffect')
+      return
+    }
+    
+    if (!pendingContentRef.current) {
+      console.log('No pending content to load')
+      return
+    }
+    
+    console.log('useEffect triggered for pending content:', {
+      hasEditor: !!editor,
+      hasState: !!(editor?.state),
+      hasDoc: !!(editor?.state?.doc),
+      pendingContentLength: pendingContentRef.current?.content?.length || 0
+    })
+    
+    // Use multiple retries with increasing delays to ensure editor is ready
+    const trySetContent = (attempt = 0) => {
+      if (attempt > 20) {
+        console.error('Failed to set editor content after multiple attempts', {
+          pendingContent: pendingContentRef.current,
+          editorState: editor.state ? 'exists' : 'missing',
+          editorDoc: editor.state?.doc ? 'exists' : 'missing'
+        })
+        pendingContentRef.current = null
+        return
+      }
+      
+      try {
+        const content = pendingContentRef.current
+        if (!content) {
+          console.log('Pending content cleared, stopping retries')
           return
         }
         
-        try {
-          const content = pendingContentRef.current
-          if (!content) return
+        // Check if editor has a valid state
+        if (editor.state && editor.state.doc) {
+          const contentStr = JSON.stringify(content)
+          const currentEditorContent = editor.getJSON()
+          const currentEditorContentStr = JSON.stringify(currentEditorContent)
           
-          // Check if editor has a valid state
-          if (editor.state && editor.state.doc) {
-            const contentStr = JSON.stringify(content)
-            const currentEditorContent = editor.getJSON()
-            const currentEditorContentStr = JSON.stringify(currentEditorContent)
-            
-            // Only set if different
-            if (contentStr !== currentEditorContentStr) {
-              console.log('Setting editor content from pending:', {
-                attempt,
-                contentLength: content.content?.length || 0,
-                currentEditorLength: currentEditorContent.content?.length || 0
-              })
-              editor.commands.setContent(content)
-              lastSnapshotContentRef.current = contentStr
-            }
+          // Only set if different
+          if (contentStr !== currentEditorContentStr) {
+            console.log('Setting editor content from pending:', {
+              attempt,
+              contentLength: content.content?.length || 0,
+              currentEditorLength: currentEditorContent.content?.length || 0,
+              contentPreview: JSON.stringify(content).substring(0, 200)
+            })
+            editor.commands.setContent(content)
+            lastSnapshotContentRef.current = contentStr
             pendingContentRef.current = null
+            console.log('Content successfully set in editor')
           } else {
-            // Retry after delay
-            setTimeout(() => trySetContent(attempt + 1), 50 * (attempt + 1))
-          }
-        } catch (error) {
-          console.error(`Error setting pending editor content (attempt ${attempt}):`, error)
-          if (attempt < 10) {
-            setTimeout(() => trySetContent(attempt + 1), 50 * (attempt + 1))
-          } else {
+            console.log('Content already matches editor, clearing pending')
             pendingContentRef.current = null
           }
+        } else {
+          // Retry after delay
+          if (attempt < 5) {
+            console.log(`Editor not ready, retrying (attempt ${attempt + 1})`)
+          }
+          setTimeout(() => trySetContent(attempt + 1), 100 * (attempt + 1))
+        }
+      } catch (error) {
+        console.error(`Error setting pending editor content (attempt ${attempt}):`, error)
+        if (attempt < 20) {
+          setTimeout(() => trySetContent(attempt + 1), 100 * (attempt + 1))
+        } else {
+          console.error('Giving up after 20 attempts')
+          pendingContentRef.current = null
         }
       }
-      
-      // Start trying immediately, then retry if needed
-      trySetContent(0)
+    }
+    
+    // Start trying immediately, then retry if needed
+    trySetContent(0)
+    
+    // Also set up an interval to check periodically (in case editor becomes ready later)
+    const intervalId = setInterval(() => {
+      if (editor && pendingContentRef.current && editor.state && editor.state.doc) {
+        console.log('Interval check: Editor ready, loading pending content')
+        trySetContent(0)
+        clearInterval(intervalId)
+      }
+    }, 200)
+    
+    return () => {
+      clearInterval(intervalId)
     }
   }, [editor])
   

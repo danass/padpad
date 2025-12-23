@@ -59,9 +59,21 @@ export async function GET(request, { params }) {
       [id]
     )
     
+    // Parse content_json for snapshots if it's a string
+    const snapshots = snapshotsResult.rows.map(snapshot => {
+      if (snapshot.content_json && typeof snapshot.content_json === 'string') {
+        try {
+          snapshot.content_json = JSON.parse(snapshot.content_json)
+        } catch (e) {
+          console.error('Error parsing snapshot content_json in history:', e)
+        }
+      }
+      return snapshot
+    })
+    
     return Response.json({
       events: result.rows,
-      snapshots: snapshotsResult.rows
+      snapshots: snapshots
     })
   } catch (error) {
     console.error('Error fetching history:', error)
