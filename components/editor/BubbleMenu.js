@@ -60,7 +60,7 @@ export default function BubbleMenu({ editor }) {
       tippyOptions={{ 
         duration: 100,
         maxWidth: 'none',
-        placement: 'top',
+        placement: 'top-end',
         offset: [0, 8],
         onDestroy: (instance) => {
           // Mark instance as destroyed to prevent warnings

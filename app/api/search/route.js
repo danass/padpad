@@ -29,8 +29,8 @@ export async function POST(request) {
         AND to_tsvector('simple', COALESCE(d.content_text, '')) @@ plainto_tsquery('simple', $1)
     `
     
-    const params = [searchQuery, userId]
-    let paramCount = 3
+    const params = [searchQuery, userId, `%${searchQuery}%`]
+    let paramCount = 4
     
     if (folder_id !== undefined && folder_id !== null) {
       docQuery += ` AND d.folder_id = $${paramCount++}`

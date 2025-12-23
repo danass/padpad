@@ -16,6 +16,8 @@ export default function DrivePage() {
   const [creatingDoc, setCreatingDoc] = useState(false)
   const [creatingFolder, setCreatingFolder] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState(null)
   
   useEffect(() => {
     loadData()
@@ -77,27 +79,29 @@ export default function DrivePage() {
     }
   }
   
-  async function createFolder() {
-    if (!newFolderName.trim()) return
+  async function createFolder(name, parentId = null) {
+    if (!name || !name.trim()) return
     
     setCreatingFolder(true)
     try {
       const response = await fetch('/api/folders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newFolderName, parent_id: null })
+        body: JSON.stringify({ name: name.trim(), parent_id: parentId })
       })
       
       if (response.ok) {
-        setNewFolderName('')
         showToast('Folder created', 'success')
         loadData()
+        return true
       } else {
         showToast('Failed to create folder', 'error')
+        return false
       }
     } catch (error) {
       console.error('Error creating folder:', error)
       showToast('Failed to create folder', 'error')
+      return false
     } finally {
       setCreatingFolder(false)
     }
@@ -122,6 +126,24 @@ export default function DrivePage() {
     } catch (error) {
       console.error('Error deleting document:', error)
       showToast('Failed to delete document', 'error')
+    }
+  }
+  
+  async function deleteFolder(id) {
+    try {
+      const response = await fetch(`/api/folders/${id}`, {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        showToast('Folder deleted', 'success')
+        loadData()
+      } else {
+        showToast('Failed to delete folder', 'error')
+      }
+    } catch (error) {
+      console.error('Error deleting folder:', error)
+      showToast('Failed to delete folder', 'error')
     }
   }
   
@@ -153,43 +175,52 @@ export default function DrivePage() {
         </div>
         
         <div className="mb-6 max-w-2xl">
-          <SearchBar />
+          <SearchBar onResults={(results) => {
+            setSearchResults(results)
+            if (results) {
+              // Combine documents and folders from search
+              const allItems = [
+                ...(results.folders || []).map(f => ({ ...f, type: 'folder' })),
+                ...(results.documents || []).map(d => ({ ...d, type: 'document' }))
+              ]
+              setDocuments(allItems)
+            } else {
+              // Reset to normal view
+              loadData()
+            }
+          }} />
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1">
-            <FolderTree folders={folders} />
-            
-            <div className="mt-4 border border-gray-200 rounded-md p-4 bg-white">
-              <h3 className="font-semibold mb-3 text-sm text-gray-900">New Folder</h3>
-              <div className="flex flex-col gap-2">
-                <input
-                  type="text"
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && createFolder()}
-                  placeholder="Folder name"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
-                />
-                <button
-                  onClick={createFolder}
-                  disabled={creatingFolder || !newFolderName.trim()}
-                  className="w-full px-3 py-2 text-sm bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {creatingFolder ? 'Creating...' : 'Create'}
-                </button>
-              </div>
-            </div>
+        <div className="bg-white border border-gray-200 rounded-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Documents</h2>
+            <button
+              onClick={createDocument}
+              disabled={creatingDoc}
+              className="px-3 py-1.5 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+            >
+              {creatingDoc ? 'Creating...' : '+ New Document'}
+            </button>
           </div>
-          
-          <div className="lg:col-span-3">
-            <div className="bg-white border border-gray-200 rounded-md p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">Documents</h2>
-              </div>
-              <DocumentList documents={documents} onDelete={deleteDocument} />
-            </div>
-          </div>
+          <DocumentList 
+            documents={searchResults ? [
+              ...(searchResults.folders || []).map(f => ({ ...f, type: 'folder' })),
+              ...(searchResults.documents || []).map(d => ({ ...d, type: 'document' }))
+            ] : [
+              ...folders.map(f => ({ ...f, type: 'folder' })),
+              ...documents.map(d => ({ ...d, type: 'document' }))
+            ]} 
+            onDelete={(id) => {
+              const item = [...folders, ...documents].find(i => i.id === id)
+              if (item && 'name' in item) {
+                // It's a folder
+                deleteFolder(id)
+              } else {
+                deleteDocument(id)
+              }
+            }}
+            onCreateFolder={createFolder}
+          />
         </div>
       </div>
     </div>

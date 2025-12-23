@@ -88,7 +88,7 @@ export default function GoogleDocsToolbar({ editor }) {
   const currentFontFamily = editor.getAttributes('textStyle')?.fontFamily || 'Arial'
   const currentFontSizeAttr = editor.getAttributes('textStyle')?.fontSize
   const currentFontSizeNum = currentFontSizeAttr ? parseInt(currentFontSizeAttr.replace('px', '')) : null
-  const [fontSize, setFontSize] = useState(currentFontSizeNum || 11)
+  const [fontSize, setFontSize] = useState(currentFontSizeNum || 16)
   const [fontSizeDisplay, setFontSizeDisplay] = useState(currentFontSizeNum ? currentFontSizeNum.toString() : 'inherited')
   const currentTextColor = editor.getAttributes('textStyle')?.color || '#000000'
   const currentHighlightColor = editor.getAttributes('highlight')?.color || null
@@ -105,11 +105,11 @@ export default function GoogleDocsToolbar({ editor }) {
           setFontSizeDisplay(sizeNum.toString())
         } else {
           setFontSizeDisplay('inherited')
-          setFontSize(11)
+          setFontSize(16)
         }
       } else {
         setFontSizeDisplay('inherited')
-        setFontSize(11) // Default for editing
+        setFontSize(16) // Default for editing (matches browser default)
       }
     }
     
@@ -168,7 +168,7 @@ export default function GoogleDocsToolbar({ editor }) {
   }
 
   const handleFontSizeDecrease = () => {
-    const currentSize = fontSizeDisplay === 'inherited' ? 11 : fontSize
+    const currentSize = fontSizeDisplay === 'inherited' ? 16 : fontSize
     const newSize = Math.max(8, currentSize - 1)
     setFontSize(newSize)
     setFontSizeDisplay(newSize.toString())
@@ -176,7 +176,7 @@ export default function GoogleDocsToolbar({ editor }) {
   }
 
   const handleFontSizeIncrease = () => {
-    const currentSize = fontSizeDisplay === 'inherited' ? 11 : fontSize
+    const currentSize = fontSizeDisplay === 'inherited' ? 16 : fontSize
     const newSize = Math.min(400, currentSize + 1)
     setFontSize(newSize)
     setFontSizeDisplay(newSize.toString())
@@ -292,14 +292,14 @@ export default function GoogleDocsToolbar({ editor }) {
             }}
             min="8"
             max="400"
-            className="w-16 px-2 py-1.5 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0"
+            className="w-20 px-2 py-1.5 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0"
             style={{
               WebkitAppearance: 'textfield',
               MozAppearance: 'textfield'
             }}
           />
           {fontSizeDisplay === 'inherited' && (
-            <span className="absolute inset-0 flex items-center justify-center text-xs text-gray-400 pointer-events-none pr-6">
+            <span className="absolute inset-0 flex items-center justify-center text-xs text-gray-400 pointer-events-none px-1">
               inherited
             </span>
           )}
