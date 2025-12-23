@@ -953,6 +953,37 @@ export default function DocumentPage() {
     const url = `/api/documents/${documentId}/export?format=${format}`
     window.open(url, '_blank')
   }
+
+  // Delete document
+  const handleDelete = async () => {
+    if (!documentId) return
+    
+    if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
+      return
+    }
+    
+    try {
+      const response = await fetch(`/api/documents/${documentId}`, {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        // Dispatch event to close tab
+        window.dispatchEvent(new CustomEvent('documentDeleted', {
+          detail: { documentId }
+        }))
+        showToast('Document deleted', 'success')
+        // Redirect to drive
+        router.push('/drive')
+      } else {
+        const data = await response.json()
+        showToast(data.error || 'Failed to delete document', 'error')
+      }
+    } catch (error) {
+      console.error('Error deleting document:', error)
+      showToast('Failed to delete document', 'error')
+    }
+  }
   
   // Restore from history
   const handleRestore = (content) => {
@@ -1232,6 +1263,14 @@ export default function DocumentPage() {
             >
               <span className="hidden sm:inline">← Back</span>
               <span className="sm:hidden">←</span>
+            </button>
+            <button
+              onClick={handleDelete}
+              className="px-3 sm:px-4 py-2 border border-red-200 text-red-600 hover:bg-red-50 rounded-md text-xs sm:text-sm font-medium transition-colors"
+              title="Delete document"
+            >
+              <span className="hidden sm:inline">Delete</span>
+              <span className="sm:hidden">🗑️</span>
             </button>
           </div>
         </div>
