@@ -10,7 +10,12 @@ export default function FloatingMenu({ editor }) {
   return (
     <TiptapFloatingMenu
       editor={editor}
-      tippyOptions={{ duration: 100 }}
+      tippyOptions={{ 
+        duration: 100,
+        onDestroy: () => {
+          // Prevent double destroy warning
+        }
+      }}
       className="floating-menu"
     >
       <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-md shadow-lg p-1">

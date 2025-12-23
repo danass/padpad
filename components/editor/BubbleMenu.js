@@ -42,7 +42,10 @@ export default function BubbleMenu({ editor }) {
         duration: 100,
         maxWidth: 'none',
         placement: 'top',
-        offset: [0, 8]
+        offset: [0, 8],
+        onDestroy: () => {
+          // Prevent double destroy warning
+        }
       }}
       className="bubble-menu"
     >
