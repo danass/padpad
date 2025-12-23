@@ -574,14 +574,34 @@ export default function DocumentPage() {
         setTitle(document.title)
         setIsPublic(document.is_public || false)
         
+        // Debug: log what we received
+        console.log('Document loaded:', {
+          hasSnapshot: !!snapshot,
+          snapshotHasContent: !!(snapshot?.content_json),
+          eventsCount: events?.length || 0,
+          snapshotContentPreview: snapshot?.content_json ? (typeof snapshot.content_json === 'string' ? snapshot.content_json.substring(0, 100) : JSON.stringify(snapshot.content_json).substring(0, 100)) : null
+        })
+        
         // Reconstruct content
         let content = replayHistory(snapshot, events)
         
-        // Parse content_json if it's a string
+        // Debug: log reconstructed content
+        console.log('Reconstructed content:', {
+          hasContent: !!content,
+          contentType: content?.type,
+          contentLength: content?.content?.length || 0,
+          contentPreview: JSON.stringify(content).substring(0, 200)
+        })
+        
+        // Parse content_json if it's a string (already done in API, but double-check)
         if (snapshot && typeof snapshot.content_json === 'string') {
           try {
             snapshot.content_json = JSON.parse(snapshot.content_json)
             content = replayHistory(snapshot, events)
+            console.log('After re-parsing snapshot, content:', {
+              hasContent: !!content,
+              contentLength: content?.content?.length || 0
+            })
           } catch (e) {
             console.error('Error parsing snapshot content_json:', e)
           }
@@ -589,6 +609,7 @@ export default function DocumentPage() {
         
         // Ensure content is valid
         if (!content || typeof content !== 'object') {
+          console.warn('Content is invalid, using empty doc')
           content = { type: 'doc', content: [] }
         }
         
@@ -597,6 +618,50 @@ export default function DocumentPage() {
           content = {
             type: 'doc',
             content: Array.isArray(content) ? content : [content]
+          }
+        }
+        
+        // Final check: if content is still empty, try to get latest snapshot directly
+        if (content.type === 'doc' && (!content.content || content.content.length === 0)) {
+          console.warn('Content is empty after reconstruction, trying to use latest snapshot directly')
+          if (snapshot && snapshot.content_json) {
+            let snapshotContent = snapshot.content_json
+            if (typeof snapshotContent === 'string') {
+              try {
+                snapshotContent = JSON.parse(snapshotContent)
+              } catch (e) {
+                console.error('Error parsing snapshot in fallback:', e)
+              }
+            }
+            if (snapshotContent && snapshotContent.type === 'doc' && 
+                snapshotContent.content && Array.isArray(snapshotContent.content) && 
+                snapshotContent.content.length > 0) {
+              console.log('Using snapshot content directly as fallback')
+              content = snapshotContent
+            }
+          }
+          
+          // If still empty, try to get latest event with full content
+          if (content.type === 'doc' && (!content.content || content.content.length === 0) && events && events.length > 0) {
+            console.log('Trying to find content in events...')
+            for (let i = events.length - 1; i >= 0; i--) {
+              const event = events[i]
+              let payload = event.payload
+              if (typeof payload === 'string') {
+                try {
+                  payload = JSON.parse(payload)
+                } catch (e) {
+                  continue
+                }
+              }
+              if (payload && payload.content && payload.content.type === 'doc' && 
+                  payload.content.content && Array.isArray(payload.content.content) && 
+                  payload.content.content.length > 0) {
+                console.log('Found content in event:', i, 'using it')
+                content = payload.content
+                break
+              }
+            }
           }
         }
         
