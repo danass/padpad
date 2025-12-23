@@ -37,7 +37,8 @@ export default function SearchBar({ onResults }) {
     }, 300)
     
     return () => clearTimeout(timeoutId)
-  }, [query, onResults])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query])
   
   return (
     <div className="relative">

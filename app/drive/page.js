@@ -23,7 +23,7 @@ export default function DrivePage() {
     loadData()
   }, [])
   
-  async function loadData() {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       // First, assign any orphaned documents to current user (one-time migration)
@@ -175,20 +175,7 @@ export default function DrivePage() {
         </div>
         
         <div className="mb-6 max-w-2xl">
-          <SearchBar onResults={(results) => {
-            setSearchResults(results)
-            if (results) {
-              // Combine documents and folders from search
-              const allItems = [
-                ...(results.folders || []).map(f => ({ ...f, type: 'folder' })),
-                ...(results.documents || []).map(d => ({ ...d, type: 'document' }))
-              ]
-              setDocuments(allItems)
-            } else {
-              // Reset to normal view
-              loadData()
-            }
-          }} />
+          <SearchBar onResults={handleSearchResults} />
         </div>
         
         <div className="bg-white border border-gray-200 rounded-md p-6">
