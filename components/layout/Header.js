@@ -3,14 +3,36 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
+import { useState, useEffect } from 'react'
 import Tabs from './Tabs'
 
 export default function Header() {
   const pathname = usePathname()
   const { data: session } = useSession()
+  const [isAdmin, setIsAdmin] = useState(false)
   
   const isDrive = pathname?.startsWith('/drive')
   const isDoc = pathname?.startsWith('/doc')
+  const isAdminPage = pathname?.startsWith('/admin')
+  
+  useEffect(() => {
+    if (session?.user?.email) {
+      checkAdminStatus()
+    }
+  }, [session])
+  
+  const checkAdminStatus = async () => {
+    try {
+      const response = await fetch('/api/admin/check')
+      if (response.ok) {
+        const data = await response.json()
+        setIsAdmin(data.isAdmin)
+      }
+    } catch (error) {
+      // Silently fail - user is not admin
+      setIsAdmin(false)
+    }
+  }
   
   return (
     <header className="border-b border-gray-200 bg-white">
@@ -26,6 +48,18 @@ export default function Header() {
           
           {/* Right side - Actions */}
           <div className="flex items-center gap-3">
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  isAdminPage
+                    ? 'bg-gray-900 text-white'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                Admin
+              </Link>
+            )}
             {session?.user?.image && (
               <img 
                 src={session.user.image} 
