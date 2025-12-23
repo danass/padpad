@@ -81,9 +81,10 @@ export default function GoogleDocsToolbar({ editor }) {
 
   // Get current font family
   const currentFontFamily = editor.getAttributes('textStyle')?.fontFamily || 'Arial'
-  const currentFontSizeAttr = editor.getAttributes('textStyle')?.fontSize || '11px'
-  const currentFontSizeNum = parseInt(currentFontSizeAttr.replace('px', '')) || 11
-  const [fontSize, setFontSize] = useState(currentFontSizeNum)
+  const currentFontSizeAttr = editor.getAttributes('textStyle')?.fontSize
+  const currentFontSizeNum = currentFontSizeAttr ? parseInt(currentFontSizeAttr.replace('px', '')) : null
+  const [fontSize, setFontSize] = useState(currentFontSizeNum || 11)
+  const [fontSizeDisplay, setFontSizeDisplay] = useState(currentFontSizeNum ? currentFontSizeNum.toString() : 'inherited')
   const currentTextColor = editor.getAttributes('textStyle')?.color || '#000000'
   const currentHighlightColor = editor.getAttributes('highlight')?.color || null
   const currentAlign = editor.getAttributes('textAlign')?.textAlign || 'left'
@@ -91,9 +92,15 @@ export default function GoogleDocsToolbar({ editor }) {
   // Update fontSize state when editor selection changes
   useEffect(() => {
     const updateFontSize = () => {
-      const sizeAttr = editor.getAttributes('textStyle')?.fontSize || '11px'
-      const sizeNum = parseInt(sizeAttr.replace('px', '')) || 11
-      setFontSize(sizeNum)
+      const sizeAttr = editor.getAttributes('textStyle')?.fontSize
+      if (sizeAttr) {
+        const sizeNum = parseInt(sizeAttr.replace('px', ''))
+        setFontSize(sizeNum)
+        setFontSizeDisplay(sizeNum.toString())
+      } else {
+        setFontSizeDisplay('inherited')
+        setFontSize(11) // Default for editing
+      }
     }
     
     editor.on('selectionUpdate', updateFontSize)
@@ -140,22 +147,33 @@ export default function GoogleDocsToolbar({ editor }) {
   }
 
   const handleFontSizeInput = (e) => {
-    const value = parseInt(e.target.value)
-    if (!isNaN(value) && value > 0) {
-      setFontSize(value)
-      editor.chain().focus().setFontSize(`${value}px`).run()
+    const value = e.target.value
+    if (value === '' || value === 'inherited') {
+      setFontSizeDisplay('inherited')
+      editor.chain().focus().unsetFontSize().run()
+      return
+    }
+    const numValue = parseInt(value)
+    if (!isNaN(numValue) && numValue > 0) {
+      setFontSize(numValue)
+      setFontSizeDisplay(numValue.toString())
+      editor.chain().focus().setFontSize(`${numValue}px`).run()
     }
   }
 
   const handleFontSizeDecrease = () => {
-    const newSize = Math.max(8, fontSize - 1)
+    const currentSize = fontSizeDisplay === 'inherited' ? 11 : fontSize
+    const newSize = Math.max(8, currentSize - 1)
     setFontSize(newSize)
+    setFontSizeDisplay(newSize.toString())
     editor.chain().focus().setFontSize(`${newSize}px`).run()
   }
 
   const handleFontSizeIncrease = () => {
-    const newSize = Math.min(400, fontSize + 1)
+    const currentSize = fontSizeDisplay === 'inherited' ? 11 : fontSize
+    const newSize = Math.min(400, currentSize + 1)
     setFontSize(newSize)
+    setFontSizeDisplay(newSize.toString())
     editor.chain().focus().setFontSize(`${newSize}px`).run()
   }
 
@@ -175,9 +193,9 @@ export default function GoogleDocsToolbar({ editor }) {
   }
 
   return (
-    <div className="flex items-center gap-0.5 p-1 border-b border-gray-200 bg-white overflow-x-auto">
+    <div className="flex items-center gap-0.5 p-1 border-b border-gray-200 bg-white overflow-x-auto relative">
       {/* Font Family */}
-      <div className="relative" ref={fontFamilyRef}>
+      <div className="relative z-50" ref={fontFamilyRef}>
         <button
           onClick={() => setShowFontFamily(!showFontFamily)}
           className="px-2 py-1.5 min-w-[80px] text-left text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
@@ -187,7 +205,12 @@ export default function GoogleDocsToolbar({ editor }) {
           <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />
         </button>
         {showFontFamily && (
-          <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 max-h-64 overflow-y-auto w-48">
+          <>
+            <div 
+              className="fixed inset-0 z-40" 
+              onClick={() => setShowFontFamily(false)}
+            />
+            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 max-h-64 overflow-y-auto w-48">
             {FONT_FAMILIES.map((font) => (
               <button
                 key={font}
@@ -203,7 +226,8 @@ export default function GoogleDocsToolbar({ editor }) {
                 )}
               </button>
             ))}
-          </div>
+            </div>
+          </>
         )}
       </div>
 
@@ -212,20 +236,38 @@ export default function GoogleDocsToolbar({ editor }) {
         <button
           onClick={handleFontSizeDecrease}
           className="px-2 py-1.5 hover:bg-gray-100 text-gray-700"
+          title="Decrease font size"
         >
           <Minus className="w-4 h-4" />
         </button>
         <input
           type="number"
-          value={fontSize}
+          value={fontSizeDisplay === 'inherited' ? '' : fontSize}
           onChange={handleFontSizeInput}
+          onFocus={(e) => {
+            if (fontSizeDisplay === 'inherited') {
+              e.target.value = fontSize.toString()
+            }
+          }}
+          onBlur={(e) => {
+            if (!e.target.value || e.target.value === '') {
+              setFontSizeDisplay('inherited')
+              editor.chain().focus().unsetFontSize().run()
+            }
+          }}
+          placeholder="inherited"
           min="8"
           max="400"
-          className="w-12 px-2 py-1.5 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0"
+          className="w-16 px-2 py-1.5 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          style={{
+            WebkitAppearance: 'textfield',
+            MozAppearance: 'textfield'
+          }}
         />
         <button
           onClick={handleFontSizeIncrease}
           className="px-2 py-1.5 hover:bg-gray-100 text-gray-700"
+          title="Increase font size"
         >
           <Plus className="w-4 h-4" />
         </button>
@@ -267,7 +309,7 @@ export default function GoogleDocsToolbar({ editor }) {
       <div className="w-px h-6 bg-gray-300 mx-0.5" />
 
       {/* Text Color */}
-      <div className="relative" ref={textColorRef}>
+      <div className="relative z-50" ref={textColorRef}>
         <button
           onClick={() => setShowTextColor(!showTextColor)}
           className={`p-1.5 rounded hover:bg-gray-100 ${
@@ -286,7 +328,12 @@ export default function GoogleDocsToolbar({ editor }) {
           </div>
         </button>
         {showTextColor && (
-          <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 p-3 w-64">
+          <>
+            <div 
+              className="fixed inset-0 z-40" 
+              onClick={() => setShowTextColor(false)}
+            />
+            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 p-3 w-64">
             <div className="grid grid-cols-10 gap-1 mb-3">
               {TEXT_COLORS.map((color) => (
                 <button
@@ -311,11 +358,12 @@ export default function GoogleDocsToolbar({ editor }) {
               <Plus className="w-4 h-4" />
             </button>
           </div>
+          </>
         )}
       </div>
 
       {/* Highlight Color */}
-      <div className="relative" ref={highlightColorRef}>
+      <div className="relative z-50" ref={highlightColorRef}>
         <button
           onClick={() => setShowHighlightColor(!showHighlightColor)}
           className={`p-1.5 rounded hover:bg-gray-100 ${
@@ -328,7 +376,12 @@ export default function GoogleDocsToolbar({ editor }) {
           </svg>
         </button>
         {showHighlightColor && (
-          <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 p-3 w-64">
+          <>
+            <div 
+              className="fixed inset-0 z-40" 
+              onClick={() => setShowHighlightColor(false)}
+            />
+            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 p-3 w-64">
             <div className="grid grid-cols-9 gap-1 mb-3">
               {HIGHLIGHT_COLORS.map((color) => (
                 <button
@@ -353,13 +406,14 @@ export default function GoogleDocsToolbar({ editor }) {
               <Plus className="w-4 h-4" />
             </button>
           </div>
+          </>
         )}
       </div>
 
       <div className="w-px h-6 bg-gray-300 mx-0.5" />
 
       {/* Alignment */}
-      <div className="relative" ref={alignRef}>
+      <div className="relative z-50" ref={alignRef}>
         <button
           onClick={() => setShowAlign(!showAlign)}
           className={`p-1.5 rounded hover:bg-gray-100 flex items-center gap-1 ${
@@ -374,7 +428,12 @@ export default function GoogleDocsToolbar({ editor }) {
           <ChevronDown className="w-3 h-3 text-gray-500" />
         </button>
         {showAlign && (
-          <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50">
+          <>
+            <div 
+              className="fixed inset-0 z-40" 
+              onClick={() => setShowAlign(false)}
+            />
+            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50">
             <button
               onClick={() => handleAlignChange('left')}
               className={`w-full px-3 py-2 hover:bg-gray-100 flex items-center justify-center ${
@@ -412,6 +471,7 @@ export default function GoogleDocsToolbar({ editor }) {
               <AlignJustify className="w-4 h-4" />
             </button>
           </div>
+          </>
         )}
       </div>
 
