@@ -4,8 +4,19 @@ import Header from '../components/layout/Header'
 import SessionProvider from '../components/providers/SessionProvider'
 
 export const metadata = {
-  title: 'PadPad - Text Editor',
-  description: 'A Vercel-native text editor with history and organization',
+  title: 'Online Text Pad • Write, Edit & Share in the Cloud',
+  description: 'textpad.cloud — online text pad for writing, editing, formatting, and sharing your text instantly.',
+  keywords: 'text pad, online editor, text editor, cloud editor, document editor, text formatting, share text',
+  openGraph: {
+    title: 'Online Text Pad • Write, Edit & Share in the Cloud',
+    description: 'textpad.cloud — online text pad for writing, editing, formatting, and sharing your text instantly.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Online Text Pad • Write, Edit & Share in the Cloud',
+    description: 'textpad.cloud — online text pad for writing, editing, formatting, and sharing your text instantly.',
+  },
 }
 
 export default function RootLayout({ children }) {

@@ -1,19 +1,32 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import { signIn, useSession } from 'next-auth/react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Suspense, useEffect } from 'react'
 
 function SignInContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const { data: session, status } = useSession()
   const callbackUrl = searchParams.get('callbackUrl') || '/drive'
+
+  // Redirect if already signed in
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      router.push(callbackUrl)
+    }
+  }, [status, session, callbackUrl, router])
+
+  if (status === 'authenticated') {
+    return null // Will redirect
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="max-w-md w-full p-8">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg mx-auto mb-4"></div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to PadPad</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to textpad.cloud</h1>
           <p className="text-gray-600">Sign in to access your documents</p>
         </div>
         
@@ -45,5 +58,7 @@ export default function SignIn() {
     </Suspense>
   )
 }
+
+
 
 

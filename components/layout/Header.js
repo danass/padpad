@@ -10,6 +10,7 @@ export default function Header() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const [isAdmin, setIsAdmin] = useState(false)
+  const [customAvatar, setCustomAvatar] = useState(null)
   
   const isDrive = pathname?.startsWith('/drive')
   const isDoc = pathname?.startsWith('/doc')
@@ -18,8 +19,21 @@ export default function Header() {
   useEffect(() => {
     if (session?.user?.email) {
       checkAdminStatus()
+      loadAvatar()
     }
   }, [session])
+  
+  const loadAvatar = async () => {
+    try {
+      const response = await fetch('/api/users/avatar')
+      if (response.ok) {
+        const data = await response.json()
+        setCustomAvatar(data.avatar_url)
+      }
+    } catch (error) {
+      // Silently fail
+    }
+  }
   
   const checkAdminStatus = async () => {
     try {
@@ -40,10 +54,18 @@ export default function Header() {
         <div className="flex items-center justify-between px-6 h-16">
           {/* Left side - Logo and project name */}
           <div className="flex items-center gap-3">
-            <Link href="/drive" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded"></div>
-              <span className="text-sm font-medium text-gray-900">PadPad</span>
+              <span className="text-sm font-medium text-gray-900">textpad.cloud</span>
             </Link>
+            {session && isDrive && (
+              <Link
+                href="/"
+                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-100 transition-colors"
+              >
+                New Document
+              </Link>
+            )}
           </div>
           
           {/* Right side - Actions */}
@@ -61,33 +83,46 @@ export default function Header() {
               </Link>
             )}
             {session && (
-              <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-gray-200">
-                {session.user?.image ? (
-                  <img 
-                    src={session.user.image} 
-                    alt={session.user.name || 'User'} 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <img 
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(session.user?.email || session.user?.name || 'user')}`}
-                    alt={session.user?.name || 'User'} 
-                    className="w-full h-full object-cover"
-                  />
-                )}
-              </div>
-            )}
-            {session && (
-              <button
-                onClick={() => {
-                  // Clear tabs before signing out
-                  localStorage.removeItem('openTabs')
-                  signOut({ callbackUrl: '/auth/signin' })
-                }}
-                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-100 transition-colors"
-              >
-                Sign out
-              </button>
+              <>
+                <Link
+                  href="/settings"
+                  className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-gray-200 hover:ring-2 hover:ring-gray-300 transition-all cursor-pointer"
+                >
+                  {customAvatar ? (
+                    <img 
+                      src={customAvatar} 
+                      alt={session.user?.name || 'User'} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to default if custom avatar fails to load
+                        e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(session.user?.email || session.user?.name || 'user')}`
+                      }}
+                    />
+                  ) : session.user?.image ? (
+                    <img 
+                      src={session.user.image} 
+                      alt={session.user.name || 'User'} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <img 
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(session.user?.email || session.user?.name || 'user')}`}
+                      alt={session.user?.name || 'User'} 
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </Link>
+                <button
+                  onClick={() => {
+                    // Clear tabs before signing out
+                    localStorage.removeItem('openTabs')
+                    signOut({ callbackUrl: '/' })
+                  }}
+                  className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-100 transition-colors"
+                >
+                  Sign out
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -112,5 +147,7 @@ export default function Header() {
     </header>
   )
 }
+
+
 
 

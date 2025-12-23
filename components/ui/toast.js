@@ -1,14 +1,16 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useRef } from 'react'
 
 const ToastContext = createContext()
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
+  const counterRef = useRef(0)
   
   const showToast = useCallback((message, type = 'info') => {
-    const id = Date.now()
+    counterRef.current += 1
+    const id = `toast-${Date.now()}-${counterRef.current}-${Math.random().toString(36).substr(2, 9)}`
     const toast = { id, message, type }
     
     setToasts(prev => [...prev, toast])
@@ -62,6 +64,7 @@ export function useToast() {
   }
   return context
 }
+
 
 
 

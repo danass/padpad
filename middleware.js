@@ -5,8 +5,9 @@ export async function middleware(request) {
   const session = await auth()
   const { pathname } = request.nextUrl
 
-  // Allow access to auth pages, API auth routes, migration routes, and public routes
-  if (pathname.startsWith('/auth') || 
+  // Allow access to auth pages, API auth routes, migration routes, public routes, and root page
+  if (pathname === '/' ||
+      pathname.startsWith('/auth') || 
       pathname.startsWith('/api/auth') || 
       pathname.startsWith('/api/migrate') ||
       pathname.startsWith('/public') ||
@@ -29,5 +30,7 @@ export const config = {
     '/((?!api/auth|_next/static|_next/image|favicon.ico).*)',
   ],
 }
+
+
 
 

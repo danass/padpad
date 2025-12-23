@@ -92,9 +92,18 @@ export default function PublicDocumentPage() {
         const response = await fetch(`/api/public/documents/${documentId}`)
         if (!response.ok) {
           if (response.status === 404) {
-            throw new Error('Document not found')
+            setError('Document not found')
+            setLoading(false)
+            return
           }
-          throw new Error('Failed to load document')
+          if (response.status === 403) {
+            setError('This document is not public')
+            setLoading(false)
+            return
+          }
+          setError('Failed to load document')
+          setLoading(false)
+          return
         }
         
         const data = await response.json()
@@ -141,15 +150,26 @@ export default function PublicDocumentPage() {
   
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <a
-            href="/"
-            className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors"
-          >
-            Go to Home
-          </a>
+      <div className="min-h-screen bg-white">
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              {error === 'Document not found' ? 'Document Not Found' : 'Access Denied'}
+            </h1>
+            <p className="text-gray-600 mb-6">
+              {error === 'Document not found' 
+                ? 'The document you are looking for does not exist or has been deleted.'
+                : error === 'This document is not public'
+                ? 'This document is private and cannot be accessed publicly.'
+                : error}
+            </p>
+            <a
+              href="/"
+              className="inline-block px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors"
+            >
+              Go to Home
+            </a>
+          </div>
         </div>
       </div>
     )
@@ -166,5 +186,7 @@ export default function PublicDocumentPage() {
     </div>
   )
 }
+
+
 
 

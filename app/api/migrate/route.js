@@ -95,7 +95,38 @@ export async function POST() {
        CREATE TRIGGER update_folders_updated_at 
        BEFORE UPDATE ON folders 
        FOR EACH ROW 
-       EXECUTE FUNCTION update_updated_at_column()`
+       EXECUTE FUNCTION update_updated_at_column()`,
+      
+      // Create users table for testament feature
+      `CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        birth_date DATE,
+        testament_slug TEXT UNIQUE,
+        testament_username TEXT UNIQUE,
+        avatar_url TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )`,
+      
+      // Add testament_slug column if it doesn't exist
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS testament_slug TEXT UNIQUE`,
+      
+      // Add testament_username column if it doesn't exist
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS testament_username TEXT UNIQUE`,
+      
+      // Add avatar_url column if it doesn't exist
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT`,
+      
+      // Create index for username
+      `CREATE INDEX IF NOT EXISTS idx_users_testament_username ON users(testament_username) WHERE testament_username IS NOT NULL`,
+      
+      // Add auto_public_date to documents
+      `ALTER TABLE documents ADD COLUMN IF NOT EXISTS auto_public_date DATE`,
+      
+      // Create indexes for testament feature
+      `CREATE INDEX IF NOT EXISTS idx_documents_auto_public_date ON documents(auto_public_date) WHERE auto_public_date IS NOT NULL`,
+      `CREATE INDEX IF NOT EXISTS idx_users_birth_date ON users(birth_date) WHERE birth_date IS NOT NULL`,
+      `CREATE INDEX IF NOT EXISTS idx_users_testament_slug ON users(testament_slug) WHERE testament_slug IS NOT NULL`
     ]
     
     for (const migration of migrations) {

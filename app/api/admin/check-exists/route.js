@@ -15,3 +15,4 @@ export async function GET() {
     return Response.json({ exists: false, count: 0 })
   }
 }
+

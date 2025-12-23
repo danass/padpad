@@ -67,7 +67,9 @@ export async function GET() {
       'idx_folders_parent_id',
       'idx_documents_content_text_search',
       'idx_documents_user_id',
-      'idx_folders_user_id'
+      'idx_folders_user_id',
+      'idx_documents_auto_public_date',
+      'idx_users_birth_date'
     ]
     for (const index of indexesToCheck) {
       try {
@@ -138,10 +140,11 @@ export async function GET() {
     
     // Check required columns
     const requiredColumns = {
-      documents: ['id', 'title', 'folder_id', 'created_at', 'updated_at', 'current_snapshot_id', 'content_text', 'user_id'],
+      documents: ['id', 'title', 'folder_id', 'created_at', 'updated_at', 'current_snapshot_id', 'content_text', 'user_id', 'auto_public_date'],
       folders: ['id', 'name', 'parent_id', 'created_at', 'updated_at', 'user_id'],
       document_snapshots: ['id', 'document_id', 'content_json', 'content_text', 'created_at'],
-      document_events: ['id', 'document_id', 'type', 'payload', 'version', 'created_at']
+      document_events: ['id', 'document_id', 'type', 'payload', 'version', 'created_at'],
+      users: ['id', 'birth_date', 'created_at', 'updated_at']
     }
     
     let allColumnsExist = true
@@ -191,3 +194,4 @@ export async function GET() {
     })
   }
 }
+

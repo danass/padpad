@@ -666,3 +666,4 @@ export default function GoogleDocsToolbar({ editor }) {
     </div>
   )
 }
+

@@ -13,3 +13,4 @@ CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id);
 CREATE INDEX IF NOT EXISTS idx_folders_user_id ON folders(user_id);
 
 
+

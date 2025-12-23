@@ -11,7 +11,10 @@ export default function SearchBar({ onResults }) {
   useEffect(() => {
     if (!query.trim()) {
       setResults(null)
-      if (onResults) onResults(null)
+      // Only call onResults(null) if we had results before (to reset view)
+      if (results !== null && onResults) {
+        onResults(null)
+      }
       return
     }
     
@@ -108,6 +111,7 @@ export default function SearchBar({ onResults }) {
     </div>
   )
 }
+
 
 
 

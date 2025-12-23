@@ -155,7 +155,30 @@ export default function FolderPage() {
             
             <div className="bg-white border border-gray-200 rounded-md p-6">
               <h2 className="text-xl font-semibold mb-4 text-gray-900">Documents</h2>
-              <DocumentList documents={documents} onDelete={deleteDocument} />
+              <DocumentList 
+                documents={documents} 
+                onDelete={deleteDocument}
+                onCreateFolder={async (name) => {
+                  const response = await fetch('/api/folders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, parent_id: folderId })
+                  })
+                  if (response.ok) {
+                    loadData()
+                  }
+                }}
+                currentFolderId={folderId}
+                parentFolderId={folder.parent_id}
+                onNavigateToParent={() => {
+                  if (folder.parent_id) {
+                    router.push(`/drive/folder/${folder.parent_id}`)
+                  } else {
+                    router.push('/drive')
+                  }
+                }}
+                allFolders={allFolders}
+              />
             </div>
           </div>
         </div>
@@ -163,6 +186,7 @@ export default function FolderPage() {
     </div>
   )
 }
+
 
 
 

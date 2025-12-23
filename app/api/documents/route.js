@@ -20,7 +20,8 @@ export async function GET(request) {
         d.created_at,
         d.updated_at,
         d.current_snapshot_id,
-        d.content_text
+        d.content_text,
+        d.auto_public_date
       FROM documents d
       WHERE d.user_id = $1
     `
@@ -52,11 +53,12 @@ export async function POST(request) {
     }
     
     const body = await request.json()
-    const { title = 'Untitled', folder_id = null } = body
+    const { title = 'Untitled', folder_id = null, content } = body
     
     const id = uuidv4()
     const now = new Date().toISOString()
     
+    // Create document
     const result = await sql.query(
       `INSERT INTO documents (id, title, folder_id, user_id, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6)
@@ -64,12 +66,52 @@ export async function POST(request) {
       [id, title, folder_id, userId, now, now]
     )
     
-    return Response.json({ document: result.rows[0] }, { status: 201 })
+    // If content is provided, create initial snapshot
+    if (content) {
+      const snapshotId = uuidv4()
+      
+      // Extract text content for search
+      const extractText = (node) => {
+        if (!node) return ''
+        if (node.type === 'text') return node.text || ''
+        if (node.content && Array.isArray(node.content)) {
+          return node.content.map(extractText).join(' ')
+        }
+        return ''
+      }
+      const content_text = extractText(content).substring(0, 1000)
+      
+      await sql.query(
+        `INSERT INTO document_snapshots (id, document_id, content_json, content_text, created_at)
+         VALUES ($1, $2, $3, $4, NOW())
+         RETURNING *`,
+        [snapshotId, id, JSON.stringify(content), content_text]
+      )
+      
+      // Update document with snapshot reference
+      await sql.query(
+        `UPDATE documents 
+         SET current_snapshot_id = $1, 
+             content_text = $2,
+             updated_at = NOW()
+         WHERE id = $3`,
+        [snapshotId, content_text, id]
+      )
+    }
+    
+    // Fetch updated document
+    const updatedDoc = await sql.query(
+      'SELECT * FROM documents WHERE id = $1',
+      [id]
+    )
+    
+    return Response.json({ document: updatedDoc.rows[0] }, { status: 201 })
   } catch (error) {
     console.error('Error creating document:', error)
     return Response.json({ error: error.message }, { status: 500 })
   }
 }
+
 
 
 
