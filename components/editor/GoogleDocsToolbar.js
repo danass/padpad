@@ -18,7 +18,8 @@ import {
   Redo,
   ChevronDown,
   Minus,
-  Plus
+  Plus,
+  Eraser
 } from 'lucide-react'
 
 const FONT_FAMILIES = [
@@ -69,6 +70,10 @@ export default function GoogleDocsToolbar({ editor }) {
   const [showTextColor, setShowTextColor] = useState(false)
   const [showHighlightColor, setShowHighlightColor] = useState(false)
   const [showAlign, setShowAlign] = useState(false)
+  const [fontFamilyPosition, setFontFamilyPosition] = useState({ top: 0, left: 0 })
+  const [textColorPosition, setTextColorPosition] = useState({ top: 0, left: 0 })
+  const [highlightColorPosition, setHighlightColorPosition] = useState({ top: 0, left: 0 })
+  const [alignPosition, setAlignPosition] = useState({ top: 0, left: 0 })
   const fontFamilyRef = useRef(null)
   const fontSizeRef = useRef(null)
   const textColorRef = useRef(null)
@@ -198,7 +203,13 @@ export default function GoogleDocsToolbar({ editor }) {
       {/* Font Family */}
       <div className="relative" ref={fontFamilyRef} style={{ zIndex: 1000 }}>
         <button
-          onClick={() => setShowFontFamily(!showFontFamily)}
+          onClick={() => {
+            if (fontFamilyRef.current) {
+              const rect = fontFamilyRef.current.getBoundingClientRect()
+              setFontFamilyPosition({ top: rect.bottom + 4, left: rect.left })
+            }
+            setShowFontFamily(!showFontFamily)
+          }}
           className="px-2 py-1.5 min-w-[80px] text-left text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
           title={currentFontFamily}
         >
@@ -216,8 +227,8 @@ export default function GoogleDocsToolbar({ editor }) {
               className="fixed bg-white border border-gray-300 rounded shadow-lg max-h-64 overflow-y-auto w-48" 
               style={{ 
                 zIndex: 10000,
-                top: fontFamilyRef.current ? fontFamilyRef.current.getBoundingClientRect().bottom + 4 : 0,
-                left: fontFamilyRef.current ? fontFamilyRef.current.getBoundingClientRect().left : 0
+                top: fontFamilyPosition.top,
+                left: fontFamilyPosition.left
               }}
             >
             {FONT_FAMILIES.map((font) => (
@@ -282,6 +293,10 @@ export default function GoogleDocsToolbar({ editor }) {
             min="8"
             max="400"
             className="w-16 px-2 py-1.5 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0"
+            style={{
+              WebkitAppearance: 'textfield',
+              MozAppearance: 'textfield'
+            }}
           />
           {fontSizeDisplay === 'inherited' && (
             <span className="absolute inset-0 flex items-center justify-center text-xs text-gray-400 pointer-events-none pr-6">
@@ -331,12 +346,39 @@ export default function GoogleDocsToolbar({ editor }) {
         <Underline className="w-4 h-4" />
       </button>
 
+      <button
+        onClick={() => {
+          editor.chain().focus()
+            .unsetBold()
+            .unsetItalic()
+            .unsetUnderline()
+            .unsetStrike()
+            .unsetColor()
+            .unsetHighlight()
+            .unsetLink()
+            .unsetFontFamily()
+            .unsetFontSize()
+            .setTextAlign('left')
+            .run()
+        }}
+        className="p-1.5 rounded hover:bg-gray-100"
+        title="Clear Formatting"
+      >
+        <Eraser className="w-4 h-4" />
+      </button>
+
       <div className="w-px h-6 bg-gray-300 mx-0.5" />
 
       {/* Text Color */}
       <div className="relative" ref={textColorRef} style={{ zIndex: 1000 }}>
         <button
-          onClick={() => setShowTextColor(!showTextColor)}
+          onClick={() => {
+            if (textColorRef.current) {
+              const rect = textColorRef.current.getBoundingClientRect()
+              setTextColorPosition({ top: rect.bottom + 4, left: rect.left })
+            }
+            setShowTextColor(!showTextColor)
+          }}
           className={`p-1.5 rounded hover:bg-gray-100 ${
             showTextColor ? 'bg-gray-200' : ''
           }`}
@@ -363,8 +405,8 @@ export default function GoogleDocsToolbar({ editor }) {
               className="fixed bg-white border border-gray-300 rounded shadow-lg p-3 w-64" 
               style={{ 
                 zIndex: 10000,
-                top: textColorRef.current ? textColorRef.current.getBoundingClientRect().bottom + 4 : 0,
-                left: textColorRef.current ? textColorRef.current.getBoundingClientRect().left : 0
+                top: textColorPosition.top,
+                left: textColorPosition.left
               }}
             >
             <div className="grid grid-cols-10 gap-1 mb-3">
@@ -398,7 +440,13 @@ export default function GoogleDocsToolbar({ editor }) {
       {/* Highlight Color */}
       <div className="relative" ref={highlightColorRef} style={{ zIndex: 1000 }}>
         <button
-          onClick={() => setShowHighlightColor(!showHighlightColor)}
+          onClick={() => {
+            if (highlightColorRef.current) {
+              const rect = highlightColorRef.current.getBoundingClientRect()
+              setHighlightColorPosition({ top: rect.bottom + 4, left: rect.left })
+            }
+            setShowHighlightColor(!showHighlightColor)
+          }}
           className={`p-1.5 rounded hover:bg-gray-100 ${
             showHighlightColor ? 'bg-gray-200' : ''
           }`}
@@ -456,7 +504,13 @@ export default function GoogleDocsToolbar({ editor }) {
       {/* Alignment */}
       <div className="relative" ref={alignRef} style={{ zIndex: 1000 }}>
         <button
-          onClick={() => setShowAlign(!showAlign)}
+          onClick={() => {
+            if (alignRef.current) {
+              const rect = alignRef.current.getBoundingClientRect()
+              setAlignPosition({ top: rect.bottom + 4, left: rect.left })
+            }
+            setShowAlign(!showAlign)
+          }}
           className={`p-1.5 rounded hover:bg-gray-100 flex items-center gap-1 ${
             showAlign ? 'bg-gray-200' : ''
           }`}
@@ -479,8 +533,8 @@ export default function GoogleDocsToolbar({ editor }) {
               className="fixed bg-white border border-gray-300 rounded shadow-lg" 
               style={{ 
                 zIndex: 10000,
-                top: alignRef.current ? alignRef.current.getBoundingClientRect().bottom + 4 : 0,
-                left: alignRef.current ? alignRef.current.getBoundingClientRect().left : 0
+                top: alignPosition.top,
+                left: alignPosition.left
               }}
             >
             <button

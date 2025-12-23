@@ -97,7 +97,7 @@ export default function MigratePage() {
 
   const checkDbSetup = async () => {
     try {
-      const response = await fetch('/api/migrate/check')
+      const response = await fetch('/api/migrate/compare')
       if (response.ok) {
         const data = await response.json()
         setDbNeedsMigration(data.needsMigration)
@@ -134,15 +134,17 @@ export default function MigratePage() {
         )}
         
         <div className="space-y-4 mb-6">
-          <div>
-            <button
-              onClick={runMigration}
-              disabled={loading}
-              className="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-            >
-              {loading ? 'Running Migration...' : 'Run Migration'}
-            </button>
-          </div>
+          {!checkingDb && dbNeedsMigration && (
+            <div>
+              <button
+                onClick={runMigration}
+                disabled={loading}
+                className="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+              >
+                {loading ? 'Running Migration...' : 'Run Migration'}
+              </button>
+            </div>
+          )}
           
           {!checkingAdmins && !adminsExist && (
             <div className="border-t pt-4">
