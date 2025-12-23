@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { format } from 'date-fns'
-import { Save, Edit, RotateCcw } from 'lucide-react'
+import { Save, Edit, RotateCcw, Trash2 } from 'lucide-react'
 
 export default function HistoryPanel({ documentId, onRestore, onClose }) {
   const [history, setHistory] = useState(null)
   const [loading, setLoading] = useState(true)
   const [restoring, setRestoring] = useState(null)
+  const [deleting, setDeleting] = useState(null)
   
   useEffect(() => {
     if (!documentId) return
@@ -34,7 +35,33 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
   const snapshots = useMemo(() => {
     if (!history) return []
     // Only return snapshots, sorted by date DESC (newest first)
-    return (history.snapshots || []).map(s => ({ ...s, type: 'snapshot' }))
+    return (history.snapshots || []).map(s => {
+      // Check if snapshot is empty (just empty paragraph)
+      const isEmpty = (() => {
+        if (!s.content_json) return true
+        let content = s.content_json
+        if (typeof content === 'string') {
+          try {
+            content = JSON.parse(content)
+          } catch (e) {
+            return false
+          }
+        }
+        if (!content || content.type !== 'doc' || !content.content) return true
+        if (content.content.length === 0) return true
+        // Check if all paragraphs are empty
+        return content.content.every(node => {
+          if (node.type === 'paragraph' || node.type === 'heading') {
+            if (!node.content || !Array.isArray(node.content)) return true
+            return !node.content.some(child => 
+              child.type === 'text' && child.text && child.text.trim().length > 0
+            )
+          }
+          return false
+        })
+      })()
+      return { ...s, type: 'snapshot', isEmpty }
+    })
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
   }, [history])
 
@@ -71,6 +98,71 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
       console.error('Error restoring:', error)
     } finally {
       setRestoring(null)
+    }
+  }
+  
+  const handleDelete = async (snapshot, e) => {
+    e.stopPropagation()
+    
+    if (!confirm('Are you sure you want to delete this snapshot?')) {
+      return
+    }
+    
+    setDeleting(snapshot.id)
+    
+    try {
+      const response = await fetch(`/api/documents/${documentId}/snapshot/${snapshot.id}`, {
+        method: 'DELETE'
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete snapshot')
+      }
+      
+      // Reload history
+      const historyResponse = await fetch(`/api/documents/${documentId}/history`)
+      if (historyResponse.ok) {
+        const data = await historyResponse.json()
+        setHistory(data)
+      }
+    } catch (error) {
+      console.error('Error deleting snapshot:', error)
+      alert('Failed to delete snapshot: ' + error.message)
+    } finally {
+      setDeleting(null)
+    }
+  }
+  
+  const handleDeleteAllEmpty = async () => {
+    const emptySnapshots = snapshots.filter(s => s.isEmpty)
+    if (emptySnapshots.length === 0) {
+      alert('No empty snapshots found')
+      return
+    }
+    
+    if (!confirm(`Are you sure you want to delete ${emptySnapshots.length} empty snapshot(s)?`)) {
+      return
+    }
+    
+    try {
+      // Delete all empty snapshots
+      const deletePromises = emptySnapshots.map(snapshot =>
+        fetch(`/api/documents/${documentId}/snapshot/${snapshot.id}`, {
+          method: 'DELETE'
+        })
+      )
+      
+      await Promise.all(deletePromises)
+      
+      // Reload history
+      const historyResponse = await fetch(`/api/documents/${documentId}/history`)
+      if (historyResponse.ok) {
+        const data = await historyResponse.json()
+        setHistory(data)
+      }
+    } catch (error) {
+      console.error('Error deleting empty snapshots:', error)
+      alert('Failed to delete empty snapshots: ' + error.message)
     }
   }
   
