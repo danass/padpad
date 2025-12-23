@@ -69,7 +69,6 @@ export default function GoogleDocsToolbar({ editor }) {
   const [showTextColor, setShowTextColor] = useState(false)
   const [showHighlightColor, setShowHighlightColor] = useState(false)
   const [showAlign, setShowAlign] = useState(false)
-  const [fontSize, setFontSize] = useState(11)
   const fontFamilyRef = useRef(null)
   const fontSizeRef = useRef(null)
   const textColorRef = useRef(null)
@@ -82,10 +81,28 @@ export default function GoogleDocsToolbar({ editor }) {
 
   // Get current font family
   const currentFontFamily = editor.getAttributes('textStyle')?.fontFamily || 'Arial'
-  const currentFontSize = editor.getAttributes('textStyle')?.fontSize || '11px'
+  const currentFontSizeAttr = editor.getAttributes('textStyle')?.fontSize || '11px'
+  const currentFontSizeNum = parseInt(currentFontSizeAttr.replace('px', '')) || 11
+  const [fontSize, setFontSize] = useState(currentFontSizeNum)
   const currentTextColor = editor.getAttributes('textStyle')?.color || '#000000'
   const currentHighlightColor = editor.getAttributes('highlight')?.color || null
   const currentAlign = editor.getAttributes('textAlign')?.textAlign || 'left'
+
+  // Update fontSize state when editor selection changes
+  useEffect(() => {
+    const updateFontSize = () => {
+      const sizeAttr = editor.getAttributes('textStyle')?.fontSize || '11px'
+      const sizeNum = parseInt(sizeAttr.replace('px', '')) || 11
+      setFontSize(sizeNum)
+    }
+    
+    editor.on('selectionUpdate', updateFontSize)
+    editor.on('transaction', updateFontSize)
+    return () => {
+      editor.off('selectionUpdate', updateFontSize)
+      editor.off('transaction', updateFontSize)
+    }
+  }, [editor])
 
   // Close dropdowns when clicking outside
   useEffect(() => {
