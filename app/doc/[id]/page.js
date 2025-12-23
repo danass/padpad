@@ -642,25 +642,53 @@ export default function DocumentPage() {
         // Always store content to load when editor is ready
         pendingContentRef.current = content
         
+        console.log('Stored content in pendingContentRef:', {
+          hasContent: !!content,
+          contentLength: content?.content?.length || 0,
+          contentPreview: JSON.stringify(content).substring(0, 300),
+          editorExists: !!editor,
+          editorStateExists: !!(editor?.state),
+          editorDocExists: !!(editor?.state?.doc)
+        })
+        
         // Try to set content immediately if editor is ready
         if (editor && content && editor.state && editor.state.doc) {
           try {
             const currentEditorContent = editor.getJSON()
+            const currentEditorContentStr = JSON.stringify(currentEditorContent)
+            const contentStr = JSON.stringify(content)
+            
             // Only set if editor is empty or content is different
             const isEmpty = !currentEditorContent || 
                            (currentEditorContent.type === 'doc' && 
                             (!currentEditorContent.content || currentEditorContent.content.length === 0))
-            const isDifferent = JSON.stringify(currentEditorContent) !== JSON.stringify(content)
+            const isDifferent = currentEditorContentStr !== contentStr
+            
+            console.log('Attempting to set content immediately:', {
+              isEmpty,
+              isDifferent,
+              currentEditorLength: currentEditorContent?.content?.length || 0,
+              newContentLength: content?.content?.length || 0
+            })
             
             if (isEmpty || isDifferent) {
               editor.commands.setContent(content)
-              lastSnapshotContentRef.current = JSON.stringify(content)
+              lastSnapshotContentRef.current = contentStr
               pendingContentRef.current = null // Clear pending content
+              console.log('Content set successfully in editor')
+            } else {
+              console.log('Content already matches, skipping set')
             }
           } catch (error) {
             console.error('Error setting editor content:', error)
             // Content will be loaded by the useEffect retry logic
           }
+        } else {
+          console.log('Editor not ready, content will be loaded by useEffect:', {
+            hasEditor: !!editor,
+            hasState: !!(editor?.state),
+            hasDoc: !!(editor?.state?.doc)
+          })
         }
         
         setLoading(false)

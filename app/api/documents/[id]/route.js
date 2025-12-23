@@ -34,29 +34,27 @@ export async function GET(request, { params }) {
       return Response.json({ error: 'Document not found' }, { status: 404 })
     }
     
-    // Get latest snapshot (prefer current_snapshot_id, but fallback to most recent)
+    // Always get the most recent snapshot (it's the source of truth)
+    // Don't rely on current_snapshot_id which might be outdated
+    const latestSnapshotResult = await sql.query(
+      `SELECT * FROM document_snapshots 
+       WHERE document_id = $1 
+       ORDER BY created_at DESC 
+       LIMIT 1`,
+      [id]
+    )
+    
     let snapshot = null
-    if (document.current_snapshot_id) {
+    if (latestSnapshotResult.rows.length > 0) {
+      snapshot = latestSnapshotResult.rows[0]
+    } else if (document.current_snapshot_id) {
+      // Fallback to current_snapshot_id if no snapshots found
       const snapshotResult = await sql.query(
         'SELECT * FROM document_snapshots WHERE id = $1',
         [document.current_snapshot_id]
       )
       if (snapshotResult.rows.length > 0) {
         snapshot = snapshotResult.rows[0]
-      }
-    }
-    
-    // If no snapshot found via current_snapshot_id, get the most recent one
-    if (!snapshot) {
-      const latestSnapshotResult = await sql.query(
-        `SELECT * FROM document_snapshots 
-         WHERE document_id = $1 
-         ORDER BY created_at DESC 
-         LIMIT 1`,
-        [id]
-      )
-      if (latestSnapshotResult.rows.length > 0) {
-        snapshot = latestSnapshotResult.rows[0]
       }
     }
     
@@ -67,6 +65,18 @@ export async function GET(request, { params }) {
       } catch (e) {
         console.error('Error parsing snapshot content_json:', e)
       }
+    }
+    
+    // Debug: log snapshot info
+    if (snapshot) {
+      console.log('API: Snapshot loaded:', {
+        snapshotId: snapshot.id,
+        hasContentJson: !!snapshot.content_json,
+        contentType: typeof snapshot.content_json,
+        contentLength: snapshot.content_json?.content?.length || 0
+      })
+    } else {
+      console.warn('API: No snapshot found for document:', id)
     }
     
     // Get events after snapshot (or all events if no snapshot)
