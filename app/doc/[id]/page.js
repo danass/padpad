@@ -577,14 +577,53 @@ export default function DocumentPage() {
         // Reconstruct content using replayHistory
         let content = replayHistory(snapshot, events)
         
-        // Debug logging (can be removed in production)
+        // Debug logging
+        console.log('Document loading:', {
+          documentId,
+          hasSnapshot: !!snapshot,
+          snapshotId: snapshot?.id,
+          snapshotHasContent: !!(snapshot?.content_json),
+          snapshotContentType: typeof snapshot?.content_json,
+          eventsCount: events?.length || 0,
+          reconstructedContentType: content?.type,
+          reconstructedContentLength: content?.content?.length || 0,
+          reconstructedContentPreview: JSON.stringify(content).substring(0, 200)
+        })
+        
+        // If content is empty, try to get latest snapshot directly
         if (!content || content.type !== 'doc' || !content.content || content.content.length === 0) {
-          console.warn('Document loaded but content is empty:', {
-            hasSnapshot: !!snapshot,
-            snapshotHasContent: !!(snapshot?.content_json),
-            eventsCount: events?.length || 0,
-            reconstructedContent: content
-          })
+          console.warn('Content is empty after replayHistory, trying direct snapshot fetch')
+          
+          // Try to fetch latest snapshot directly
+          try {
+            const snapshotResponse = await fetch(`/api/documents/${documentId}/history`)
+            if (snapshotResponse.ok) {
+              const historyData = await snapshotResponse.json()
+              const snapshots = historyData.snapshots || []
+              if (snapshots.length > 0) {
+                // Get most recent snapshot
+                const latestSnapshot = snapshots[0]
+                if (latestSnapshot.content_json) {
+                  let latestContent = latestSnapshot.content_json
+                  if (typeof latestContent === 'string') {
+                    try {
+                      latestContent = JSON.parse(latestContent)
+                    } catch (e) {
+                      console.error('Error parsing latest snapshot:', e)
+                    }
+                  }
+                  if (latestContent && latestContent.type === 'doc' && 
+                      latestContent.content && Array.isArray(latestContent.content) && 
+                      latestContent.content.length > 0) {
+                    console.log('Found content in latest snapshot, using it')
+                    content = latestContent
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            console.error('Error fetching history for fallback:', err)
+          }
         }
         
         // Ensure content is valid
@@ -640,8 +679,12 @@ export default function DocumentPage() {
     if (editor && pendingContentRef.current) {
       // Use multiple retries with increasing delays to ensure editor is ready
       const trySetContent = (attempt = 0) => {
-        if (attempt > 5) {
-          console.error('Failed to set editor content after multiple attempts')
+        if (attempt > 10) {
+          console.error('Failed to set editor content after multiple attempts', {
+            pendingContent: pendingContentRef.current,
+            editorState: editor.state ? 'exists' : 'missing',
+            editorDoc: editor.state?.doc ? 'exists' : 'missing'
+          })
           pendingContentRef.current = null
           return
         }
@@ -652,8 +695,20 @@ export default function DocumentPage() {
           
           // Check if editor has a valid state
           if (editor.state && editor.state.doc) {
-            editor.commands.setContent(content)
-            lastSnapshotContentRef.current = JSON.stringify(content)
+            const contentStr = JSON.stringify(content)
+            const currentEditorContent = editor.getJSON()
+            const currentEditorContentStr = JSON.stringify(currentEditorContent)
+            
+            // Only set if different
+            if (contentStr !== currentEditorContentStr) {
+              console.log('Setting editor content from pending:', {
+                attempt,
+                contentLength: content.content?.length || 0,
+                currentEditorLength: currentEditorContent.content?.length || 0
+              })
+              editor.commands.setContent(content)
+              lastSnapshotContentRef.current = contentStr
+            }
             pendingContentRef.current = null
           } else {
             // Retry after delay
@@ -661,7 +716,7 @@ export default function DocumentPage() {
           }
         } catch (error) {
           console.error(`Error setting pending editor content (attempt ${attempt}):`, error)
-          if (attempt < 5) {
+          if (attempt < 10) {
             setTimeout(() => trySetContent(attempt + 1), 50 * (attempt + 1))
           } else {
             pendingContentRef.current = null
