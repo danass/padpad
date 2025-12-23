@@ -12,8 +12,29 @@ export default function FloatingMenu({ editor }) {
       editor={editor}
       tippyOptions={{ 
         duration: 100,
-        onDestroy: () => {
-          // Prevent double destroy warning
+        onDestroy: (instance) => {
+          // Mark instance as destroyed to prevent warnings
+          if (instance) {
+            instance.destroyed = true
+          }
+        },
+        onHide: (instance) => {
+          // Prevent hide() calls on destroyed instances
+          if (instance && instance.destroyed) {
+            return false
+          }
+        },
+        onShow: (instance) => {
+          // Prevent show() calls on destroyed instances
+          if (instance && instance.destroyed) {
+            return false
+          }
+        },
+        onHidden: (instance) => {
+          // Clean up after hide
+          if (instance && instance.destroyed) {
+            return false
+          }
         }
       }}
       className="floating-menu"
