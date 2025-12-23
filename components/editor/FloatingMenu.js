@@ -1,11 +1,27 @@
 'use client'
 
 import { FloatingMenu as TiptapFloatingMenu } from '@tiptap/react'
+import { useRef, useEffect } from 'react'
 
 export default function FloatingMenu({ editor }) {
   if (!editor) {
     return null
   }
+
+  const instanceRef = useRef(null)
+  
+  // Patch tippy to prevent destroy warnings
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.tippy) {
+      const originalDestroy = window.tippy.prototype.destroy
+      window.tippy.prototype.destroy = function() {
+        if (this.state && this.state.isDestroyed) {
+          return // Already destroyed, skip
+        }
+        return originalDestroy.call(this)
+      }
+    }
+  }, [])
 
   return (
     <TiptapFloatingMenu
@@ -16,6 +32,17 @@ export default function FloatingMenu({ editor }) {
           // Mark instance as destroyed to prevent warnings
           if (instance) {
             instance.destroyed = true
+            instance.state = instance.state || {}
+            instance.state.isDestroyed = true
+            instanceRef.current = null
+          }
+        },
+        onCreate: (instance) => {
+          // Track instance
+          instanceRef.current = instance
+          if (instance) {
+            instance.state = instance.state || {}
+            instance.state.isDestroyed = false
           }
         },
         onHide: (instance) => {

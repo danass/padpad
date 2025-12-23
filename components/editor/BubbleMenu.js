@@ -1,7 +1,7 @@
 'use client'
 
 import { BubbleMenu as TiptapBubbleMenu } from '@tiptap/react'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { 
   Bold, 
   Italic, 
@@ -26,6 +26,20 @@ export default function BubbleMenu({ editor }) {
   }
 
   const [showMoreOptions, setShowMoreOptions] = useState(false)
+  const instanceRef = useRef(null)
+  
+  // Patch tippy to prevent destroy warnings
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.tippy) {
+      const originalDestroy = window.tippy.prototype.destroy
+      window.tippy.prototype.destroy = function() {
+        if (this.state && this.state.isDestroyed) {
+          return // Already destroyed, skip
+        }
+        return originalDestroy.call(this)
+      }
+    }
+  }, [])
 
   const handleTextColorChange = (color) => {
     editor.chain().focus().setColor(color).run()
@@ -47,6 +61,17 @@ export default function BubbleMenu({ editor }) {
           // Mark instance as destroyed to prevent warnings
           if (instance) {
             instance.destroyed = true
+            instance.state = instance.state || {}
+            instance.state.isDestroyed = true
+            instanceRef.current = null
+          }
+        },
+        onCreate: (instance) => {
+          // Track instance
+          instanceRef.current = instance
+          if (instance) {
+            instance.state = instance.state || {}
+            instance.state.isDestroyed = false
           }
         },
         onHide: (instance) => {

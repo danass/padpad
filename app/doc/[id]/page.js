@@ -820,11 +820,17 @@ export default function DocumentPage() {
             // Wait and verify (same as restore)
             setTimeout(() => {
               const verifyContent = editor.getJSON()
+              const verifyContentStr = JSON.stringify(verifyContent)
+              // Normalize comparison (remove whitespace differences)
+              const normalizedContent = contentStr.replace(/\s+/g, ' ').trim()
+              const normalizedVerify = verifyContentStr.replace(/\s+/g, ' ').trim()
               console.log('After setContent (pending), editor content:', {
                 verifyContentType: verifyContent?.type,
                 verifyContentLength: verifyContent?.content?.length || 0,
-                verifyContentPreview: JSON.stringify(verifyContent).substring(0, 200),
-                matches: JSON.stringify(verifyContent) === contentStr
+                verifyContentPreview: verifyContentStr.substring(0, 200),
+                matches: normalizedContent === normalizedVerify,
+                contentLength: content.content?.length || 0,
+                verifyLength: verifyContent?.content?.length || 0
               })
             }, 100)
             
