@@ -180,10 +180,11 @@ export default function GoogleDocsToolbar({ editor }) {
       <div className="relative" ref={fontFamilyRef}>
         <button
           onClick={() => setShowFontFamily(!showFontFamily)}
-          className="px-2 py-1.5 min-w-[100px] text-left text-sm border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-2"
+          className="px-2 py-1.5 min-w-[80px] text-left text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
+          title={currentFontFamily}
         >
-          <span style={{ fontFamily: currentFontFamily }}>{currentFontFamily}</span>
-          <ChevronDown className="w-4 h-4 text-gray-500" />
+          <span style={{ fontFamily: currentFontFamily }} className="truncate max-w-[60px]">{currentFontFamily}</span>
+          <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />
         </button>
         {showFontFamily && (
           <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 max-h-64 overflow-y-auto w-48">
@@ -304,10 +305,10 @@ export default function GoogleDocsToolbar({ editor }) {
                 const color = window.prompt('Enter hex color:', currentTextColor)
                 if (color) handleTextColorChange(color)
               }}
-              className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+              className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center justify-center"
+              title="Custom Color"
             >
               <Plus className="w-4 h-4" />
-              <span>Custom</span>
             </button>
           </div>
         )}
@@ -346,10 +347,10 @@ export default function GoogleDocsToolbar({ editor }) {
                 const color = window.prompt('Enter hex color:', currentHighlightColor || '#FFFF00')
                 if (color) handleHighlightColorChange(color)
               }}
-              className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+              className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center justify-center"
+              title="Custom Color"
             >
               <Plus className="w-4 h-4" />
-              <span>Custom</span>
             </button>
           </div>
         )}
@@ -376,39 +377,39 @@ export default function GoogleDocsToolbar({ editor }) {
           <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50">
             <button
               onClick={() => handleAlignChange('left')}
-              className={`w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-2 ${
+              className={`w-full px-3 py-2 hover:bg-gray-100 flex items-center justify-center ${
                 currentAlign === 'left' ? 'bg-blue-50 text-blue-600' : ''
               }`}
+              title="Left"
             >
               <AlignLeft className="w-4 h-4" />
-              <span>Left</span>
             </button>
             <button
               onClick={() => handleAlignChange('center')}
-              className={`w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-2 ${
+              className={`w-full px-3 py-2 hover:bg-gray-100 flex items-center justify-center ${
                 currentAlign === 'center' ? 'bg-blue-50 text-blue-600' : ''
               }`}
+              title="Center"
             >
               <AlignCenter className="w-4 h-4" />
-              <span>Center</span>
             </button>
             <button
               onClick={() => handleAlignChange('right')}
-              className={`w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-2 ${
+              className={`w-full px-3 py-2 hover:bg-gray-100 flex items-center justify-center ${
                 currentAlign === 'right' ? 'bg-blue-50 text-blue-600' : ''
               }`}
+              title="Right"
             >
               <AlignRight className="w-4 h-4" />
-              <span>Right</span>
             </button>
             <button
               onClick={() => handleAlignChange('justify')}
-              className={`w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-2 ${
+              className={`w-full px-3 py-2 hover:bg-gray-100 flex items-center justify-center ${
                 currentAlign === 'justify' ? 'bg-blue-50 text-blue-600' : ''
               }`}
+              title="Justify"
             >
               <AlignJustify className="w-4 h-4" />
-              <span>Justify</span>
             </button>
           </div>
         )}

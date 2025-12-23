@@ -44,7 +44,9 @@ import {
   DraggableCodeBlock,
 } from '../../../lib/editor/draggable-nodes'
 import { Details, DetailsSummary, DetailsContent } from '../../../lib/editor/details-extension'
+import { FontSize } from '../../../lib/editor/font-size-extension'
 import EditorToolbar from '../../../components/editor/EditorToolbar'
+import GoogleDocsToolbar from '../../../components/editor/GoogleDocsToolbar'
 import HistoryPanel from '../../../components/editor/HistoryPanel'
 import SlashMenu from '../../../components/editor/SlashMenu'
 import BubbleMenu from '../../../components/editor/BubbleMenu'

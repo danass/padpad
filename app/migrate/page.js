@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 
 export default function MigratePage() {
@@ -10,6 +10,8 @@ export default function MigratePage() {
   const [adminEmail, setAdminEmail] = useState('')
   const [adminLoading, setAdminLoading] = useState(false)
   const [adminResult, setAdminResult] = useState(null)
+  const [adminsExist, setAdminsExist] = useState(false)
+  const [checkingAdmins, setCheckingAdmins] = useState(true)
   
   const runMigration = async () => {
     setLoading(true)
@@ -67,6 +69,8 @@ export default function MigratePage() {
       setAdminResult(data)
       if (data.success) {
         setAdminEmail('')
+        // Check if admins exist now
+        checkAdminsExist()
       }
     } catch (error) {
       setAdminResult({ success: false, error: error.message })
@@ -74,6 +78,24 @@ export default function MigratePage() {
       setAdminLoading(false)
     }
   }
+
+  const checkAdminsExist = async () => {
+    try {
+      const response = await fetch('/api/admin/check-exists')
+      if (response.ok) {
+        const data = await response.json()
+        setAdminsExist(data.exists)
+      }
+    } catch (error) {
+      console.error('Error checking admins:', error)
+    } finally {
+      setCheckingAdmins(false)
+    }
+  }
+
+  useEffect(() => {
+    checkAdminsExist()
+  }, [])
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-8">
@@ -96,39 +118,41 @@ export default function MigratePage() {
             </button>
           </div>
           
-          <div className="border-t pt-4">
-            <h2 className="text-lg font-semibold mb-3 text-gray-900">Admin Setup</h2>
-            <p className="mb-4 text-sm text-gray-600">
-              First, run the admin migration to create the admins table. Then add your first admin user.
-            </p>
-            
-            <div className="mb-4">
-              <button
-                onClick={runAdminMigration}
-                disabled={adminLoading}
-                className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors mb-3"
-              >
-                {adminLoading ? 'Running...' : 'Run Admin Migration'}
-              </button>
+          {!checkingAdmins && !adminsExist && (
+            <div className="border-t pt-4">
+              <h2 className="text-lg font-semibold mb-3 text-gray-900">Admin Setup</h2>
+              <p className="mb-4 text-sm text-gray-600">
+                First, run the admin migration to create the admins table. Then add your first admin user.
+              </p>
+              
+              <div className="mb-4">
+                <button
+                  onClick={runAdminMigration}
+                  disabled={adminLoading}
+                  className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors mb-3"
+                >
+                  {adminLoading ? 'Running...' : 'Run Admin Migration'}
+                </button>
+              </div>
+              
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={adminEmail}
+                  onChange={(e) => setAdminEmail(e.target.value)}
+                  placeholder={session?.user?.email || "Enter admin email"}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+                <button
+                  onClick={setupAdmin}
+                  disabled={adminLoading || !adminEmail}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+                >
+                  {adminLoading ? 'Adding...' : 'Add Admin'}
+                </button>
+              </div>
             </div>
-            
-            <div className="flex gap-2">
-              <input
-                type="email"
-                value={adminEmail}
-                onChange={(e) => setAdminEmail(e.target.value)}
-                placeholder={session?.user?.email || "Enter admin email"}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-              />
-              <button
-                onClick={setupAdmin}
-                disabled={adminLoading || !adminEmail}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-              >
-                {adminLoading ? 'Adding...' : 'Add Admin'}
-              </button>
-            </div>
-          </div>
+          )}
         </div>
         
         {result && (
