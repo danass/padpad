@@ -133,6 +133,42 @@ export async function POST(request, { params }) {
     // Extract plain text
     const content_text = extractPlainText(content_json)
     
+    // Check if content is empty (only empty paragraphs)
+    const isEmpty = (content) => {
+      if (!content || !content.content || !Array.isArray(content.content)) {
+        return true
+      }
+      
+      // Check if all content nodes are empty paragraphs
+      const hasNonEmptyContent = content.content.some(node => {
+        if (node.type === 'paragraph') {
+          // Paragraph is empty if it has no content or only empty text nodes
+          if (!node.content || node.content.length === 0) {
+            return false
+          }
+          // Check if all text nodes are empty
+          return node.content.some(textNode => {
+            if (textNode.type === 'text' && textNode.text && textNode.text.trim().length > 0) {
+              return true
+            }
+            return false
+          })
+        }
+        // Non-paragraph nodes are considered content
+        return true
+      })
+      
+      return !hasNonEmptyContent
+    }
+    
+    // Don't create snapshot if content is empty
+    if (isEmpty(content_json)) {
+      return Response.json(
+        { message: 'Content is empty, snapshot not created', skipped: true },
+        { status: 200 }
+      )
+    }
+    
     // Create snapshot
     const snapshotId = uuidv4()
     const snapshotResult = await sql.query(
