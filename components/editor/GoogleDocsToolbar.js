@@ -215,9 +215,9 @@ export default function GoogleDocsToolbar({ editor }) {
             <div 
               className="fixed bg-white border border-gray-300 rounded shadow-lg max-h-64 overflow-y-auto w-48" 
               style={{ 
-                zIndex: 1000,
-                top: fontFamilyRef.current ? fontFamilyRef.current.getBoundingClientRect().bottom + 4 + window.scrollY : 0,
-                left: fontFamilyRef.current ? fontFamilyRef.current.getBoundingClientRect().left + window.scrollX : 0
+                zIndex: 10000,
+                top: fontFamilyRef.current ? fontFamilyRef.current.getBoundingClientRect().bottom + 4 : 0,
+                left: fontFamilyRef.current ? fontFamilyRef.current.getBoundingClientRect().left : 0
               }}
             >
             {FONT_FAMILIES.map((font) => (
@@ -279,17 +279,12 @@ export default function GoogleDocsToolbar({ editor }) {
                 e.target.blur()
               }
             }}
-            placeholder="inherited"
             min="8"
             max="400"
-            className="w-16 px-2 py-1.5 pr-6 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0"
-            style={{
-              WebkitAppearance: 'textfield',
-              MozAppearance: 'textfield'
-            }}
+            className="w-16 px-2 py-1.5 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0"
           />
           {fontSizeDisplay === 'inherited' && (
-            <span className="absolute inset-0 flex items-center justify-center text-xs text-gray-400 pointer-events-none">
+            <span className="absolute inset-0 flex items-center justify-center text-xs text-gray-400 pointer-events-none pr-6">
               inherited
             </span>
           )}
@@ -367,9 +362,9 @@ export default function GoogleDocsToolbar({ editor }) {
             <div 
               className="fixed bg-white border border-gray-300 rounded shadow-lg p-3 w-64" 
               style={{ 
-                zIndex: 1000,
-                top: textColorRef.current ? textColorRef.current.getBoundingClientRect().bottom + 4 + window.scrollY : 0,
-                left: textColorRef.current ? textColorRef.current.getBoundingClientRect().left + window.scrollX : 0
+                zIndex: 10000,
+                top: textColorRef.current ? textColorRef.current.getBoundingClientRect().bottom + 4 : 0,
+                left: textColorRef.current ? textColorRef.current.getBoundingClientRect().left : 0
               }}
             >
             <div className="grid grid-cols-10 gap-1 mb-3">
@@ -423,9 +418,9 @@ export default function GoogleDocsToolbar({ editor }) {
             <div 
               className="fixed bg-white border border-gray-300 rounded shadow-lg p-3 w-64" 
               style={{ 
-                zIndex: 1000,
-                top: highlightColorRef.current ? highlightColorRef.current.getBoundingClientRect().bottom + 4 + window.scrollY : 0,
-                left: highlightColorRef.current ? highlightColorRef.current.getBoundingClientRect().left + window.scrollX : 0
+                zIndex: 10000,
+                top: highlightColorRef.current ? highlightColorRef.current.getBoundingClientRect().bottom + 4 : 0,
+                left: highlightColorRef.current ? highlightColorRef.current.getBoundingClientRect().left : 0
               }}
             >
             <div className="grid grid-cols-9 gap-1 mb-3">
@@ -483,9 +478,9 @@ export default function GoogleDocsToolbar({ editor }) {
             <div 
               className="fixed bg-white border border-gray-300 rounded shadow-lg" 
               style={{ 
-                zIndex: 1000,
-                top: alignRef.current ? alignRef.current.getBoundingClientRect().bottom + 4 + window.scrollY : 0,
-                left: alignRef.current ? alignRef.current.getBoundingClientRect().left + window.scrollX : 0
+                zIndex: 10000,
+                top: alignRef.current ? alignRef.current.getBoundingClientRect().bottom + 4 : 0,
+                left: alignRef.current ? alignRef.current.getBoundingClientRect().left : 0
               }}
             >
             <button
