@@ -39,6 +39,7 @@ export async function POST(request, { params }) {
     const { id } = await params
     const body = await request.json()
     const { content_json } = body
+    const admin = await isAdmin()
     
     if (!content_json) {
       return Response.json(
@@ -65,13 +66,9 @@ export async function POST(request, { params }) {
         'UPDATE documents SET user_id = $1 WHERE id = $2',
         [userId, id]
       )
-    } else {
-      // Check if user is admin
-      const admin = await isAdmin()
-      if (doc.user_id !== userId && !admin) {
-        // Document belongs to another user
-        return Response.json({ error: 'Document not found' }, { status: 404 })
-      }
+    } else if (doc.user_id !== userId && !admin) {
+      // Document belongs to another user - only admins can access
+      return Response.json({ error: 'Document not found' }, { status: 404 })
     }
     
     // Get the last snapshot to compare
