@@ -141,6 +141,46 @@ export default function DocumentPage() {
         // Mark as saved and update last saved content
         lastSavedContentRef.current = currentContentStr
         markSaved()
+        
+        // Also create a snapshot immediately after saving event (to ensure content is persisted)
+        // This ensures content is available even if user refreshes before the 1-minute interval
+        try {
+          const snapshotResponse = await fetch(`/api/documents/${documentId}/snapshot`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content_json: content })
+          })
+          
+          if (snapshotResponse.ok) {
+            const snapshotResult = await snapshotResponse.json()
+            if (!snapshotResult.skipped) {
+              // Update lastSnapshotContentRef with normalized content
+              const normalizeJSON = (obj) => {
+                if (obj === null || typeof obj !== 'object') {
+                  return obj
+                }
+                if (Array.isArray(obj)) {
+                  return obj.map(normalizeJSON).sort((a, b) => {
+                    const aStr = JSON.stringify(a)
+                    const bStr = JSON.stringify(b)
+                    return aStr < bStr ? -1 : aStr > bStr ? 1 : 0
+                  })
+                }
+                const sorted = {}
+                Object.keys(obj).sort().forEach(key => {
+                  sorted[key] = normalizeJSON(obj[key])
+                })
+                return sorted
+              }
+              const normalizedContent = normalizeJSON(content)
+              lastSnapshotContentRef.current = JSON.stringify(normalizedContent)
+              hasChangesRef.current = false
+            }
+          }
+        } catch (snapshotErr) {
+          // Don't fail autosave if snapshot creation fails, just log it
+          console.error('Error creating snapshot after autosave:', snapshotErr)
+        }
       } catch (err) {
         console.error('Autosave error:', err)
         setError(err.message)
@@ -550,8 +590,29 @@ export default function DocumentPage() {
       if (snapshotResponse.ok) {
         const result = await snapshotResponse.json()
         if (!result.skipped) {
-          lastSnapshotContentRef.current = JSON.stringify(currentContent)
+          // Normalize content for comparison
+          const normalizeJSON = (obj) => {
+            if (obj === null || typeof obj !== 'object') {
+              return obj
+            }
+            if (Array.isArray(obj)) {
+              return obj.map(normalizeJSON).sort((a, b) => {
+                const aStr = JSON.stringify(a)
+                const bStr = JSON.stringify(b)
+                return aStr < bStr ? -1 : aStr > bStr ? 1 : 0
+              })
+            }
+            const sorted = {}
+            Object.keys(obj).sort().forEach(key => {
+              sorted[key] = normalizeJSON(obj[key])
+            })
+            return sorted
+          }
+          const normalizedContent = normalizeJSON(currentContent)
+          lastSnapshotContentRef.current = JSON.stringify(normalizedContent)
+          lastSavedContentRef.current = JSON.stringify(currentContent)
           hasChangesRef.current = false
+          markSaved()
           showToast('Document saved', 'success')
         } else {
           showToast('No changes to save', 'info')
