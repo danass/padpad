@@ -121,9 +121,9 @@ export default function DrivePage() {
     } finally {
       setCreatingFolder(false)
     }
-  }
+  }, [loadData, showToast])
   
-  async function deleteDocument(id) {
+  const deleteDocument = useCallback(async (id) => {
     try {
       const response = await fetch(`/api/documents/${id}`, {
         method: 'DELETE'
@@ -143,9 +143,9 @@ export default function DrivePage() {
       console.error('Error deleting document:', error)
       showToast('Failed to delete document', 'error')
     }
-  }
+  }, [loadData, showToast])
   
-  async function deleteFolder(id) {
+  const deleteFolder = useCallback(async (id) => {
     try {
       const response = await fetch(`/api/folders/${id}`, {
         method: 'DELETE'
@@ -161,7 +161,7 @@ export default function DrivePage() {
       console.error('Error deleting folder:', error)
       showToast('Failed to delete folder', 'error')
     }
-  }
+  }, [loadData, showToast])
   
   if (loading) {
     return (
