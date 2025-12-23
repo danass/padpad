@@ -34,7 +34,7 @@ export async function GET(request, { params }) {
       return Response.json({ error: 'Document not found' }, { status: 404 })
     }
     
-    // Get latest snapshot if exists
+    // Get latest snapshot (prefer current_snapshot_id, but fallback to most recent)
     let snapshot = null
     if (document.current_snapshot_id) {
       const snapshotResult = await sql.query(
@@ -43,14 +43,29 @@ export async function GET(request, { params }) {
       )
       if (snapshotResult.rows.length > 0) {
         snapshot = snapshotResult.rows[0]
-        // Parse content_json if it's a string
-        if (snapshot.content_json && typeof snapshot.content_json === 'string') {
-          try {
-            snapshot.content_json = JSON.parse(snapshot.content_json)
-          } catch (e) {
-            console.error('Error parsing snapshot content_json:', e)
-          }
-        }
+      }
+    }
+    
+    // If no snapshot found via current_snapshot_id, get the most recent one
+    if (!snapshot) {
+      const latestSnapshotResult = await sql.query(
+        `SELECT * FROM document_snapshots 
+         WHERE document_id = $1 
+         ORDER BY created_at DESC 
+         LIMIT 1`,
+        [id]
+      )
+      if (latestSnapshotResult.rows.length > 0) {
+        snapshot = latestSnapshotResult.rows[0]
+      }
+    }
+    
+    // Parse content_json if it's a string
+    if (snapshot && snapshot.content_json && typeof snapshot.content_json === 'string') {
+      try {
+        snapshot.content_json = JSON.parse(snapshot.content_json)
+      } catch (e) {
+        console.error('Error parsing snapshot content_json:', e)
       }
     }
     
