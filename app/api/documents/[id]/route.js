@@ -67,17 +67,6 @@ export async function GET(request, { params }) {
       }
     }
     
-    // Debug: log snapshot info
-    if (snapshot) {
-      console.log('API: Snapshot loaded:', {
-        snapshotId: snapshot.id,
-        hasContentJson: !!snapshot.content_json,
-        contentType: typeof snapshot.content_json,
-        contentLength: snapshot.content_json?.content?.length || 0
-      })
-    } else {
-      console.warn('API: No snapshot found for document:', id)
-    }
     
     // Get events after snapshot (or all events if no snapshot)
     let events = []
