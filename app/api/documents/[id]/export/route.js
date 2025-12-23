@@ -2,6 +2,7 @@ import { sql } from '@vercel/postgres'
 import { tipTapToMarkdown } from '../../../../../lib/export/markdown.js'
 import { tipTapToHTML } from '../../../../../lib/export/html.js'
 import { getUserId } from '@/lib/auth/getSession'
+import { isAdmin } from '@/lib/auth/isAdmin'
 
 export async function GET(request, { params }) {
   try {
@@ -34,8 +35,12 @@ export async function GET(request, { params }) {
       )
       document.user_id = userId
     } else if (document.user_id !== userId) {
-      // Document belongs to another user
-      return Response.json({ error: 'Document not found' }, { status: 404 })
+      // Check if user is admin
+      const admin = await isAdmin()
+      if (!admin) {
+        // Document belongs to another user
+        return Response.json({ error: 'Document not found' }, { status: 404 })
+      }
     }
     
     // Get latest snapshot OR reconstruct from events

@@ -180,36 +180,38 @@ export default function AdminPage() {
 
         {/* Stats Tab */}
         {activeTab === 'stats' && stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="text-sm font-medium text-gray-600 mb-1">Total Documents</div>
-              <div className="text-3xl font-bold text-gray-900">{stats.totalDocuments}</div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <div className="text-sm font-medium text-gray-600 mb-1">Total Documents</div>
+                <div className="text-3xl font-bold text-gray-900">{stats.totalDocuments}</div>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <div className="text-sm font-medium text-gray-600 mb-1">Total Users</div>
+                <div className="text-3xl font-bold text-gray-900">{stats.totalUsers}</div>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <div className="text-sm font-medium text-gray-600 mb-1">Total Snapshots</div>
+                <div className="text-3xl font-bold text-gray-900">{stats.totalSnapshots}</div>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <div className="text-sm font-medium text-gray-600 mb-1">Recent (7 days)</div>
+                <div className="text-3xl font-bold text-gray-900">{stats.recentDocuments}</div>
+              </div>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="text-sm font-medium text-gray-600 mb-1">Total Users</div>
-              <div className="text-3xl font-bold text-gray-900">{stats.totalUsers}</div>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="text-sm font-medium text-gray-600 mb-1">Total Snapshots</div>
-              <div className="text-3xl font-bold text-gray-900">{stats.totalSnapshots}</div>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="text-sm font-medium text-gray-600 mb-1">Recent (7 days)</div>
-              <div className="text-3xl font-bold text-gray-900">{stats.recentDocuments}</div>
-            </div>
-          </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Documents by User</h2>
-            <div className="space-y-2">
-              {stats.documentsByUser.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                  <div className="text-sm text-gray-900">{item.user_email || 'No user'}</div>
-                  <div className="text-sm font-medium text-gray-600">{item.count} documents</div>
-                </div>
-              ))}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Documents by User</h2>
+              <div className="space-y-2">
+                {stats.documentsByUser.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                    <div className="text-sm text-gray-900">{item.user_email || 'No user'}</div>
+                    <div className="text-sm font-medium text-gray-600">{item.count} documents</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {/* Documents Tab */}

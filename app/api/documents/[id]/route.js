@@ -1,5 +1,6 @@
 import { sql } from '@vercel/postgres'
 import { getUserId } from '@/lib/auth/getSession'
+import { isAdmin } from '@/lib/auth/isAdmin'
 
 export async function GET(request, { params }) {
   try {
@@ -9,6 +10,7 @@ export async function GET(request, { params }) {
     }
     
     const { id } = await params
+    const admin = await isAdmin()
     
     // Get document - if it has no user_id, assign it to current user
     let docResult = await sql.query(
@@ -29,8 +31,8 @@ export async function GET(request, { params }) {
         [userId, id]
       )
       document.user_id = userId
-    } else if (document.user_id !== userId) {
-      // Document belongs to another user
+    } else if (document.user_id !== userId && !admin) {
+      // Document belongs to another user - only admins can access
       return Response.json({ error: 'Document not found' }, { status: 404 })
     }
     
@@ -136,12 +138,19 @@ export async function PATCH(request, { params }) {
       return Response.json({ error: 'No fields to update' }, { status: 400 })
     }
     
-    values.push(id, userId)
+    values.push(id)
+    
+    const admin = await isAdmin()
+    let whereClause = `id = $${paramCount}`
+    if (!admin) {
+      whereClause += ` AND user_id = $${paramCount + 1}`
+      values.push(userId)
+    }
     
     const result = await sql.query(
       `UPDATE documents 
        SET ${updates.join(', ')}, updated_at = NOW()
-       WHERE id = $${paramCount} AND user_id = $${paramCount + 1}
+       WHERE ${whereClause}
        RETURNING *`,
       values
     )
@@ -165,11 +174,20 @@ export async function DELETE(request, { params }) {
     }
     
     const { id } = await params
+    const admin = await isAdmin()
     
-    const result = await sql.query(
-      'DELETE FROM documents WHERE id = $1 AND user_id = $2 RETURNING id',
-      [id, userId]
-    )
+    let result
+    if (admin) {
+      result = await sql.query(
+        'DELETE FROM documents WHERE id = $1 RETURNING id',
+        [id]
+      )
+    } else {
+      result = await sql.query(
+        'DELETE FROM documents WHERE id = $1 AND user_id = $2 RETURNING id',
+        [id, userId]
+      )
+    }
     
     if (result.rows.length === 0) {
       return Response.json({ error: 'Document not found' }, { status: 404 })

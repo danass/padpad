@@ -1,6 +1,7 @@
 import { sql } from '@vercel/postgres'
 import { v4 as uuidv4 } from 'uuid'
 import { getUserId } from '@/lib/auth/getSession'
+import { isAdmin } from '@/lib/auth/isAdmin'
 
 export async function POST(request, { params }) {
   try {
@@ -27,6 +28,8 @@ export async function POST(request, { params }) {
       )
     }
     
+    const admin = await isAdmin()
+    
     // Verify document exists - if it has no user_id, assign it to current user
     let docCheck = await sql.query(
       'SELECT id, user_id FROM documents WHERE id = $1',
@@ -45,8 +48,8 @@ export async function POST(request, { params }) {
         'UPDATE documents SET user_id = $1 WHERE id = $2',
         [userId, id]
       )
-    } else if (doc.user_id !== userId) {
-      // Document belongs to another user
+    } else if (doc.user_id !== userId && !admin) {
+      // Document belongs to another user - only admins can access
       return Response.json({ error: 'Document not found' }, { status: 404 })
     }
     

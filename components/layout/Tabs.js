@@ -68,10 +68,15 @@ export default function Tabs() {
               if (res.ok) {
                 return res.json()
               }
+              // If 404, document doesn't exist or user doesn't have access
+              // Just keep the tab with 'Untitled' - don't throw error
+              if (res.status === 404) {
+                return null
+              }
               throw new Error('Failed to fetch document')
             })
             .then(data => {
-              if (data.document) {
+              if (data && data.document) {
                 setTabs(prevTabs => 
                   prevTabs.map(t => 
                     t.id === docId ? { ...t, title: data.document.title || 'Untitled' } : t
@@ -80,8 +85,11 @@ export default function Tabs() {
               }
             })
             .catch(err => {
-              console.error('Error fetching document title:', err)
-              // Keep the tab with 'Untitled' if fetch fails
+              // Silently handle errors - just keep the tab with 'Untitled'
+              // Don't log 404 errors as they're expected for unauthorized access
+              if (err.message !== 'Failed to fetch document') {
+                console.error('Error fetching document title:', err)
+              }
             })
           
           return prev.map(t => ({ ...t, active: false })).concat(newTab)

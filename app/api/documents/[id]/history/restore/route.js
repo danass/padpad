@@ -1,6 +1,7 @@
 import { sql } from '@vercel/postgres'
 import { getContentAtTime } from '../../../../../../lib/editor/history-replay'
 import { getUserId } from '@/lib/auth/getSession'
+import { isAdmin } from '@/lib/auth/isAdmin'
 
 export async function POST(request, { params }) {
   try {
@@ -31,8 +32,12 @@ export async function POST(request, { params }) {
         [userId, id]
       )
     } else if (doc.user_id !== userId) {
-      // Document belongs to another user
-      return Response.json({ error: 'Document not found' }, { status: 404 })
+      // Check if user is admin
+      const admin = await isAdmin()
+      if (!admin) {
+        // Document belongs to another user
+        return Response.json({ error: 'Document not found' }, { status: 404 })
+      }
     }
     
     if (!targetTime) {

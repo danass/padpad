@@ -1,5 +1,6 @@
 import { sql } from '@vercel/postgres'
 import { getUserId } from '@/lib/auth/getSession'
+import { isAdmin } from '@/lib/auth/isAdmin'
 
 export async function DELETE(request, { params }) {
   try {
@@ -9,6 +10,7 @@ export async function DELETE(request, { params }) {
     }
     
     const { id, snapshotId } = await params
+    const admin = await isAdmin()
     
     // Verify document exists and user owns it
     const docCheck = await sql.query(
@@ -21,7 +23,7 @@ export async function DELETE(request, { params }) {
     }
     
     const doc = docCheck.rows[0]
-    if (doc.user_id !== userId) {
+    if (doc.user_id !== userId && !admin) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
     

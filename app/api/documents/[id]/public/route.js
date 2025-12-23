@@ -1,5 +1,6 @@
 import { sql } from '@vercel/postgres'
 import { getUserId } from '@/lib/auth/getSession'
+import { isAdmin } from '@/lib/auth/isAdmin'
 
 export async function PATCH(request, { params }) {
   try {
@@ -31,8 +32,12 @@ export async function PATCH(request, { params }) {
         [userId, id]
       )
     } else if (document.user_id !== userId) {
-      // Document belongs to another user
-      return Response.json({ error: 'Document not found' }, { status: 404 })
+      // Check if user is admin
+      const admin = await isAdmin()
+      if (!admin) {
+        // Document belongs to another user
+        return Response.json({ error: 'Document not found' }, { status: 404 })
+      }
     }
     
     // Update is_public status
