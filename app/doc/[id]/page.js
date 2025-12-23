@@ -560,8 +560,30 @@ export default function DocumentPage() {
         const normalizedCurrent = normalizeJSON(currentContent)
         const currentContentStr = JSON.stringify(normalizedCurrent)
         
-        // Double-check content actually changed
-        if (lastSnapshotContentRef.current !== currentContentStr) {
+        // Check if content is empty before creating snapshot
+        const isContentEmpty = (content) => {
+          if (!content || !content.content || !Array.isArray(content.content)) {
+            return true
+          }
+          const hasNonEmptyContent = content.content.some(node => {
+            if (node.type === 'paragraph') {
+              if (!node.content || node.content.length === 0) {
+                return false
+              }
+              return node.content.some(textNode => {
+                if (textNode.type === 'text' && textNode.text && textNode.text.trim().length > 0) {
+                  return true
+                }
+                return false
+              })
+            }
+            return true
+          })
+          return !hasNonEmptyContent
+        }
+        
+        // Double-check content actually changed and is not empty
+        if (lastSnapshotContentRef.current !== currentContentStr && !isContentEmpty(currentContent)) {
           const snapshotResponse = await fetch(`/api/documents/${documentId}/snapshot`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -576,7 +598,7 @@ export default function DocumentPage() {
               hasChangesRef.current = false // Reset flag after successful save
               showToast('Document saved', 'success')
             } else {
-              // Snapshot was skipped because content is identical
+              // Snapshot was skipped because content is identical or empty
               hasChangesRef.current = false
               lastSnapshotContentRef.current = currentContentStr // Update ref even if skipped
             }
@@ -589,7 +611,7 @@ export default function DocumentPage() {
             return
           }
         } else {
-          hasChangesRef.current = false // Content didn't actually change
+          hasChangesRef.current = false // Content didn't actually change or is empty
         }
       } catch (err) {
         console.error('Error creating snapshot:', err)
