@@ -759,14 +759,15 @@ export default function DocumentPage() {
       return
     }
     
-    console.log('useEffect triggered for pending content:', {
+    console.log('=== useEffect triggered for pending content ===', {
       hasEditor: !!editor,
       hasState: !!(editor?.state),
       hasDoc: !!(editor?.state?.doc),
-      pendingContentLength: pendingContentRef.current?.content?.length || 0
+      pendingContentLength: pendingContentRef.current?.content?.length || 0,
+      pendingContentPreview: JSON.stringify(pendingContentRef.current).substring(0, 200)
     })
     
-    // Use multiple retries with increasing delays to ensure editor is ready
+    // Use the same approach as handleRestore - direct setContent call
     const trySetContent = (attempt = 0) => {
       if (attempt > 20) {
         console.error('Failed to set editor content after multiple attempts', {
@@ -785,7 +786,7 @@ export default function DocumentPage() {
           return
         }
         
-        // Check if editor has a valid state
+        // Check if editor has a valid state (same check as handleRestore)
         if (editor.state && editor.state.doc) {
           const contentStr = JSON.stringify(content)
           const currentEditorContent = editor.getJSON()
@@ -793,16 +794,33 @@ export default function DocumentPage() {
           
           // Only set if different
           if (contentStr !== currentEditorContentStr) {
-            console.log('Setting editor content from pending:', {
+            console.log('=== Setting editor content from pending (same as restore) ===', {
               attempt,
               contentLength: content.content?.length || 0,
               currentEditorLength: currentEditorContent.content?.length || 0,
-              contentPreview: JSON.stringify(content).substring(0, 200)
+              contentPreview: JSON.stringify(content).substring(0, 200),
+              editorState: editor.state ? 'exists' : 'exists',
+              editorDoc: editor.state?.doc ? 'exists' : 'exists'
             })
+            
+            // Use the exact same method as handleRestore
             editor.commands.setContent(content)
+            setCurrentContent(content)
             lastSnapshotContentRef.current = contentStr
+            
+            // Wait and verify (same as restore)
+            setTimeout(() => {
+              const verifyContent = editor.getJSON()
+              console.log('After setContent (pending), editor content:', {
+                verifyContentType: verifyContent?.type,
+                verifyContentLength: verifyContent?.content?.length || 0,
+                verifyContentPreview: JSON.stringify(verifyContent).substring(0, 200),
+                matches: JSON.stringify(verifyContent) === contentStr
+              })
+            }, 100)
+            
             pendingContentRef.current = null
-            console.log('Content successfully set in editor')
+            console.log('=== Pending content successfully set in editor ===')
           } else {
             console.log('Content already matches editor, clearing pending')
             pendingContentRef.current = null
@@ -810,7 +828,10 @@ export default function DocumentPage() {
         } else {
           // Retry after delay
           if (attempt < 5) {
-            console.log(`Editor not ready, retrying (attempt ${attempt + 1})`)
+            console.log(`Editor not ready, retrying (attempt ${attempt + 1}):`, {
+              hasState: !!(editor?.state),
+              hasDoc: !!(editor?.state?.doc)
+            })
           }
           setTimeout(() => trySetContent(attempt + 1), 100 * (attempt + 1))
         }
@@ -880,6 +901,15 @@ export default function DocumentPage() {
   
   // Restore from history
   const handleRestore = (content) => {
+    console.log('=== HANDLE RESTORE CALLED ===', {
+      hasEditor: !!editor,
+      hasState: !!(editor?.state),
+      hasDoc: !!(editor?.state?.doc),
+      contentType: typeof content,
+      contentIsString: typeof content === 'string',
+      contentPreview: typeof content === 'string' ? content.substring(0, 200) : JSON.stringify(content).substring(0, 200)
+    })
+    
     if (editor && content) {
       try {
         // Ensure content is parsed if it's a string
@@ -887,6 +917,10 @@ export default function DocumentPage() {
         if (typeof content === 'string') {
           try {
             parsedContent = JSON.parse(content)
+            console.log('Parsed content from string:', {
+              parsedType: typeof parsedContent,
+              parsedContentLength: parsedContent?.content?.length || 0
+            })
           } catch (e) {
             console.error('Error parsing content:', e)
             showToast('Failed to restore: invalid content format', 'error')
@@ -896,9 +930,18 @@ export default function DocumentPage() {
         
         // Validate content structure
         if (!parsedContent || typeof parsedContent !== 'object') {
+          console.error('Invalid content structure:', parsedContent)
           showToast('Failed to restore: invalid content', 'error')
           return
         }
+        
+        console.log('About to set content in editor:', {
+          editorState: editor.state ? 'exists' : 'missing',
+          editorDoc: editor.state?.doc ? 'exists' : 'missing',
+          contentType: parsedContent?.type,
+          contentLength: parsedContent?.content?.length || 0,
+          currentEditorContent: editor.getJSON()
+        })
         
         // Ensure it has the correct structure
         if (!parsedContent.type && !parsedContent.content) {
