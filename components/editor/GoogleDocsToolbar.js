@@ -193,9 +193,9 @@ export default function GoogleDocsToolbar({ editor }) {
   }
 
   return (
-    <div className="flex items-center gap-0.5 p-1 border-b border-gray-200 bg-white overflow-x-auto relative">
+    <div className="flex items-center gap-0.5 p-1 border-b border-gray-200 bg-white overflow-x-auto" style={{ position: 'relative', zIndex: 1 }}>
       {/* Font Family */}
-      <div className="relative z-50" ref={fontFamilyRef}>
+      <div className="relative" ref={fontFamilyRef} style={{ zIndex: 1000 }}>
         <button
           onClick={() => setShowFontFamily(!showFontFamily)}
           className="px-2 py-1.5 min-w-[80px] text-left text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
@@ -207,10 +207,18 @@ export default function GoogleDocsToolbar({ editor }) {
         {showFontFamily && (
           <>
             <div 
-              className="fixed inset-0 z-40" 
+              className="fixed inset-0" 
               onClick={() => setShowFontFamily(false)}
+              style={{ zIndex: 999 }}
             />
-            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 max-h-64 overflow-y-auto w-48">
+            <div 
+              className="fixed bg-white border border-gray-300 rounded shadow-lg max-h-64 overflow-y-auto w-48" 
+              style={{ 
+                zIndex: 1000,
+                top: fontFamilyRef.current ? fontFamilyRef.current.getBoundingClientRect().bottom + 4 + window.scrollY : 0,
+                left: fontFamilyRef.current ? fontFamilyRef.current.getBoundingClientRect().left + window.scrollX : 0
+              }}
+            >
             {FONT_FAMILIES.map((font) => (
               <button
                 key={font}
@@ -305,7 +313,7 @@ export default function GoogleDocsToolbar({ editor }) {
       <div className="w-px h-6 bg-gray-300 mx-0.5" />
 
       {/* Text Color */}
-      <div className="relative z-50" ref={textColorRef}>
+      <div className="relative" ref={textColorRef} style={{ zIndex: 1000 }}>
         <button
           onClick={() => setShowTextColor(!showTextColor)}
           className={`p-1.5 rounded hover:bg-gray-100 ${
@@ -326,10 +334,18 @@ export default function GoogleDocsToolbar({ editor }) {
         {showTextColor && (
           <>
             <div 
-              className="fixed inset-0 z-40" 
+              className="fixed inset-0" 
               onClick={() => setShowTextColor(false)}
+              style={{ zIndex: 999 }}
             />
-            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 p-3 w-64">
+            <div 
+              className="fixed bg-white border border-gray-300 rounded shadow-lg p-3 w-64" 
+              style={{ 
+                zIndex: 1000,
+                top: textColorRef.current ? textColorRef.current.getBoundingClientRect().bottom + 4 + window.scrollY : 0,
+                left: textColorRef.current ? textColorRef.current.getBoundingClientRect().left + window.scrollX : 0
+              }}
+            >
             <div className="grid grid-cols-10 gap-1 mb-3">
               {TEXT_COLORS.map((color) => (
                 <button
@@ -359,7 +375,7 @@ export default function GoogleDocsToolbar({ editor }) {
       </div>
 
       {/* Highlight Color */}
-      <div className="relative z-50" ref={highlightColorRef}>
+      <div className="relative" ref={highlightColorRef} style={{ zIndex: 1000 }}>
         <button
           onClick={() => setShowHighlightColor(!showHighlightColor)}
           className={`p-1.5 rounded hover:bg-gray-100 ${
@@ -374,10 +390,18 @@ export default function GoogleDocsToolbar({ editor }) {
         {showHighlightColor && (
           <>
             <div 
-              className="fixed inset-0 z-40" 
+              className="fixed inset-0" 
               onClick={() => setShowHighlightColor(false)}
+              style={{ zIndex: 999 }}
             />
-            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 p-3 w-64">
+            <div 
+              className="fixed bg-white border border-gray-300 rounded shadow-lg p-3 w-64" 
+              style={{ 
+                zIndex: 1000,
+                top: highlightColorRef.current ? highlightColorRef.current.getBoundingClientRect().bottom + 4 + window.scrollY : 0,
+                left: highlightColorRef.current ? highlightColorRef.current.getBoundingClientRect().left + window.scrollX : 0
+              }}
+            >
             <div className="grid grid-cols-9 gap-1 mb-3">
               {HIGHLIGHT_COLORS.map((color) => (
                 <button
@@ -409,7 +433,7 @@ export default function GoogleDocsToolbar({ editor }) {
       <div className="w-px h-6 bg-gray-300 mx-0.5" />
 
       {/* Alignment */}
-      <div className="relative z-50" ref={alignRef}>
+      <div className="relative" ref={alignRef} style={{ zIndex: 1000 }}>
         <button
           onClick={() => setShowAlign(!showAlign)}
           className={`p-1.5 rounded hover:bg-gray-100 flex items-center gap-1 ${
@@ -426,10 +450,18 @@ export default function GoogleDocsToolbar({ editor }) {
         {showAlign && (
           <>
             <div 
-              className="fixed inset-0 z-40" 
+              className="fixed inset-0" 
               onClick={() => setShowAlign(false)}
+              style={{ zIndex: 999 }}
             />
-            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50">
+            <div 
+              className="fixed bg-white border border-gray-300 rounded shadow-lg" 
+              style={{ 
+                zIndex: 1000,
+                top: alignRef.current ? alignRef.current.getBoundingClientRect().bottom + 4 + window.scrollY : 0,
+                left: alignRef.current ? alignRef.current.getBoundingClientRect().left + window.scrollX : 0
+              }}
+            >
             <button
               onClick={() => handleAlignChange('left')}
               className={`w-full px-3 py-2 hover:bg-gray-100 flex items-center justify-center ${
