@@ -686,6 +686,7 @@ export default function DocumentPage() {
         
         // Always store content to load when editor is ready
         pendingContentRef.current = content
+        setPendingContentReady(true) // Trigger useEffect
         
         console.log('Stored content in pendingContentRef:', {
           hasContent: !!content,
@@ -696,7 +697,7 @@ export default function DocumentPage() {
           editorDocExists: !!(editor?.state?.doc)
         })
         
-        // Try to set content immediately if editor is ready
+        // Try to set content immediately if editor is ready (same as handleRestore)
         if (editor && content && editor.state && editor.state.doc) {
           try {
             const currentEditorContent = editor.getJSON()
@@ -717,12 +718,17 @@ export default function DocumentPage() {
             })
             
             if (isEmpty || isDifferent) {
+              // Use same method as handleRestore
               editor.commands.setContent(content)
+              setCurrentContent(content)
               lastSnapshotContentRef.current = contentStr
               pendingContentRef.current = null // Clear pending content
-              console.log('Content set successfully in editor')
+              setPendingContentReady(false)
+              console.log('Content set successfully in editor (immediate)')
             } else {
               console.log('Content already matches, skipping set')
+              pendingContentRef.current = null
+              setPendingContentReady(false)
             }
           } catch (error) {
             console.error('Error setting editor content:', error)
@@ -747,7 +753,10 @@ export default function DocumentPage() {
     loadDocument()
   }, [documentId, router])
   
-  // Load pending content when editor becomes ready
+  // State to trigger useEffect when pendingContentRef changes
+  const [pendingContentReady, setPendingContentReady] = useState(false)
+  
+  // Load pending content when editor becomes ready AND content is available
   useEffect(() => {
     if (!editor) {
       console.log('Editor not available yet in useEffect')
@@ -820,10 +829,12 @@ export default function DocumentPage() {
             }, 100)
             
             pendingContentRef.current = null
+            setPendingContentReady(false)
             console.log('=== Pending content successfully set in editor ===')
           } else {
             console.log('Content already matches editor, clearing pending')
             pendingContentRef.current = null
+            setPendingContentReady(false)
           }
         } else {
           // Retry after delay
@@ -842,6 +853,7 @@ export default function DocumentPage() {
         } else {
           console.error('Giving up after 20 attempts')
           pendingContentRef.current = null
+          setPendingContentReady(false)
         }
       }
     }
@@ -861,7 +873,7 @@ export default function DocumentPage() {
     return () => {
       clearInterval(intervalId)
     }
-  }, [editor])
+  }, [editor, pendingContentReady])
   
   // Save title
   const handleTitleSave = async () => {
