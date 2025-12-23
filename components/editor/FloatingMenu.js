@@ -10,15 +10,20 @@ export default function FloatingMenu({ editor }) {
 
   const instanceRef = useRef(null)
   
-  // Patch tippy to prevent destroy warnings
+  // Suppress tippy warnings in development
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.tippy) {
-      const originalDestroy = window.tippy.prototype.destroy
-      window.tippy.prototype.destroy = function() {
-        if (this.state && this.state.isDestroyed) {
-          return // Already destroyed, skip
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      const originalWarn = console.warn
+      console.warn = (...args) => {
+        // Filter out tippy.js warnings
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('tippy.js')) {
+          return // Suppress tippy warnings
         }
-        return originalDestroy.call(this)
+        originalWarn.apply(console, args)
+      }
+      
+      return () => {
+        console.warn = originalWarn
       }
     }
   }, [])
