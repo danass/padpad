@@ -68,9 +68,9 @@ export default function DrivePage() {
       // Reset to normal view - reload data
       loadData()
     }
-  }, [loadData])
+  }, [loadData, searchResults])
   
-  async function createDocument() {
+  const createDocument = useCallback(async () => {
     setCreatingDoc(true)
     try {
       const response = await fetch('/api/documents', {
