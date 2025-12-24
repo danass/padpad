@@ -58,7 +58,7 @@ export default function PublicHeader() {
                         <div className="flex items-center gap-3">
                             <a
                                 href="https://www.textpad.cloud"
-                                className="px-3 md:px-4 py-1.5 md:py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 text-xs md:text-sm font-medium transition-colors"
+                                className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium transition-colors"
                             >
                                 Write on Textpad
                             </a>

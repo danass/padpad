@@ -11,10 +11,10 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
   const [loading, setLoading] = useState(true)
   const [restoring, setRestoring] = useState(null)
   const [deleting, setDeleting] = useState(null)
-  
+
   useEffect(() => {
     if (!documentId) return
-    
+
     async function loadHistory() {
       setLoading(true)
       try {
@@ -29,10 +29,10 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
         setLoading(false)
       }
     }
-    
+
     loadHistory()
   }, [documentId])
-  
+
   // Only show snapshots, not events
   const snapshots = useMemo(() => {
     if (!history) return []
@@ -55,7 +55,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
         return content.content.every(node => {
           if (node.type === 'paragraph' || node.type === 'heading') {
             if (!node.content || !Array.isArray(node.content)) return true
-            return !node.content.some(child => 
+            return !node.content.some(child =>
               child.type === 'text' && child.text && child.text.trim().length > 0
             )
           }
@@ -69,12 +69,12 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
 
   const handleRestore = async (snapshot) => {
     if (!onRestore) return
-    
+
     setRestoring(snapshot.id)
-    
+
     try {
       let content = null
-      
+
       // Direct restore from snapshot
       if (snapshot.content_json) {
         // Parse if it's a string
@@ -89,7 +89,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
           content = snapshot.content_json
         }
       }
-      
+
       if (content) {
         onRestore(content)
         // Don't close the panel after restore
@@ -102,25 +102,25 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
       setRestoring(null)
     }
   }
-  
+
   const handleDelete = async (snapshot, e) => {
     e.stopPropagation()
-    
+
     if (!confirm(t?.confirmDeleteSnapshot || 'Are you sure you want to delete this snapshot?')) {
       return
     }
-    
+
     setDeleting(snapshot.id)
-    
+
     try {
       const response = await fetch(`/api/documents/${documentId}/snapshot/${snapshot.id}`, {
         method: 'DELETE'
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete snapshot')
       }
-      
+
       // Reload history
       const historyResponse = await fetch(`/api/documents/${documentId}/history`)
       if (historyResponse.ok) {
@@ -134,19 +134,19 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
       setDeleting(null)
     }
   }
-  
+
   const handleDeleteAllEmpty = async () => {
     const emptySnapshots = snapshots.filter(s => s.isEmpty)
     if (emptySnapshots.length === 0) {
       alert(t?.noSnapshotsYet || 'No empty snapshots found')
       return
     }
-    
+
     const confirmMsg = (t?.confirmDeleteEmptySnapshots || 'Are you sure you want to delete {count} empty snapshot(s)?').replace('{count}', emptySnapshots.length)
     if (!confirm(confirmMsg)) {
       return
     }
-    
+
     try {
       // Delete all empty snapshots
       const deletePromises = emptySnapshots.map(snapshot =>
@@ -154,9 +154,9 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
           method: 'DELETE'
         })
       )
-      
+
       await Promise.all(deletePromises)
-      
+
       // Reload history
       const historyResponse = await fetch(`/api/documents/${documentId}/history`)
       if (historyResponse.ok) {
@@ -168,7 +168,46 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
       alert((t?.failedToDelete || 'Failed to delete') + ': ' + error.message)
     }
   }
-  
+
+  const handleDeleteAllButLast = async () => {
+    if (snapshots.length <= 1) {
+      alert(t?.onlyOneSnapshot || 'Only one snapshot exists')
+      return
+    }
+
+    // First snapshot in array is the newest (sorted DESC)
+    const toDelete = snapshots.slice(1)
+    const confirmMsg = (t?.confirmDeleteAllButLast || 'Delete {count} old snapshot(s)? Only the most recent will be kept.').replace('{count}', toDelete.length)
+    if (!confirm(confirmMsg)) {
+      return
+    }
+
+    try {
+      setDeleting('all')
+
+      // Delete all except the first (newest)
+      const deletePromises = toDelete.map(snapshot =>
+        fetch(`/api/documents/${documentId}/snapshot/${snapshot.id}`, {
+          method: 'DELETE'
+        })
+      )
+
+      await Promise.all(deletePromises)
+
+      // Reload history
+      const historyResponse = await fetch(`/api/documents/${documentId}/history`)
+      if (historyResponse.ok) {
+        const data = await historyResponse.json()
+        setHistory(data)
+      }
+    } catch (error) {
+      console.error('Error deleting old snapshots:', error)
+      alert((t?.failedToDelete || 'Failed to delete') + ': ' + error.message)
+    } finally {
+      setDeleting(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="fixed inset-y-0 right-0 w-96 bg-white border-l border-gray-200 shadow-lg z-[200] p-6">
@@ -184,11 +223,11 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
       </div>
     )
   }
-  
+
   const emptyCount = snapshots.filter(s => s.isEmpty).length
-  
+
   return (
-    <div 
+    <div
       className="fixed inset-y-0 right-0 w-96 bg-white border-l border-gray-200 shadow-lg z-[200] overflow-y-auto"
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
@@ -197,23 +236,37 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
         <div className="flex items-center justify-between mb-6">
           <div className="flex-1">
             <h2 className="text-xl font-semibold text-gray-900">{t?.history || 'History'}</h2>
-            {emptyCount > 0 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleDeleteAllEmpty()
-                }}
-                className="mt-2 text-xs text-red-600 hover:text-red-700 underline"
-              >
-                {t?.deleteEmptySnapshots || `Delete ${emptyCount} empty snapshot${emptyCount > 1 ? 's' : ''}`}
-              </button>
-            )}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {snapshots.length > 1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDeleteAllButLast()
+                  }}
+                  disabled={deleting === 'all'}
+                  className="text-xs text-gray-600 hover:text-gray-800 underline disabled:opacity-50"
+                >
+                  {deleting === 'all' ? (t?.deleting || 'Deleting...') : (t?.keepOnlyLast || 'Keep only last')}
+                </button>
+              )}
+              {emptyCount > 0 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDeleteAllEmpty()
+                  }}
+                  className="text-xs text-red-600 hover:text-red-700 underline"
+                >
+                  {t?.deleteEmptySnapshots || `Delete ${emptyCount} empty`}
+                </button>
+              )}
+            </div>
           </div>
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation()
               onClose()
-            }} 
+            }}
             className="text-gray-500 hover:text-gray-900 p-1 rounded-md hover:bg-gray-100 transition-colors"
           >
             ✕
@@ -229,21 +282,20 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
             </div>
           </div>
         </div>
-        
+
         <div className="space-y-2">
           {snapshots.map((snapshot) => (
             <div
               key={snapshot.id}
-              className={`p-3 border rounded-md transition-colors ${
-                restoring === snapshot.id
-                  ? 'border-blue-500 bg-blue-50 opacity-50'
-                  : snapshot.isEmpty
+              className={`p-3 border rounded-md transition-colors ${restoring === snapshot.id
+                ? 'border-blue-500 bg-blue-50 opacity-50'
+                : snapshot.isEmpty
                   ? 'border-red-200 bg-red-50'
                   : 'border-blue-200 bg-blue-50/50 hover:bg-blue-100'
-              }`}
+                }`}
             >
               <div className="flex items-start justify-between mb-2">
-                <div 
+                <div
                   className="flex-1 cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation()
@@ -276,7 +328,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
                   )}
                 </button>
               </div>
-              
+
               <div className="mt-2">
                 <button
                   onClick={(e) => {
@@ -292,7 +344,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
               </div>
             </div>
           ))}
-          
+
           {snapshots.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               {t?.noSnapshotsYet || 'No snapshots yet'}
