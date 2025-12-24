@@ -200,6 +200,30 @@ export default function SettingsPage() {
     }
   }
   
+  const handleClearBirthDate = async () => {
+    setSaving(true)
+    await new Promise(r => setTimeout(r, 300))
+    try {
+      const response = await fetch('/api/users/birth-date', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ birth_date: null })
+      })
+      
+      if (response.ok) {
+        setBirthDate('')
+        showToast('Digital Legacy disabled - your documents will remain private', 'success')
+      } else {
+        showToast('Failed to remove birth date', 'error')
+      }
+    } catch (error) {
+      console.error('Error removing birth date:', error)
+      showToast('Failed to remove birth date', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+  
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -395,8 +419,20 @@ export default function SettingsPage() {
                     </svg>
                   )}
                 </button>
+                {birthDate && (
+                  <button
+                    onClick={handleClearBirthDate}
+                    disabled={saving}
+                    className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-red-400 bg-white hover:bg-red-50 flex items-center justify-center transition-all disabled:opacity-50 flex-shrink-0"
+                    title="Disable Digital Legacy"
+                  >
+                    <svg className="w-4 h-4 text-gray-500 hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
               </div>
-              {birthDate && (
+              {birthDate ? (
                 <p className="text-xs text-gray-500 mt-2">
                   Publication date: {(() => {
                     const birth = new Date(birthDate)
@@ -404,6 +440,10 @@ export default function SettingsPage() {
                     age99.setFullYear(birth.getFullYear() + 99)
                     return age99.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
                   })()}
+                </p>
+              ) : (
+                <p className="text-xs text-gray-400 mt-2 italic">
+                  No birth date set — your documents will remain private forever.
                 </p>
               )}
             </div>

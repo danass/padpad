@@ -1,6 +1,7 @@
 import './globals.css'
 import { ToastProvider } from '@/components/ui/toast'
 import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
 import SessionProvider from '@/components/providers/SessionProvider'
 
 export const metadata = {
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
           <ToastProvider>
             <Header />
             {children}
+            <Footer />
           </ToastProvider>
         </SessionProvider>
       </body>
