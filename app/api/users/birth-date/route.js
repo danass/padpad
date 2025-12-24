@@ -34,14 +34,13 @@ export async function PATCH(request) {
     const body = await request.json()
     const { birth_date } = body
     
-    if (!birth_date) {
-      return Response.json({ error: 'birth_date is required' }, { status: 400 })
-    }
-    
-    // Validate date format
-    const date = new Date(birth_date)
-    if (isNaN(date.getTime())) {
-      return Response.json({ error: 'Invalid date format' }, { status: 400 })
+    // Allow null to clear birth date (disable Digital Legacy)
+    if (birth_date !== null && birth_date !== undefined) {
+      // Validate date format if provided
+      const date = new Date(birth_date)
+      if (isNaN(date.getTime())) {
+        return Response.json({ error: 'Invalid date format' }, { status: 400 })
+      }
     }
     
     // Insert or update user
@@ -60,4 +59,5 @@ export async function PATCH(request) {
     return Response.json({ error: error.message }, { status: 500 })
   }
 }
+
 

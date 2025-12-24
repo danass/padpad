@@ -852,16 +852,16 @@ export default function GoogleDocsToolbar({ editor }) {
       </div>
 
       {/* Font Size */}
-      <div className="relative flex items-center border border-gray-300 rounded h-10 md:h-8" ref={fontSizeRef}>
+      <div className="relative flex items-center border border-gray-300 rounded h-8" ref={fontSizeRef}>
         <button
           onMouseDown={() => startFontSizeRepeat(handleFontSizeDecrease)}
           onMouseUp={stopFontSizeRepeat}
           onMouseLeave={stopFontSizeRepeat}
           onTouchStart={() => startFontSizeRepeat(handleFontSizeDecrease)}
           onTouchEnd={stopFontSizeRepeat}
-          className="px-2 h-full hover:bg-gray-100 text-gray-700 flex items-center select-none"
+          className="px-1.5 h-full hover:bg-gray-100 text-gray-700 flex items-center select-none"
         >
-          <Minus className="w-5 h-5 md:w-4 md:h-4" />
+          <Minus className="w-4 h-4" />
         </button>
         <div className="relative h-full flex items-center">
           <input
@@ -956,9 +956,9 @@ export default function GoogleDocsToolbar({ editor }) {
           onMouseLeave={stopFontSizeRepeat}
           onTouchStart={() => startFontSizeRepeat(handleFontSizeIncrease)}
           onTouchEnd={stopFontSizeRepeat}
-          className="px-2 h-full hover:bg-gray-100 text-gray-700 flex items-center select-none"
+          className="px-1.5 h-full hover:bg-gray-100 text-gray-700 flex items-center select-none"
         >
-          <Plus className="w-5 h-5 md:w-4 md:h-4" />
+          <Plus className="w-4 h-4" />
         </button>
       </div>
 

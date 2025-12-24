@@ -28,11 +28,13 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Lato:wght@300;400;700&family=Open+Sans:wght@300;400;600;700&family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="bg-white" suppressHydrationWarning>
+      <body className="bg-white min-h-screen flex flex-col" suppressHydrationWarning>
         <SessionProvider>
           <ToastProvider>
             <Header />
-            {children}
+            <main className="flex-1">
+              {children}
+            </main>
             <Footer />
           </ToastProvider>
         </SessionProvider>
