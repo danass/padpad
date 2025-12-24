@@ -9,6 +9,11 @@ export const metadata = {
   title: 'Online Text Pad • Write, Edit & Share in the Cloud',
   description: 'textpad — online text pad for writing, editing, formatting, and sharing your text instantly.',
   keywords: 'text pad, online editor, text editor, cloud editor, document editor, text formatting, share text',
+  viewport: 'width=device-width, initial-scale=1',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   openGraph: {
     title: 'Online Text Pad • Write, Edit & Share in the Cloud',
     description: 'textpad — online text pad for writing, editing, formatting, and sharing your text instantly.',
