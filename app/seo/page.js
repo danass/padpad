@@ -24,7 +24,7 @@ export async function generateMetadata() {
 }
 
 export default function SEOPage() {
-  const keywords = 'textpad online, online text editor, free online notepad, plain text editor, browser text editor, simple text editor online, write text online, edit text online, no signup text editor, quick text editor online'
+  const keywords = 'textpad online, online text editor, free online notepad, plain text editor, browser text editor, simple text editor online, write text online, edit text online, no signup text editor, quick text editor online, notepad, bloc note, bloc note en ligne, bloc notes, note pad, online notepad, free notepad, bloc-notes en ligne, bloc-notes, blocnote, blocnote en ligne, cuaderno de notas, bloc de notas, bloc de notas en línea, cuaderno de notas en línea, блокнот, блокнот онлайн, онлайн блокнот, 记事本, 在线记事本, 记事本在线'
   
   return (
     <>

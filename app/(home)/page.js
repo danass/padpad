@@ -46,6 +46,12 @@ export default function Home() {
   const [mounted, setMounted] = useState(false)
   const editor = useEditor({
     immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        'aria-label': 'Start writing... Create your document here',
+        'role': 'textbox',
+      },
+    },
     extensions: [
       StarterKit,
       Placeholder.configure({
@@ -398,14 +404,12 @@ export default function Home() {
     )
   }
 
-  const keywords = 'textpad online, online text editor, free online notepad, plain text editor, browser text editor, simple text editor online, write text online, edit text online, no signup text editor, quick text editor online'
+  const keywords = 'textpad online, online text editor, free online notepad, plain text editor, browser text editor, simple text editor online, write text online, edit text online, no signup text editor, quick text editor online, notepad, bloc note, bloc note en ligne, bloc notes, note pad, online notepad, free notepad, bloc-notes en ligne, bloc-notes, blocnote, blocnote en ligne, cuaderno de notas, bloc de notas, bloc de notas en línea, cuaderno de notas en línea, блокнот, блокнот онлайн, онлайн блокнот, 记事本, 在线记事本, 记事本在线'
 
   return (
     <>
       <SEOKeywords keywords={keywords} />
       <main className="min-h-screen bg-white">
-        {/* SEO: Hidden H1 for search engines */}
-        <h1 className="sr-only">TextPad Online - Free Online Text Editor | Simple Text Editor Online</h1>
         <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-8">
         <div className="mb-4 md:mb-6 flex items-center justify-end">
           <button
@@ -434,11 +438,19 @@ export default function Home() {
                   className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500"
                   style={{ opacity: showWatermark ? 0.7 : 0 }}
                 >
-                  <img 
-                    src="/padpad.png" 
-                    alt="textpad watermark" 
-                    className="w-64 h-64 md:w-96 md:h-96 object-contain"
-                  />
+                  <picture>
+                    <source srcSet="/padpad.avif" type="image/avif" />
+                    <source srcSet="/padpad.webp" type="image/webp" />
+                    <img 
+                      src="/padpad.png" 
+                      alt="textpad watermark" 
+                      className="w-64 h-64 md:w-96 md:h-96 object-contain"
+                      width="384"
+                      height="384"
+                      fetchPriority="high"
+                      loading="eager"
+                    />
+                  </picture>
                 </div>
               )}
               {mounted && <EditorContent editor={editor} />}
@@ -451,6 +463,51 @@ export default function Home() {
             </p>
           </>
         )}
+
+        {/* SEO Content - Below the editor */}
+        <div className="mt-12 prose prose-lg max-w-none">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Online Text Editor, Instantly Shareable
+          </h1>
+          <p className="text-gray-700 mb-6 text-lg">
+            Simple online text editor to write, edit and share text instantly. No account required. Collaborative and fast.
+          </p>
+          
+          <h2 className="text-2xl font-semibold text-gray-900 mb-3 mt-8">
+            Write and Edit Text Online
+          </h2>
+          <p className="text-gray-700 mb-4">
+            Open your browser and start writing. Format text, add links, insert images. Changes save automatically. Access from any device.
+          </p>
+          
+          <h2 className="text-2xl font-semibold text-gray-900 mb-3 mt-8">
+            Share Your Text Instantly
+          </h2>
+          <p className="text-gray-700 mb-4">
+            Create a document and share it with a link. No signup needed. Works for quick notes, collaborative editing, or temporary text sharing.
+          </p>
+          
+          <h2 className="text-2xl font-semibold text-gray-900 mb-3 mt-8">
+            Real-Time Collaboration
+          </h2>
+          <p className="text-gray-700 mb-4">
+            Multiple people can edit the same document simultaneously. See changes as they happen. Useful for team notes, code snippets, or shared drafts.
+          </p>
+          
+          <h2 className="text-2xl font-semibold text-gray-900 mb-3 mt-8">
+            No Account, No Friction
+          </h2>
+          <p className="text-gray-700 mb-4">
+            Start writing immediately. Sign in only to save documents permanently. Works offline, syncs when connected.
+          </p>
+          
+          <h2 className="text-2xl font-semibold text-gray-900 mb-3 mt-8">
+            Use Cases
+          </h2>
+          <p className="text-gray-700 mb-4">
+            Developers use it for quick code notes and paste sharing. Writers draft without distractions. Teams collaborate on shared documents. Anyone who needs to write and share text quickly.
+          </p>
+        </div>
       </div>
     </main>
     </>

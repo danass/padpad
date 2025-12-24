@@ -8,7 +8,7 @@ import { LanguageProvider } from '@/app/i18n/LanguageContext'
 export const metadata = {
   title: 'Online Text Pad • Write, Edit & Share in the Cloud',
   description: 'textpad — online text pad for writing, editing, formatting, and sharing your text instantly.',
-  keywords: 'text pad, online editor, text editor, cloud editor, document editor, text formatting, share text',
+  keywords: 'text pad, online editor, text editor, cloud editor, document editor, text formatting, share text, notepad, bloc note, bloc note en ligne, bloc notes, note pad, online notepad, free notepad, bloc-notes en ligne, bloc-notes, blocnote, blocnote en ligne, cuaderno de notas, bloc de notas, bloc de notas en línea, cuaderno de notas en línea, блокнот, блокнот онлайн, онлайн блокнот, 记事本, 在线记事本, 记事本在线',
   viewport: 'width=device-width, initial-scale=1',
   icons: {
     icon: '/favicon.ico',
@@ -18,6 +18,7 @@ export const metadata = {
     title: 'Online Text Pad • Write, Edit & Share in the Cloud',
     description: 'textpad — online text pad for writing, editing, formatting, and sharing your text instantly.',
     type: 'website',
+    url: 'https://textpad.cloud',
   },
   twitter: {
     card: 'summary_large_image',

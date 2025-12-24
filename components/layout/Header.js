@@ -129,7 +129,7 @@ export default function Header() {
         <div className="flex items-center justify-between px-6 h-16">
           {/* Left side - Logo and project name */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2" title={t?.appName || 'TextPad - Online Text Pad'}>
               <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
                 <img 
                   src="/padpad.png" 
@@ -169,6 +169,7 @@ export default function Header() {
               <Link
                 href="/auth/signin"
                 className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium transition-colors"
+                title={t?.signIn || 'Sign in to TextPad'}
               >
                 {t?.signIn || 'Sign in'}
               </Link>
@@ -216,6 +217,7 @@ export default function Header() {
                           href="/settings"
                           onClick={() => setShowUserMenu(false)}
                           className="block px-4 py-2.5 md:py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          title={t?.settings || 'Settings'}
                         >
                           {t?.settings || 'Settings'}
                         </Link>
@@ -228,6 +230,7 @@ export default function Header() {
                                 ? 'bg-gray-100 text-gray-900 font-medium'
                                 : 'text-gray-700 hover:bg-gray-100'
                             }`}
+                            title="Admin Panel"
                           >
                             Admin
                           </Link>
@@ -263,6 +266,7 @@ export default function Header() {
                   ? 'border-gray-900 text-gray-900'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
+              title={t?.drive || 'Drive'}
             >
               {t?.drive || 'Drive'}
             </Link>

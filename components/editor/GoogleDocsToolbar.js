@@ -723,6 +723,7 @@ export default function GoogleDocsToolbar({ editor }) {
           }}
           className="p-1.5 h-8 rounded-l border border-r-0 border-gray-300 hover:bg-gray-100 flex items-center justify-center"
           title={t?.prevFont || 'Previous font'}
+          aria-label={t?.prevFont || 'Previous font'}
         >
           <ChevronLeft className="w-3 h-3 text-gray-500" />
         </button>
@@ -848,6 +849,7 @@ export default function GoogleDocsToolbar({ editor }) {
           }}
           className="p-1.5 h-8 rounded-r border border-l-0 border-gray-300 hover:bg-gray-100 flex items-center justify-center"
           title={t?.nextFont || 'Next font'}
+          aria-label={t?.nextFont || 'Next font'}
         >
           <ChevronRight className="w-3 h-3 text-gray-500" />
         </button>
@@ -862,6 +864,7 @@ export default function GoogleDocsToolbar({ editor }) {
           onTouchStart={() => startFontSizeRepeat(handleFontSizeDecrease)}
           onTouchEnd={stopFontSizeRepeat}
           className="px-1.5 h-full hover:bg-gray-100 text-gray-700 flex items-center select-none"
+          aria-label="Decrease font size"
         >
           <Minus className="w-4 h-4" />
         </button>
@@ -959,6 +962,7 @@ export default function GoogleDocsToolbar({ editor }) {
           onTouchStart={() => startFontSizeRepeat(handleFontSizeIncrease)}
           onTouchEnd={stopFontSizeRepeat}
           className="px-1.5 h-full hover:bg-gray-100 text-gray-700 flex items-center select-none"
+          aria-label="Increase font size"
         >
           <Plus className="w-4 h-4" />
         </button>
@@ -972,6 +976,7 @@ export default function GoogleDocsToolbar({ editor }) {
             className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
               paintMode ? 'bg-blue-100 text-blue-600' : ''
             }`}
+            aria-label={t?.brushMode || 'Brush mode'}
           >
             {/* Paint bucket icon */}
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1021,6 +1026,7 @@ export default function GoogleDocsToolbar({ editor }) {
           className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
             editor.isActive('bold') ? 'bg-gray-200' : ''
           }`}
+          aria-label={t?.bold || 'Bold'}
         >
           <Bold className="w-5 h-5 md:w-4 md:h-4" />
         </button>
@@ -1037,6 +1043,7 @@ export default function GoogleDocsToolbar({ editor }) {
           className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
             editor.isActive('italic') ? 'bg-gray-200' : ''
           }`}
+          aria-label={t?.italic || 'Italic'}
         >
           <Italic className="w-5 h-5 md:w-4 md:h-4" />
         </button>
@@ -1047,12 +1054,11 @@ export default function GoogleDocsToolbar({ editor }) {
           onClick={() => {
             const newUnderline = !editor.isActive('underline')
             editor.chain().focus().toggleUnderline().run()
-            setActiveStyle(prev => ({ ...prev, underline: newUnderline }))
-            shouldApplyActiveStyleRef.current = true
           }}
           className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
             editor.isActive('underline') ? 'bg-gray-200' : ''
           }`}
+          aria-label={t?.underline || 'Underline'}
         >
           <Underline className="w-5 h-5 md:w-4 md:h-4" />
         </button>
@@ -1075,6 +1081,7 @@ export default function GoogleDocsToolbar({ editor }) {
               .run()
           }}
           className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
+          aria-label={t?.clearFormatting || 'Clear formatting'}
         >
           <Eraser className="w-5 h-5 md:w-4 md:h-4" />
         </button>
@@ -1096,6 +1103,7 @@ export default function GoogleDocsToolbar({ editor }) {
             className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
               showTextColor ? 'bg-gray-200' : ''
             }`}
+            aria-label={t?.textColor || 'Text color'}
           >
             <div className="flex flex-col items-center justify-center">
               <span className="text-sm font-bold leading-none" style={{ color: currentTextColor }}>A</span>
@@ -1208,6 +1216,7 @@ export default function GoogleDocsToolbar({ editor }) {
             className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
               showHighlightColor ? 'bg-gray-200' : ''
             }`}
+            aria-label={t?.highlighter || 'Highlighter'}
           >
             <div className="flex flex-col items-center justify-center">
               <Highlighter className="w-4 h-4" />
@@ -1322,6 +1331,7 @@ export default function GoogleDocsToolbar({ editor }) {
             className={`p-2 md:p-1.5 h-10 md:h-8 rounded hover:bg-gray-100 flex items-center justify-center gap-1 ${
               showAlign ? 'bg-gray-200' : ''
             }`}
+            aria-label={t?.alignment || 'Alignment'}
           >
             {currentAlign === 'left' && <AlignLeft className="w-5 h-5 md:w-4 md:h-4" />}
             {currentAlign === 'center' && <AlignCenter className="w-5 h-5 md:w-4 md:h-4" />}
@@ -1352,6 +1362,7 @@ export default function GoogleDocsToolbar({ editor }) {
                   currentAlign === 'left' ? 'bg-gray-200' : ''
                 }`}
                 title={t?.left || 'Left'}
+                aria-label={t?.left || 'Left'}
               >
                 <AlignLeft className="w-4 h-4" />
               </button>
@@ -1361,6 +1372,7 @@ export default function GoogleDocsToolbar({ editor }) {
                   currentAlign === 'center' ? 'bg-gray-200' : ''
                 }`}
                 title={t?.center || 'Center'}
+                aria-label={t?.center || 'Center'}
               >
                 <AlignCenter className="w-4 h-4" />
               </button>
@@ -1370,6 +1382,7 @@ export default function GoogleDocsToolbar({ editor }) {
                   currentAlign === 'right' ? 'bg-gray-200' : ''
                 }`}
                 title={t?.right || 'Right'}
+                aria-label={t?.right || 'Right'}
               >
                 <AlignRight className="w-4 h-4" />
               </button>
@@ -1379,6 +1392,7 @@ export default function GoogleDocsToolbar({ editor }) {
                   currentAlign === 'justify' ? 'bg-gray-200' : ''
                 }`}
                 title={t?.justified || 'Justified'}
+                aria-label={t?.justified || 'Justified'}
               >
                 <AlignJustify className="w-4 h-4" />
               </button>
@@ -1396,6 +1410,7 @@ export default function GoogleDocsToolbar({ editor }) {
           className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
             editor.isActive('bulletList') ? 'bg-gray-200' : ''
           }`}
+          aria-label={t?.bulletList || 'Bullet list'}
         >
           <List className="w-5 h-5 md:w-4 md:h-4" />
         </button>
@@ -1407,6 +1422,7 @@ export default function GoogleDocsToolbar({ editor }) {
           className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
             editor.isActive('orderedList') ? 'bg-gray-200' : ''
           }`}
+          aria-label={t?.numberedList || 'Numbered list'}
         >
           <ListOrdered className="w-5 h-5 md:w-4 md:h-4" />
         </button>
@@ -1417,6 +1433,7 @@ export default function GoogleDocsToolbar({ editor }) {
       {/* Image */}
       <Tooltip label={t?.insertImage || 'Insert image'}>
         <button
+          aria-label={t?.insertImage || 'Insert image'}
           onClick={() => {
             const input = document.createElement('input')
             input.type = 'file'
@@ -1509,6 +1526,7 @@ export default function GoogleDocsToolbar({ editor }) {
       {/* Link */}
       <Tooltip label={t?.insertLink || 'Insert link'} shortcut={['⌘', 'K']}>
         <button
+          aria-label={t?.insertLink || 'Insert link'}
           onClick={() => {
             // Get selection position to show LinkEditor
             const { selection } = editor.state
@@ -1560,6 +1578,7 @@ export default function GoogleDocsToolbar({ editor }) {
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().chain().focus().undo().run()}
             className="p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center"
+            aria-label={t?.undo || 'Undo'}
           >
             <Undo className="w-5 h-5 md:w-4 md:h-4" />
           </button>
@@ -1570,6 +1589,7 @@ export default function GoogleDocsToolbar({ editor }) {
             onClick={() => editor.chain().focus().redo().run()}
             disabled={!editor.can().chain().focus().redo().run()}
             className="p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center"
+            aria-label={t?.redo || 'Redo'}
           >
             <Redo className="w-5 h-5 md:w-4 md:h-4" />
           </button>
