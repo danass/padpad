@@ -24,37 +24,31 @@ const features = [
         title: 'Digital Legacy',
         description: 'Write now, publish on your 99th birthday. Your words live on.',
         href: '/features/digital-testament',
-        icon: '📖',
     },
     {
         title: 'Public Blog & Archive',
         description: 'Get your own subdomain. Share your writing publicly.',
         href: '/features/public-blog',
-        icon: '🌐',
     },
     {
         title: 'Shareable Links',
         description: 'Share any document with a simple link.',
         href: '/features/shareable-links',
-        icon: '🔗',
     },
     {
         title: 'Tabs & Drive',
         description: 'Organize documents in folders. Work on multiple files.',
         href: '/features/tabs-and-drive',
-        icon: '📁',
     },
     {
         title: 'Version History',
         description: 'Every save is preserved. Restore any version.',
         href: '/features/version-history',
-        icon: '⏱️',
     },
     {
         title: 'Images & Drawings',
         description: 'Add images, resize them, draw directly in your docs.',
         href: '/features/images-and-drawings',
-        icon: '🎨',
     },
 ]
 
@@ -87,13 +81,10 @@ export default function FeaturesPage() {
                         <Link
                             key={feature.href}
                             href={feature.href}
-                            className="flex items-start gap-4 p-5 border border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                            className="block p-5 border border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors"
                         >
-                            <span className="text-2xl">{feature.icon}</span>
-                            <div>
-                                <h2 className="text-lg font-medium text-gray-900 mb-1">{feature.title}</h2>
-                                <p className="text-gray-600">{feature.description}</p>
-                            </div>
+                            <h2 className="text-lg font-medium text-gray-900 mb-1">{feature.title}</h2>
+                            <p className="text-gray-600">{feature.description}</p>
                         </Link>
                     ))}
                 </div>
