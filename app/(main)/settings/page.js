@@ -1,79 +1,38 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useToast } from '@/components/ui/toast'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 
-function LegacyUrlDisplay({ username, slug, birthDate }) {
-  const { t } = useLanguage()
-  const identifier = username || slug
-  if (!identifier) return null
-
-  const publicUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/public/testament/${identifier}`
-    : `/public/testament/${identifier}`
-
-  const age99Date = birthDate ? (() => {
-    const birth = new Date(birthDate)
-    const age99 = new Date(birth)
-    age99.setFullYear(birth.getFullYear() + 99)
-    return age99.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
-  })() : null
-
-  return (
-    <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-      <p className="text-xs font-medium text-gray-700 mb-2">{t?.yourLegacyUrl || 'Your Legacy URL'}:</p>
-      <div className="flex items-center gap-2">
-        <code className="flex-1 text-xs sm:text-sm font-mono bg-white px-3 py-2 rounded border border-gray-300 text-gray-900 break-all">
-          {publicUrl}
-        </code>
-        <button
-          onClick={async () => {
-            try {
-              await navigator.clipboard.writeText(publicUrl)
-            } catch (err) {
-              const textArea = document.createElement('textarea')
-              textArea.value = publicUrl
-              textArea.style.position = 'fixed'
-              textArea.style.opacity = '0'
-              document.body?.appendChild(textArea)
-              textArea.select()
-              document.execCommand('copy')
-              textArea.remove()
-            }
-          }}
-          className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 flex items-center justify-center transition-all flex-shrink-0"
-          title={t?.copyUrl || 'Copy URL'}
-        >
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
-        </button>
-      </div>
-      {age99Date && (
-        <p className="text-xs text-gray-500 mt-2">
-          {(t?.accessibleOn || 'This page will become accessible on {date}.').replace('{date}', age99Date)}
-        </p>
-      )}
-    </div>
-  )
-}
-
 export default function SettingsPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const { showToast } = useToast()
   const { t } = useLanguage()
+
+  // Data states
   const [birthDate, setBirthDate] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
   const [testamentUsername, setTestamentUsername] = useState('')
+
+  // Original values for comparison
+  const [originalBirthDate, setOriginalBirthDate] = useState('')
+  const [originalAvatarUrl, setOriginalAvatarUrl] = useState('')
+  const [originalUsername, setOriginalUsername] = useState('')
+
+  // UI states
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [savingAvatar, setSavingAvatar] = useState(false)
   const [savingUsername, setSavingUsername] = useState(false)
+  const [savingBirthDate, setSavingBirthDate] = useState(false)
+
+  // Track if values have changed
+  const avatarChanged = avatarUrl !== originalAvatarUrl
+  const usernameChanged = testamentUsername !== originalUsername
+  const birthDateChanged = birthDate !== originalBirthDate
 
   useEffect(() => {
     if (!session) {
@@ -94,20 +53,23 @@ export default function SettingsPage() {
       if (birthResponse.ok) {
         const birthData = await birthResponse.json()
         if (birthData.birth_date) {
-          // Format date for input (YYYY-MM-DD)
           const date = new Date(birthData.birth_date)
-          setBirthDate(date.toISOString().split('T')[0])
+          const formatted = date.toISOString().split('T')[0]
+          setBirthDate(formatted)
+          setOriginalBirthDate(formatted)
         }
       }
 
       if (avatarResponse.ok) {
         const avatarData = await avatarResponse.json()
         setAvatarUrl(avatarData.avatar_url || '')
+        setOriginalAvatarUrl(avatarData.avatar_url || '')
       }
 
       if (usernameResponse.ok) {
         const usernameData = await usernameResponse.json()
         setTestamentUsername(usernameData.testament_username || '')
+        setOriginalUsername(usernameData.testament_username || '')
       }
     } catch (error) {
       console.error('Error loading data:', error)
@@ -118,8 +80,6 @@ export default function SettingsPage() {
 
   const handleSaveAvatar = async () => {
     setSavingAvatar(true)
-    // Small delay for visual feedback
-    await new Promise(r => setTimeout(r, 300))
     try {
       const response = await fetch('/api/users/avatar', {
         method: 'PATCH',
@@ -128,24 +88,22 @@ export default function SettingsPage() {
       })
 
       if (response.ok) {
-        showToast(t?.avatarSaved || 'Avatar saved successfully', 'success')
-        // Reload page to update avatar in header
+        setOriginalAvatarUrl(avatarUrl)
+        showToast(t?.avatarSaved || 'Avatar saved', 'success')
         setTimeout(() => window.location.reload(), 500)
       } else {
         const data = await response.json()
-        showToast(data.error || t?.failedToSaveAvatar || 'Failed to save avatar', 'error')
-        setSavingAvatar(false)
+        showToast(data.error || 'Failed to save avatar', 'error')
       }
     } catch (error) {
-      console.error('Error saving avatar:', error)
-      showToast(t?.failedToSaveAvatar || 'Failed to save avatar', 'error')
+      showToast('Failed to save avatar', 'error')
+    } finally {
       setSavingAvatar(false)
     }
   }
 
   const handleSaveUsername = async () => {
     setSavingUsername(true)
-    await new Promise(r => setTimeout(r, 300))
     try {
       const response = await fetch('/api/users/testament-username', {
         method: 'PATCH',
@@ -154,77 +112,50 @@ export default function SettingsPage() {
       })
 
       if (response.ok) {
-        showToast(t?.usernameSaved || 'Username saved successfully', 'success')
-        loadData()
+        setOriginalUsername(testamentUsername)
+        showToast(t?.usernameSaved || 'Username saved', 'success')
       } else {
         const data = await response.json()
-        showToast(data.error || t?.failedToSaveUsername || 'Failed to save username', 'error')
+        showToast(data.error || 'Failed to save username', 'error')
       }
     } catch (error) {
-      console.error('Error saving username:', error)
-      showToast(t?.failedToSaveUsername || 'Failed to save username', 'error')
+      showToast('Failed to save username', 'error')
     } finally {
       setSavingUsername(false)
     }
   }
 
-  const handleSave = async () => {
-    if (!birthDate) {
-      showToast(t?.pleaseEnterBirthDate || 'Please enter your birth date', 'error')
-      return
-    }
-
-    setSaving(true)
-    await new Promise(r => setTimeout(r, 300))
+  const handleSaveBirthDate = async () => {
+    setSavingBirthDate(true)
     try {
       const response = await fetch('/api/users/birth-date', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ birth_date: birthDate })
+        body: JSON.stringify({ birth_date: birthDate || null })
       })
 
       if (response.ok) {
-        showToast(t?.birthDateSaved || 'Birth date saved successfully', 'success')
-
-        // Calculate and show 99th birthday
-        const birth = new Date(birthDate)
-        const age99 = new Date(birth)
-        age99.setFullYear(birth.getFullYear() + 99)
-        showToast((t?.docsPublicOn || 'Your documents will become public on {date} (your 99th birthday)').replace('{date}', age99.toLocaleDateString()), 'success')
+        setOriginalBirthDate(birthDate)
+        if (birthDate) {
+          const birth = new Date(birthDate)
+          const age99 = new Date(birth)
+          age99.setFullYear(birth.getFullYear() + 99)
+          showToast(`Documents will become public on ${age99.toLocaleDateString()}`, 'success')
+        } else {
+          showToast('Digital Legacy disabled', 'success')
+        }
       } else {
-        const data = await response.json()
-        showToast(data.error || t?.failedToSaveBirthDate || 'Failed to save birth date', 'error')
+        showToast('Failed to save birth date', 'error')
       }
     } catch (error) {
-      console.error('Error saving birth date:', error)
-      showToast(t?.failedToSaveBirthDate || 'Failed to save birth date', 'error')
+      showToast('Failed to save birth date', 'error')
     } finally {
-      setSaving(false)
+      setSavingBirthDate(false)
     }
   }
 
-  const handleClearBirthDate = async () => {
-    setSaving(true)
-    await new Promise(r => setTimeout(r, 300))
-    try {
-      const response = await fetch('/api/users/birth-date', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ birth_date: null })
-      })
-
-      if (response.ok) {
-        setBirthDate('')
-        showToast(t?.legacyDisabled || 'Digital Legacy disabled - your documents will remain private', 'success')
-      } else {
-        showToast(t?.failedToRemoveBirthDate || 'Failed to remove birth date', 'error')
-      }
-    } catch (error) {
-      console.error('Error removing birth date:', error)
-      showToast(t?.failedToRemoveBirthDate || 'Failed to remove birth date', 'error')
-    } finally {
-      setSaving(false)
-    }
+  const handleClearBirthDate = () => {
+    setBirthDate('')
   }
 
   if (loading) {
@@ -235,6 +166,8 @@ export default function SettingsPage() {
     )
   }
 
+  const subdomainUrl = testamentUsername ? `https://${testamentUsername}.textpad.cloud` : null
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-3xl mx-auto px-6 py-8">
@@ -243,143 +176,198 @@ export default function SettingsPage() {
           <p className="text-sm text-gray-500">{t?.accountSettings || 'Manage your account settings'}</p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">{t?.profilePicture || 'Profile'}</h2>
+        {/* Profile Section */}
+        <div className="bg-white border border-gray-200 rounded-md p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Profile</h2>
 
-          <div className="space-y-4 mb-8">
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Avatar
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Avatar</label>
               <div className="flex items-start gap-4">
-                {/* Avatar Preview */}
                 <div className="flex-shrink-0">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt="Avatar"
-                      className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
-                      onError={(e) => {
-                        const defaultUrl = `https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(session?.user?.email || session?.user?.name || 'user')}`
-                        e.target.src = defaultUrl
-                        setAvatarUrl(defaultUrl)
-                      }}
-                    />
-                  ) : (
-                    <img
-                      src={session?.user?.image || `https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(session?.user?.email || session?.user?.name || 'user')}`}
-                      alt="Default Avatar"
-                      className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
-                    />
-                  )}
+                  <img
+                    src={avatarUrl || session?.user?.image || `https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(session?.user?.email || 'user')}`}
+                    alt="Avatar"
+                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
+                    onError={(e) => {
+                      e.target.src = `https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(session?.user?.email || 'user')}`
+                    }}
+                  />
                 </div>
 
-                {/* Avatar Options */}
                 <div className="flex-1 space-y-3">
-                  {/* Icon buttons row */}
-                  <div className="flex items-center gap-2">
-                    {/* Google Avatar (if available) */}
+                  <div className="flex items-center gap-2 flex-wrap">
                     {session?.user?.image && (
                       <button
                         onClick={() => setAvatarUrl(session.user.image)}
-                        className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all hover:scale-110 ${avatarUrl === session.user.image ? 'border-black ring-2 ring-black ring-offset-2' : 'border-gray-300 hover:border-gray-400'}`}
-                        title={t?.useGoogleAvatar || 'Use Google avatar'}
+                        className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all hover:scale-110 ${avatarUrl === session.user.image ? 'border-black ring-2 ring-black ring-offset-2' : 'border-gray-300'}`}
+                        title="Use Google avatar"
                       >
                         <img src={session.user.image} alt="Google" className="w-full h-full object-cover" />
                       </button>
                     )}
 
-                    {/* Random Avatar Croodles */}
                     <button
-                      onClick={() => {
-                        const randomSeed = Math.random().toString(36).substring(2, 15)
-                        setAvatarUrl(`https://api.dicebear.com/9.x/croodles/svg?seed=${randomSeed}`)
-                      }}
-                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-all"
-                      title="Random croodles avatar"
+                      onClick={() => setAvatarUrl(`https://api.dicebear.com/9.x/croodles/svg?seed=${Math.random().toString(36).substring(2)}`)}
+                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center bg-gray-50"
+                      title="Random avatar"
                     >
-                      <span className="text-lg">🎨</span>
+                      🎨
                     </button>
 
-                    {/* Random Avatar Pixel Art */}
                     <button
-                      onClick={() => {
-                        const randomSeed = Math.random().toString(36).substring(2, 15)
-                        setAvatarUrl(`https://api.dicebear.com/9.x/pixel-art/svg?seed=${randomSeed}`)
-                      }}
-                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-all"
-                      title="Random pixel art avatar"
+                      onClick={() => setAvatarUrl(`https://api.dicebear.com/9.x/pixel-art/svg?seed=${Math.random().toString(36).substring(2)}`)}
+                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center bg-gray-50"
+                      title="Pixel art avatar"
                     >
-                      <span className="text-lg">👾</span>
+                      👾
                     </button>
 
-                    {/* Email-based Avatar */}
-                    <button
-                      onClick={() => {
-                        const emailSeed = session?.user?.email || session?.user?.name || 'user'
-                        setAvatarUrl(`https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(emailSeed)}`)
-                      }}
-                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-all"
-                      title="Use email-based avatar"
-                    >
-                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                      </svg>
-                    </button>
-
-                    {/* Clear */}
                     <button
                       onClick={() => setAvatarUrl('')}
-                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-red-400 flex items-center justify-center bg-gray-50 hover:bg-red-50 transition-all"
-                      title="Reset to default"
+                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-red-400 flex items-center justify-center bg-gray-50"
+                      title="Reset"
                     >
-                      <svg className="w-5 h-5 text-gray-600 hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      ✕
                     </button>
 
-                    {/* Separator */}
                     <div className="w-px h-8 bg-gray-200 mx-1" />
 
-                    {/* Save button */}
+                    {/* Save button with state feedback */}
                     <button
                       onClick={handleSaveAvatar}
-                      disabled={savingAvatar}
-                      className="w-10 h-10 rounded-full border-2 border-black bg-black hover:bg-gray-800 flex items-center justify-center transition-all disabled:opacity-50"
-                      title="Save avatar"
+                      disabled={savingAvatar || !avatarChanged}
+                      className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${!avatarChanged
+                          ? 'border-gray-200 bg-gray-100 cursor-default'
+                          : 'border-black bg-black hover:bg-gray-800'
+                        }`}
+                      title={avatarChanged ? 'Save' : 'No changes'}
                     >
                       {savingAvatar ? (
                         <svg className="w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
                       ) : (
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className={`w-5 h-5 ${avatarChanged ? 'text-white' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       )}
                     </button>
                   </div>
 
-                  {/* Custom URL input */}
-                  <div>
-                    <input
-                      type="url"
-                      id="avatar-url"
-                      value={avatarUrl}
-                      onChange={(e) => setAvatarUrl(e.target.value)}
-                      placeholder="Or paste custom avatar URL..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-sm"
-                    />
-                  </div>
+                  <input
+                    type="url"
+                    value={avatarUrl}
+                    onChange={(e) => setAvatarUrl(e.target.value)}
+                    placeholder="Or paste custom avatar URL..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black text-sm"
+                  />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Digital Legacy Section */}
-        <div className="bg-white border border-gray-200 rounded-md p-6 mt-6">
+        {/* Public Blog Section - PRIMARY */}
+        <div className="bg-white border border-gray-200 rounded-md p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Public Blog</h2>
+              <p className="text-sm text-gray-500">Get your own subdomain for public documents</p>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+            <p className="text-sm text-blue-900">
+              Set a username to get your own public blog at <strong>username.textpad.cloud</strong>.
+              All documents you mark as public will be listed there.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <div className="flex items-center">
+                  <span className="hidden sm:inline-flex items-center px-3 py-2 text-sm text-gray-500 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md whitespace-nowrap">
+                    https://
+                  </span>
+                  <input
+                    type="text"
+                    value={testamentUsername}
+                    onChange={(e) => setTestamentUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                    placeholder="your-name"
+                    className="flex-1 px-3 py-2 border border-gray-300 sm:rounded-l-none rounded-md focus:ring-2 focus:ring-black text-sm"
+                  />
+                  <span className="hidden sm:inline-flex items-center px-3 py-2 text-sm text-gray-500 bg-gray-100 border border-l-0 border-gray-300 rounded-r-md whitespace-nowrap">
+                    .textpad.cloud
+                  </span>
+                </div>
+              </div>
+
+              {/* Save button with state feedback */}
+              <button
+                onClick={handleSaveUsername}
+                disabled={savingUsername || !usernameChanged}
+                className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${!usernameChanged
+                    ? 'bg-gray-100 text-gray-400 cursor-default'
+                    : 'bg-black text-white hover:bg-gray-800'
+                  }`}
+              >
+                {savingUsername ? (
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+                {usernameChanged ? 'Save' : 'Saved'}
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 mt-2">
+              Lowercase letters, numbers, hyphens, and underscores only.
+            </p>
+
+            {/* Show URL if username is set */}
+            {originalUsername && (
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-xs font-medium text-green-800 mb-1">Your blog is live:</p>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`https://${originalUsername}.textpad.cloud`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-green-700 hover:text-green-900 underline break-all"
+                  >
+                    https://{originalUsername}.textpad.cloud
+                  </a>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(`https://${originalUsername}.textpad.cloud`)}
+                    className="text-green-600 hover:text-green-800 p-1"
+                    title="Copy URL"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Digital Legacy Section - SECONDARY/OPTIONAL */}
+        <div className="bg-white border border-gray-200 rounded-md p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -388,128 +376,82 @@ export default function SettingsPage() {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Digital Legacy</h2>
-              <p className="text-sm text-gray-500">Preserve your writings for future generations</p>
+              <p className="text-sm text-gray-500">Optional: preserve your writings for future generations</p>
             </div>
           </div>
 
           <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6">
             <p className="text-sm text-amber-900">
-              Your digital legacy is a collection of all your documents that will automatically become
-              accessible to the public on your <strong>99th birthday</strong>. This ensures your writings,
-              thoughts, and memories are preserved for future generations.
+              Set your birth date to automatically make <strong>all documents public</strong> on your 99th birthday.
+              This ensures your writings are preserved for future generations.
             </p>
           </div>
 
-          <div className="space-y-6">
-            {/* Birth Date */}
-            <div>
-              <label htmlFor="birth-date" className="block text-sm font-medium text-gray-700 mb-2">
-                Date of Birth
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  id="birth-date"
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                  max={new Date().toISOString().split('T')[0]}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-sm"
-                />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black text-sm"
+              />
+
+              {birthDate && (
                 <button
-                  onClick={handleSave}
-                  disabled={saving || !birthDate}
-                  className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${birthDate ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-200 text-gray-500'
-                    }`}
-                  title="Save"
+                  onClick={handleClearBirthDate}
+                  className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-red-400 bg-white hover:bg-red-50 flex items-center justify-center"
+                  title="Remove birth date"
                 >
-                  {saving ? (
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                  Save
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
-                {birthDate && (
-                  <button
-                    onClick={handleClearBirthDate}
-                    disabled={saving}
-                    className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-red-400 bg-white hover:bg-red-50 flex items-center justify-center transition-all disabled:opacity-50 flex-shrink-0"
-                    title="Disable Digital Legacy"
-                  >
-                    <svg className="w-4 h-4 text-gray-500 hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-              {birthDate ? (
-                <p className="text-xs text-gray-500 mt-2">
-                  Publication date: {(() => {
-                    const birth = new Date(birthDate)
-                    const age99 = new Date(birth)
-                    age99.setFullYear(birth.getFullYear() + 99)
-                    return age99.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
-                  })()}
-                </p>
-              ) : (
-                <p className="text-xs text-gray-400 mt-2 italic">
-                  No birth date set — your documents will remain private forever.
-                </p>
               )}
+
+              {/* Save button with state feedback */}
+              <button
+                onClick={handleSaveBirthDate}
+                disabled={savingBirthDate || !birthDateChanged}
+                className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${!birthDateChanged
+                    ? 'bg-gray-100 text-gray-400 cursor-default'
+                    : 'bg-black text-white hover:bg-gray-800'
+                  }`}
+              >
+                {savingBirthDate ? (
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+                {birthDateChanged ? 'Save' : 'Saved'}
+              </button>
             </div>
 
-            {/* Custom URL */}
-            <div>
-              <label htmlFor="legacy-username" className="block text-sm font-medium text-gray-700 mb-2">
-                Custom URL (optional)
-              </label>
-              <div className="flex items-center gap-2">
-                <div className="flex-1">
-                  <div className="flex items-center">
-                    <span className="hidden sm:inline-flex items-center px-3 py-2 text-sm text-gray-500 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md whitespace-nowrap">
-                      /public/testament/
-                    </span>
-                    <input
-                      type="text"
-                      id="legacy-username"
-                      value={testamentUsername}
-                      onChange={(e) => setTestamentUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                      placeholder="your-name"
-                      className="flex-1 px-3 py-2 border border-gray-300 sm:rounded-l-none rounded-md sm:rounded-r-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-sm"
-                    />
-                  </div>
-                </div>
-                <button
-                  onClick={handleSaveUsername}
-                  disabled={savingUsername}
-                  className="px-4 py-2 rounded-md bg-black text-white hover:bg-gray-800 text-sm font-medium flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                  title="Save"
-                >
-                  {savingUsername ? (
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                  Save
-                </button>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Lowercase letters, numbers, hyphens, and underscores only.
+            {originalBirthDate ? (
+              <p className="text-xs text-gray-500 mt-2">
+                All documents will become public on {(() => {
+                  const birth = new Date(originalBirthDate)
+                  const age99 = new Date(birth)
+                  age99.setFullYear(birth.getFullYear() + 99)
+                  return age99.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                })()}
               </p>
-            </div>
+            ) : (
+              <p className="text-xs text-gray-400 mt-2 italic">
+                No birth date set — documents will remain private unless marked public individually.
+              </p>
+            )}
+          </div>
 
-            {/* Preview and URL Display */}
-            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+          {/* Preview link */}
+          {originalBirthDate && originalUsername && (
+            <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-200">
               <div>
                 <p className="text-sm font-medium text-gray-700">Preview your legacy page</p>
                 <p className="text-xs text-gray-500">See how it will appear to visitors</p>
@@ -525,11 +467,9 @@ export default function SettingsPage() {
                 Preview
               </Link>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
   )
 }
-
-
