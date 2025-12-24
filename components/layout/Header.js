@@ -18,11 +18,30 @@ const headerCache = {
   CACHE_DURATION: 5 * 60 * 1000, // 5 minutes cache
 }
 
+// Check if we're on a subdomain
+function isSubdomain() {
+  if (typeof window === 'undefined') return false
+  const hostname = window.location.hostname
+  const match = hostname.match(/^([a-z0-9_-]+)\.textpad\.cloud$/i)
+  return match && match[1].toLowerCase() !== 'www'
+}
+
 export default function Header() {
   const { t } = useLanguage()
   const pathname = usePathname()
   const router = useRouter()
-  const { data: session } = useSession()
+
+  // On subdomains, don't use session at all
+  const onSubdomain = isSubdomain()
+  let session = null
+  try {
+    const sessionData = useSession()
+    session = onSubdomain ? null : sessionData?.data
+  } catch (e) {
+    // If useSession fails (no provider), treat as no session
+    session = null
+  }
+
   const [isAdmin, setIsAdmin] = useState(false)
   const [customAvatar, setCustomAvatar] = useState(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -226,8 +245,8 @@ export default function Header() {
                             href="/admin"
                             onClick={() => setShowUserMenu(false)}
                             className={`block px-4 py-2.5 md:py-2 text-sm transition-colors ${isAdminPage
-                                ? 'bg-gray-100 text-gray-900 font-medium'
-                                : 'text-gray-700 hover:bg-gray-100'
+                              ? 'bg-gray-100 text-gray-900 font-medium'
+                              : 'text-gray-700 hover:bg-gray-100'
                               }`}
                             title="Admin Panel"
                           >
@@ -261,8 +280,8 @@ export default function Header() {
             <Link
               href="/drive"
               className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 flex-shrink-0 ${isDrive && !isDoc
-                  ? 'border-gray-900 text-gray-900'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
+                ? 'border-gray-900 text-gray-900'
+                : 'border-transparent text-gray-600 hover:text-gray-900'
                 }`}
               title={t?.drive || 'Drive'}
             >
