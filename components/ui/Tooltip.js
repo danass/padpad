@@ -6,9 +6,24 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
   const [isVisible, setIsVisible] = useState(false)
   const [isPositioned, setIsPositioned] = useState(false)
   const [coords, setCoords] = useState({ top: 0, left: 0 })
+  const [isMobile, setIsMobile] = useState(false)
   const triggerRef = useRef(null)
   const tooltipRef = useRef(null)
   const timeoutRef = useRef(null)
+
+  // Detect mobile/touch devices
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(
+        'ontouchstart' in window || 
+        navigator.maxTouchPoints > 0 ||
+        window.innerWidth < 768
+      )
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const calculatePosition = useCallback(() => {
     if (!triggerRef.current) return null
@@ -45,6 +60,9 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
   }, [position])
 
   const showTooltip = () => {
+    // Don't show tooltips on mobile/touch devices
+    if (isMobile) return
+    
     // Calculate position before showing
     const initialPos = calculatePosition()
     if (initialPos) {
