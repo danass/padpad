@@ -257,14 +257,14 @@ export default function SettingsPage() {
                       alt="Avatar" 
                       className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
                       onError={(e) => {
-                        const defaultUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(session?.user?.email || session?.user?.name || 'user')}`
+                        const defaultUrl = `https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(session?.user?.email || session?.user?.name || 'user')}`
                         e.target.src = defaultUrl
                         setAvatarUrl(defaultUrl)
                       }}
                     />
                   ) : (
                     <img 
-                      src={session?.user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(session?.user?.email || session?.user?.name || 'user')}`}
+                      src={session?.user?.image || `https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(session?.user?.email || session?.user?.name || 'user')}`}
                       alt="Default Avatar" 
                       className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
                     />
@@ -290,7 +290,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => {
                         const randomSeed = Math.random().toString(36).substring(2, 15)
-                        setAvatarUrl(`https://api.dicebear.com/7.x/avataaars/svg?seed=${randomSeed}`)
+                        setAvatarUrl(`https://api.dicebear.com/9.x/croodles/svg?seed=${randomSeed}`)
                       }}
                       className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-all"
                       title="Generate random avatar"
@@ -304,7 +304,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => {
                         const emailSeed = session?.user?.email || session?.user?.name || 'user'
-                        setAvatarUrl(`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(emailSeed)}`)
+                        setAvatarUrl(`https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(emailSeed)}`)
                       }}
                       className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-all"
                       title="Use email-based avatar"

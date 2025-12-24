@@ -131,7 +131,7 @@ export default function Header() {
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         // Fallback to default if custom avatar fails to load
-                        e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(session.user?.email || session.user?.name || 'user')}`
+                        e.target.src = `https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(session.user?.email || session.user?.name || 'user')}`
                       }}
                     />
                   ) : session.user?.image ? (
@@ -142,7 +142,7 @@ export default function Header() {
                     />
                   ) : (
                     <img 
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(session.user?.email || session.user?.name || 'user')}`}
+                      src={`https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(session.user?.email || session.user?.name || 'user')}`}
                       alt={session.user?.name || 'User'} 
                       className="w-full h-full object-cover"
                     />
