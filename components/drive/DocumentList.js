@@ -2,12 +2,85 @@
 
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { memo, useState, useMemo } from 'react'
+import { memo, useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Grid, List, ListChecks, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { Grid, List, ListChecks, ArrowUpDown, ArrowUp, ArrowDown, FileText, Image, Pencil, Type } from 'lucide-react'
+import { useLanguage } from '@/app/i18n/LanguageContext'
+
+// Helper to get document stats
+const getDocumentStats = (item) => {
+  if (item.type === 'folder') return null
+  
+  const stats = {
+    characters: 0,
+    words: 0,
+    images: 0,
+    drawings: 0
+  }
+  
+  // Get character and word count from content_text
+  if (item.content_text) {
+    stats.characters = item.content_text.length
+    const words = item.content_text.trim().split(/\s+/).filter(w => w.length > 0)
+    stats.words = words.length
+  }
+  
+  // Count images and drawings from content if available
+  // This requires the content JSON which we'll need to fetch
+  // For now, we'll add this info to the API response
+  if (item.image_count !== undefined) {
+    stats.images = item.image_count
+  }
+  if (item.drawing_count !== undefined) {
+    stats.drawings = item.drawing_count
+  }
+  
+  return stats
+}
+
+// Format stats for display - économique
+const formatStats = (stats) => {
+  if (!stats) return null
+  
+  const parts = []
+  
+  // Priority: show most relevant stats
+  if (stats.characters > 0) {
+    if (stats.words > 0) {
+      parts.push(`${stats.words} mot${stats.words > 1 ? 's' : ''}`)
+    }
+    parts.push(`${stats.characters} car.`)
+  }
+  
+  if (stats.images > 0) {
+    parts.push(`${stats.images} image${stats.images > 1 ? 's' : ''}`)
+  }
+  
+  if (stats.drawings > 0) {
+    parts.push(`${stats.drawings} dessin${stats.drawings > 1 ? 's' : ''}`)
+  }
+  
+  // If nothing, show "vide"
+  if (parts.length === 0) {
+    return 'Vide'
+  }
+  
+  return parts.join(' • ')
+}
+
+// Get preview text (first ~50 characters)
+const getPreviewText = (item) => {
+  if (!item.content_text || item.content_text.trim().length === 0) {
+    return null
+  }
+  const text = item.content_text.trim()
+  if (text.length <= 60) return text
+  return text.substring(0, 57) + '...'
+}
 
 function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, onMove, onTogglePublic, currentFolderId = null, parentFolderId = null, onNavigateToParent }) {
   const router = useRouter()
+  const { t } = useLanguage()
   const [contextMenu, setContextMenu] = useState(null)
   const [newFolderName, setNewFolderName] = useState('')
   const [creatingFolder, setCreatingFolder] = useState(false)
@@ -101,7 +174,8 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
   // Delete selected items
   const handleDeleteSelected = () => {
     if (selectedItems.size === 0) return
-    if (confirm(`Are you sure you want to delete ${selectedItems.size} item(s)?`)) {
+    const confirmMsg = (t?.confirmDeleteMultiple || 'Are you sure you want to delete {count} item(s)?').replace('{count}', selectedItems.size)
+    if (confirm(confirmMsg)) {
       selectedItems.forEach(id => {
         onDelete(id)
       })
@@ -176,7 +250,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
               </svg>
             )}
             <h3 className="font-medium text-sm truncate">{item.name}</h3>
-            <p className="text-xs text-gray-500 mt-1">Folder</p>
+            <p className="text-xs text-gray-500 mt-1">{t?.folder || 'Folder'}</p>
           </Link>
         ) : (
           <Link href={`/doc/${item.id}`} className="block">
@@ -185,7 +259,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             )}
-            <h3 className="font-medium text-sm truncate">{item.title || 'Untitled'}</h3>
+            <h3 className="font-medium text-sm truncate">{item.title || (t?.untitled || 'Untitled')}</h3>
             <p className="text-xs text-gray-500 mt-1">{format(new Date(item.updated_at), 'MMM d, yyyy')}</p>
           </Link>
         )}
@@ -237,7 +311,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
               }
               
               if (draggedItem.type === 'folder' && isDescendant(draggedItem.id, item.id)) {
-                alert('Cannot move folder into its own subfolder')
+                alert(t?.cannotMoveFolder || 'Cannot move folder into its own subfolder')
                 setDragOverFolder(null)
                 setDraggedItem(null)
                 return
@@ -273,15 +347,20 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
               <h3 className="font-medium text-sm md:text-base truncate">{item.name}</h3>
             </Link>
           ) : (
-            <Link href={`/doc/${item.id}`} className="col-span-5 flex items-center gap-2">
-              <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <h3 className="font-medium text-sm md:text-base truncate">{item.title || 'Untitled'}</h3>
+            <Link href={`/doc/${item.id}`} className="col-span-5 flex flex-col gap-0.5">
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 className="font-medium text-sm md:text-base truncate">{item.title || (t?.untitled || 'Untitled')}</h3>
+              </div>
+              {getPreviewText(item) && (
+                <p className="text-xs text-gray-400 truncate ml-6 hidden md:block">{getPreviewText(item)}</p>
+              )}
             </Link>
           )}
           <div className="col-span-1 text-xs md:text-sm text-gray-600 whitespace-nowrap hidden md:block">
-            {item.type === 'folder' ? 'Folder' : 'Doc'}
+            {item.type === 'folder' ? (t?.folder || 'Folder') : (t?.doc || 'Doc')}
           </div>
           <div className="col-span-3 md:col-span-2 text-xs md:text-sm text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
             <span className="hidden md:inline">{format(new Date(item.updated_at || item.created_at), 'MMM d, yyyy')}</span>
@@ -300,7 +379,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                     ? 'bg-green-100 text-green-600 hover:bg-green-200' 
                     : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                 }`}
-                title={item.is_public ? 'Public - Click to make private' : 'Private - Click to make public'}
+                title={item.is_public ? (t?.publicClickPrivate || 'Public - Click to make private') : (t?.privateClickPublic || 'Private - Click to make public')}
               >
                 {item.is_public ? (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -320,12 +399,12 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                if (confirm(`Are you sure you want to delete this ${item.type === 'folder' ? 'folder' : 'document'}?`)) {
+                if (confirm(t?.confirmDelete || `Are you sure you want to delete this ${item.type === 'folder' ? 'folder' : 'document'}?`)) {
                   onDelete(item.id)
                 }
               }}
               className="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:bg-red-50 rounded-full transition-all"
-              title="Delete"
+              title={t?.delete || 'Delete'}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -347,8 +426,8 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
   if (!documents || documents.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
-        <p>No documents yet</p>
-        <p className="text-sm mt-2">Create a new document to get started</p>
+        <p>{t?.noDocuments || 'No documents yet'}</p>
+        <p className="text-sm mt-2">{t?.createFirst || 'Create a new document to get started'}</p>
       </div>
     )
   }
@@ -383,35 +462,35 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
               onClick={handleDeleteSelected}
                 className="px-2 py-1 text-xs bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
               >
-                Delete ({selectedItems.size})
+                {t?.delete || 'Delete'} ({selectedItems.size})
               </button>
               {onTogglePublic && (
                 <>
                   <button
                     onClick={() => handleSetVisibility(true)}
                     className="px-2 py-1 text-xs bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-                    title="Make selected documents public"
+                    title={t?.makePublic || 'Make selected documents public'}
                   >
-                    Public
+                    {t?.publicLabel || 'Public'}
                   </button>
                   <button
                     onClick={() => handleSetVisibility(false)}
                     className="px-2 py-1 text-xs bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
-                    title="Make selected documents private"
+                    title={t?.makePrivate || 'Make selected documents private'}
                   >
-                    Private
+                    {t?.privateLabel || 'Private'}
             </button>
                 </>
               )}
             </>
           )}
-          <span className="text-xs md:text-sm text-gray-600">View:</span>
+          <span className="text-xs md:text-sm text-gray-600">{t?.view || 'View'}:</span>
           <button
             onClick={() => setViewMode('compact')}
             className={`p-2.5 md:p-2 rounded transition-colors ${
               viewMode === 'compact' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
             }`}
-            title="Compact grid view"
+            title={t?.gridView || 'Compact grid view'}
           >
             <Grid className="w-5 h-5 md:w-4 md:h-4" />
           </button>
@@ -420,7 +499,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
             className={`p-2.5 md:p-2 rounded transition-colors ${
               viewMode === 'list-no-icons' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
             }`}
-            title="List view"
+            title={t?.listView || 'List view'}
           >
             <List className="w-5 h-5 md:w-4 md:h-4" />
           </button>
@@ -465,7 +544,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                   onClick={() => handleSort('name')}
                   className="col-span-5 md:col-span-5 flex items-center gap-1 md:gap-2 text-left hover:text-gray-900 transition-colors"
                 >
-                  <span className="truncate">Name</span>
+                  <span className="truncate">{t?.name || 'Name'}</span>
                   {sortBy === 'name' ? (
                     sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" /> : <ArrowDown className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
                   ) : (
@@ -476,7 +555,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                   onClick={() => handleSort('type')}
                   className="col-span-1 hidden md:flex items-center gap-1 md:gap-2 text-left hover:text-gray-900 transition-colors"
                 >
-                  <span className="truncate">Type</span>
+                  <span className="truncate">{t?.type || 'Type'}</span>
                   {sortBy === 'type' ? (
                     sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" /> : <ArrowDown className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
                   ) : (
@@ -487,7 +566,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                   onClick={() => handleSort('date')}
                   className="col-span-3 md:col-span-2 flex items-center gap-1 md:gap-2 text-left hover:text-gray-900 transition-colors"
                 >
-                  <span className="truncate">Date</span>
+                  <span className="truncate">{t?.date || 'Date'}</span>
                   {sortBy === 'date' ? (
                     sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" /> : <ArrowDown className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
                   ) : (
@@ -498,7 +577,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                   onClick={() => handleSort('visibility')}
                   className="col-span-2 md:col-span-2 flex items-center gap-1 text-left hover:text-gray-900 transition-colors"
                 >
-                  <span className="truncate hidden md:inline">Visibility</span>
+                  <span className="truncate hidden md:inline">{t?.visibility || 'Visibility'}</span>
                   <svg className="w-4 h-4 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -537,20 +616,27 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                     router.push(`/drive/folder/${contextMenu.item.id}`)
                     setContextMenu(null)
                   }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
                 >
-                  Open
+                  <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  {t?.open || 'Open'}
                 </button>
+                <div className="border-t border-gray-100 my-1" />
                 <button
                   onClick={() => {
-                    if (confirm('Are you sure you want to delete this folder?')) {
+                    if (confirm(t?.deleteConfirm || 'Delete this folder?')) {
                       onDelete(contextMenu.item.id)
                     }
                     setContextMenu(null)
                   }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600"
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600 flex items-center gap-2"
                 >
-                  Delete
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  {t?.delete || 'Delete'}
                 </button>
               </>
             ) : (
@@ -560,20 +646,79 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                     router.push(`/doc/${contextMenu.item.id}`)
                     setContextMenu(null)
                   }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
                 >
-                  Open
+                  <FileText className="w-4 h-4 text-gray-500" />
+                  {t?.open || 'Open'}
                 </button>
+                {contextMenu.item.is_public && (
+                  <button
+                    onClick={() => {
+                      window.open(`/public/doc/${contextMenu.item.id}`, '_blank')
+                      setContextMenu(null)
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    {t?.viewPublic || 'View public'}
+                  </button>
+                )}
+                <div className="border-t border-gray-100 my-1" />
+                {/* Stats section */}
+                <div className="px-4 py-2 text-xs text-gray-500 space-y-1">
+                  {(() => {
+                    const stats = getDocumentStats(contextMenu.item)
+                    if (!stats) return null
+                    return (
+                      <>
+                        {stats.words > 0 && (
+                          <div className="flex items-center gap-2">
+                            <Type className="w-3 h-3" />
+                            <span>{stats.words} {stats.words > 1 ? (t?.words || 'words') : (t?.word || 'word')}</span>
+                          </div>
+                        )}
+                        {stats.characters > 0 && (
+                          <div className="flex items-center gap-2">
+                            <span className="w-3 h-3 flex items-center justify-center text-[10px] font-mono">#</span>
+                            <span>{stats.characters.toLocaleString()} {stats.characters > 1 ? (t?.characters || 'characters') : (t?.character || 'character')}</span>
+                          </div>
+                        )}
+                        {stats.images > 0 && (
+                          <div className="flex items-center gap-2">
+                            <Image className="w-3 h-3" />
+                            <span>{stats.images} {stats.images > 1 ? (t?.images || 'images') : (t?.image || 'image')}</span>
+                          </div>
+                        )}
+                        {stats.drawings > 0 && (
+                          <div className="flex items-center gap-2">
+                            <Pencil className="w-3 h-3" />
+                            <span>{stats.drawings} {stats.drawings > 1 ? (t?.drawings || 'drawings') : (t?.drawing || 'drawing')}</span>
+                          </div>
+                        )}
+                        {stats.words === 0 && stats.characters === 0 && stats.images === 0 && stats.drawings === 0 && (
+                          <div className="text-gray-400 italic">{t?.emptyDocument || 'Empty document'}</div>
+                        )}
+                      </>
+                    )
+                  })()}
+                </div>
+                <div className="border-t border-gray-100 my-1" />
                 <button
                   onClick={() => {
-                    if (confirm('Are you sure you want to delete this document?')) {
+                    if (confirm(t?.deleteConfirm || 'Delete this document?')) {
                       onDelete(contextMenu.item.id)
                     }
                     setContextMenu(null)
                   }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600"
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600 flex items-center gap-2"
                 >
-                  Delete
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  {t?.delete || 'Delete'}
                 </button>
               </>
             )}

@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import NextLink from 'next/link'
 import SEOKeywords from '@/components/SEOKeywords'
 import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
+import ContextMenu from '@/components/editor/ContextMenu'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -37,9 +39,11 @@ const EXPIRY_HOURS = 48
 export default function Home() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { t } = useLanguage()
   const [saving, setSaving] = useState(false)
   const [showWatermark, setShowWatermark] = useState(true)
   const [hasEverHadContent, setHasEverHadContent] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -257,6 +261,11 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [editor])
 
+  // Set mounted state to prevent flushSync errors during hydration
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   // Clear localStorage when browser is closed (using beforeunload)
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -409,7 +418,7 @@ export default function Home() {
             })()}
             className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors fixed bottom-4 right-4 z-50 shadow-lg md:static md:shadow-none"
           >
-            {saving ? 'Saving...' : session ? 'Save Document' : 'Save'}
+            {saving ? (t?.saving || 'Saving...') : session ? (t?.saveDocument || 'Save Document') : (t?.save || 'Save')}
           </button>
         </div>
 
@@ -432,12 +441,13 @@ export default function Home() {
                   />
                 </div>
               )}
-              <EditorContent editor={editor} />
+              {mounted && <EditorContent editor={editor} />}
+              <ContextMenu editor={editor} />
             </div>
             <p className="mt-4 text-xs text-gray-500 text-center">
               {session 
-                ? 'Your document is saved locally. Click "Save Document" to save it permanently.'
-                : 'Click "Save" to sign in and save your document permanently.'}
+                ? (t?.savedLocally || 'Your document is saved locally. Click "Save Document" to save it permanently.')
+                : (t?.clickToSave || 'Click "Save" to sign in and save your document permanently.')}
             </p>
           </>
         )}

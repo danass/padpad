@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -10,7 +11,10 @@ export default function TipTapEditor({
   editable = true,
   placeholder = 'Start typing...'
 }) {
+  const [mounted, setMounted] = useState(false)
+  
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Placeholder.configure({
@@ -26,13 +30,17 @@ export default function TipTapEditor({
     },
   })
 
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   if (!editor) {
     return null
   }
 
   return (
     <div className="border rounded-lg min-h-[300px] focus-within:ring-2 focus-within:ring-blue-500">
-      <EditorContent editor={editor} />
+      {mounted && <EditorContent editor={editor} />}
     </div>
   )
 }

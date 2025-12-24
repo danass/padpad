@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function DragHandle({ editor, onAddClick, onOptionsClick }) {
+  const { t } = useLanguage()
   const [showButtons, setShowButtons] = useState(false)
   const [showTooltip, setShowTooltip] = useState(false)
   const handleRef = useRef(null)
@@ -58,8 +60,8 @@ export default function DragHandle({ editor, onAddClick, onOptionsClick }) {
             pointerEvents: 'none',
           }}
         >
-          <div>Click for options</div>
-          <div>Hold for drag</div>
+          <div>{t?.clickForOptions || 'Click for options'}</div>
+          <div>{t?.holdForDrag || 'Hold for drag'}</div>
         </div>
       )}
       
@@ -70,7 +72,7 @@ export default function DragHandle({ editor, onAddClick, onOptionsClick }) {
           if (onAddClick) onAddClick()
         }}
         className="drag-handle-button drag-handle-add"
-        title="Add content"
+        title={t?.addContent || 'Add content'}
         style={{
           width: '20px',
           height: '20px',
@@ -95,7 +97,7 @@ export default function DragHandle({ editor, onAddClick, onOptionsClick }) {
           if (onOptionsClick) onOptionsClick()
         }}
         className="drag-handle-button drag-handle-options"
-        title="Options"
+        title={t?.options || 'Options'}
         style={{
           width: '20px',
           height: '20px',
@@ -115,6 +117,7 @@ export default function DragHandle({ editor, onAddClick, onOptionsClick }) {
     </div>
   )
 }
+
 
 
 

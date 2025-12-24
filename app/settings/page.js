@@ -5,8 +5,10 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useToast } from '@/components/ui/toast'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 function LegacyUrlDisplay({ username, slug, birthDate }) {
+  const { t } = useLanguage()
   const identifier = username || slug
   if (!identifier) return null
   
@@ -23,7 +25,7 @@ function LegacyUrlDisplay({ username, slug, birthDate }) {
   
   return (
     <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-      <p className="text-xs font-medium text-gray-700 mb-2">Your Legacy URL:</p>
+      <p className="text-xs font-medium text-gray-700 mb-2">{t?.yourLegacyUrl || 'Your Legacy URL'}:</p>
       <div className="flex items-center gap-2">
         <code className="flex-1 text-xs sm:text-sm font-mono bg-white px-3 py-2 rounded border border-gray-300 text-gray-900 break-all">
           {publicUrl}
@@ -44,7 +46,7 @@ function LegacyUrlDisplay({ username, slug, birthDate }) {
             }
           }}
           className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 flex items-center justify-center transition-all flex-shrink-0"
-          title="Copy URL"
+          title={t?.copyUrl || 'Copy URL'}
         >
           <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -53,7 +55,7 @@ function LegacyUrlDisplay({ username, slug, birthDate }) {
       </div>
       {age99Date && (
         <p className="text-xs text-gray-500 mt-2">
-          This page will become accessible on {age99Date}.
+          {(t?.accessibleOn || 'This page will become accessible on {date}.').replace('{date}', age99Date)}
         </p>
       )}
     </div>
@@ -64,6 +66,7 @@ export default function SettingsPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const { showToast } = useToast()
+  const { t } = useLanguage()
   const [birthDate, setBirthDate] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
   const [testamentUsername, setTestamentUsername] = useState('')
@@ -125,17 +128,17 @@ export default function SettingsPage() {
       })
       
       if (response.ok) {
-        showToast('Avatar saved successfully', 'success')
+        showToast(t?.avatarSaved || 'Avatar saved successfully', 'success')
         // Reload page to update avatar in header
         setTimeout(() => window.location.reload(), 500)
       } else {
         const data = await response.json()
-        showToast(data.error || 'Failed to save avatar', 'error')
+        showToast(data.error || t?.failedToSaveAvatar || 'Failed to save avatar', 'error')
         setSavingAvatar(false)
       }
     } catch (error) {
       console.error('Error saving avatar:', error)
-      showToast('Failed to save avatar', 'error')
+      showToast(t?.failedToSaveAvatar || 'Failed to save avatar', 'error')
       setSavingAvatar(false)
     }
   }
@@ -151,15 +154,15 @@ export default function SettingsPage() {
       })
       
       if (response.ok) {
-        showToast('Username saved successfully', 'success')
+        showToast(t?.usernameSaved || 'Username saved successfully', 'success')
         loadData()
       } else {
         const data = await response.json()
-        showToast(data.error || 'Failed to save username', 'error')
+        showToast(data.error || t?.failedToSaveUsername || 'Failed to save username', 'error')
       }
     } catch (error) {
       console.error('Error saving username:', error)
-      showToast('Failed to save username', 'error')
+      showToast(t?.failedToSaveUsername || 'Failed to save username', 'error')
     } finally {
       setSavingUsername(false)
     }
@@ -167,7 +170,7 @@ export default function SettingsPage() {
   
   const handleSave = async () => {
     if (!birthDate) {
-      showToast('Please enter your birth date', 'error')
+      showToast(t?.pleaseEnterBirthDate || 'Please enter your birth date', 'error')
       return
     }
     
@@ -181,20 +184,20 @@ export default function SettingsPage() {
       })
       
       if (response.ok) {
-        showToast('Birth date saved successfully', 'success')
+        showToast(t?.birthDateSaved || 'Birth date saved successfully', 'success')
         
         // Calculate and show 99th birthday
         const birth = new Date(birthDate)
         const age99 = new Date(birth)
         age99.setFullYear(birth.getFullYear() + 99)
-        showToast(`Your documents will become public on ${age99.toLocaleDateString()} (your 99th birthday)`, 'success')
+        showToast((t?.docsPublicOn || 'Your documents will become public on {date} (your 99th birthday)').replace('{date}', age99.toLocaleDateString()), 'success')
       } else {
         const data = await response.json()
-        showToast(data.error || 'Failed to save birth date', 'error')
+        showToast(data.error || t?.failedToSaveBirthDate || 'Failed to save birth date', 'error')
       }
     } catch (error) {
       console.error('Error saving birth date:', error)
-      showToast('Failed to save birth date', 'error')
+      showToast(t?.failedToSaveBirthDate || 'Failed to save birth date', 'error')
     } finally {
       setSaving(false)
     }
@@ -212,13 +215,13 @@ export default function SettingsPage() {
       
       if (response.ok) {
         setBirthDate('')
-        showToast('Digital Legacy disabled - your documents will remain private', 'success')
+        showToast(t?.legacyDisabled || 'Digital Legacy disabled - your documents will remain private', 'success')
       } else {
-        showToast('Failed to remove birth date', 'error')
+        showToast(t?.failedToRemoveBirthDate || 'Failed to remove birth date', 'error')
       }
     } catch (error) {
       console.error('Error removing birth date:', error)
-      showToast('Failed to remove birth date', 'error')
+      showToast(t?.failedToRemoveBirthDate || 'Failed to remove birth date', 'error')
     } finally {
       setSaving(false)
     }
@@ -236,12 +239,12 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-3xl mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
-          <p className="text-sm text-gray-500">Manage your account settings</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t?.settings || 'Settings'}</h1>
+          <p className="text-sm text-gray-500">{t?.accountSettings || 'Manage your account settings'}</p>
         </div>
         
         <div className="bg-white border border-gray-200 rounded-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Profile</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">{t?.profilePicture || 'Profile'}</h2>
           
           <div className="space-y-4 mb-8">
             <div>
@@ -280,7 +283,7 @@ export default function SettingsPage() {
                       <button
                         onClick={() => setAvatarUrl(session.user.image)}
                         className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all hover:scale-110 ${avatarUrl === session.user.image ? 'border-black ring-2 ring-black ring-offset-2' : 'border-gray-300 hover:border-gray-400'}`}
-                        title="Use Google avatar"
+                        title={t?.useGoogleAvatar || 'Use Google avatar'}
                       >
                         <img src={session.user.image} alt="Google" className="w-full h-full object-cover" />
                       </button>
@@ -293,7 +296,7 @@ export default function SettingsPage() {
                         setAvatarUrl(`https://api.dicebear.com/9.x/croodles/svg?seed=${randomSeed}`)
                       }}
                       className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-all"
-                      title="Generate random avatar"
+                      title={t?.generateRandomAvatar || 'Generate random avatar'}
                     >
                       <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

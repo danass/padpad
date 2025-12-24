@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function SearchBar({ onResults }) {
+  const { t } = useLanguage()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -53,7 +55,7 @@ export default function SearchBar({ onResults }) {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search documents..."
+          placeholder={t?.searchDocuments || 'Search documents...'}
           className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-black focus:border-black text-sm"
         />
       </div>
@@ -67,14 +69,14 @@ export default function SearchBar({ onResults }) {
         <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-md shadow-lg max-h-96 overflow-y-auto">
           {results.documents && results.documents.length > 0 && (
             <div className="p-2">
-              <div className="text-xs font-semibold text-gray-500 px-2 py-1">Documents</div>
+              <div className="text-xs font-semibold text-gray-500 px-2 py-1">{t?.documents || 'Documents'}</div>
               {results.documents.map((doc) => (
                 <Link
                   key={doc.id}
                   href={`/doc/${doc.id}`}
                   className="block px-2 py-2 hover:bg-gray-50 rounded transition-colors"
                 >
-                  <div className="font-medium text-gray-900">{doc.title || 'Untitled'}</div>
+                  <div className="font-medium text-gray-900">{doc.title || (t?.untitled || 'Untitled')}</div>
                   {doc.content_text && (
                     <div className="text-sm text-gray-500 truncate">
                       {doc.content_text.substring(0, 100)}...
@@ -87,7 +89,7 @@ export default function SearchBar({ onResults }) {
           
           {results.folders && results.folders.length > 0 && (
             <div className="p-2 border-t border-gray-200">
-              <div className="text-xs font-semibold text-gray-500 px-2 py-1">Folders</div>
+              <div className="text-xs font-semibold text-gray-500 px-2 py-1">{t?.folders || 'Folders'}</div>
               {results.folders.map((folder) => (
                 <Link
                   key={folder.id}
@@ -103,7 +105,7 @@ export default function SearchBar({ onResults }) {
           {(!results.documents || results.documents.length === 0) &&
            (!results.folders || results.folders.length === 0) && (
             <div className="p-4 text-center text-gray-500">
-              No results found
+              {t?.noResultsFound || 'No results found'}
             </div>
           )}
         </div>
@@ -111,6 +113,7 @@ export default function SearchBar({ onResults }) {
     </div>
   )
 }
+
 
 
 

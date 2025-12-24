@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function FolderTree({ folders, currentFolderId = null }) {
+  const { t } = useLanguage()
   const [expanded, setExpanded] = useState({})
   
   const toggleExpanded = (folderId) => {
@@ -61,13 +63,14 @@ export default function FolderTree({ folders, currentFolderId = null }) {
   
   return (
     <div className="border border-gray-200 rounded-md p-4 bg-white">
-      <h3 className="font-semibold mb-3 text-gray-900">Folders</h3>
+      <h3 className="font-semibold mb-3 text-gray-900">{t?.folders || 'Folders'}</h3>
       <div className="space-y-1">
         {rootFolders.map(folder => renderFolder(folder))}
       </div>
     </div>
   )
 }
+
 
 
 

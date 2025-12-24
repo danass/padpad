@@ -18,8 +18,10 @@ import {
   Superscript
 } from 'lucide-react'
 import ColorPicker from './ColorPicker'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function BubbleMenu({ editor }) {
+  const { t } = useLanguage()
   if (!editor) {
     return null
   }
@@ -128,7 +130,7 @@ export default function BubbleMenu({ editor }) {
                 ? 'bg-gray-100 text-gray-900'
                 : 'hover:bg-gray-100 text-gray-700'
             } active:scale-95`}
-            title="Bold (Ctrl+B)"
+            title={`${t?.bold || 'Bold'} (Ctrl+B)`}
           >
             <Bold className="w-4 h-4" />
           </button>
@@ -140,7 +142,7 @@ export default function BubbleMenu({ editor }) {
                 ? 'bg-gray-100 text-gray-900'
                 : 'hover:bg-gray-100 text-gray-700'
             } active:scale-95`}
-            title="Italic (Ctrl+I)"
+            title={`${t?.italic || 'Italic'} (Ctrl+I)`}
           >
             <Italic className="w-4 h-4" />
           </button>
@@ -152,7 +154,7 @@ export default function BubbleMenu({ editor }) {
                 ? 'bg-gray-100 text-gray-900'
                 : 'hover:bg-gray-100 text-gray-700'
             } active:scale-95`}
-            title="Underline (Ctrl+U)"
+            title={`${t?.underline || 'Underline'} (Ctrl+U)`}
           >
             <Underline className="w-4 h-4" />
           </button>
@@ -164,7 +166,7 @@ export default function BubbleMenu({ editor }) {
                 ? 'bg-gray-100 text-gray-900'
                 : 'hover:bg-gray-100 text-gray-700'
             } active:scale-95`}
-            title="Strikethrough"
+            title={t?.strikethrough || 'Strikethrough'}
           >
             <Strikethrough className="w-4 h-4" />
           </button>
@@ -176,7 +178,7 @@ export default function BubbleMenu({ editor }) {
                 ? 'bg-gray-100 text-gray-900'
                 : 'hover:bg-gray-100 text-gray-700'
             } active:scale-95`}
-            title="Inline Code"
+            title={t?.inlineCode || 'Inline Code'}
           >
             <Code className="w-4 h-4" />
           </button>
@@ -201,7 +203,7 @@ export default function BubbleMenu({ editor }) {
               ? 'bg-gray-100 text-gray-900'
               : 'hover:bg-gray-100 text-gray-700'
           } active:scale-95`}
-          title="Link (Ctrl+K)"
+            title={`${t?.link || 'Link'} (Ctrl+K)`}
         >
           <Link className="w-4 h-4" />
         </button>
@@ -232,7 +234,7 @@ export default function BubbleMenu({ editor }) {
                 ? 'bg-gray-100'
                 : 'hover:bg-gray-100'
             } text-gray-700 active:scale-95`}
-            title="More options"
+            title={t?.other || 'More options'}
           >
             <MoreHorizontal className="w-4 h-4" />
           </button>
@@ -256,7 +258,7 @@ export default function BubbleMenu({ editor }) {
                   }`}
                 >
                   <Subscript className="w-4 h-4" />
-                  <span>Subscript</span>
+                  <span>{t?.subscript || 'Subscript'}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -270,7 +272,7 @@ export default function BubbleMenu({ editor }) {
                   }`}
                 >
                   <Superscript className="w-4 h-4" />
-                  <span>Superscript</span>
+                  <span>{t?.superscript || 'Superscript'}</span>
                 </button>
                 <div className="border-t border-gray-200 my-1"></div>
                 <button
@@ -285,7 +287,7 @@ export default function BubbleMenu({ editor }) {
                   }`}
                 >
                   <AlignLeft className="w-4 h-4" />
-                  <span>Align Left</span>
+                  <span>{t?.alignLeft || 'Align Left'}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -299,7 +301,7 @@ export default function BubbleMenu({ editor }) {
                   }`}
                 >
                   <AlignCenter className="w-4 h-4" />
-                  <span>Align Center</span>
+                  <span>{t?.alignCenter || 'Align Center'}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -313,7 +315,7 @@ export default function BubbleMenu({ editor }) {
                   }`}
                 >
                   <AlignRight className="w-4 h-4" />
-                  <span>Align Right</span>
+                  <span>{t?.alignRight || 'Align Right'}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -327,7 +329,7 @@ export default function BubbleMenu({ editor }) {
                   }`}
                 >
                   <AlignJustify className="w-4 h-4" />
-                  <span>Justify</span>
+                  <span>{t?.alignJustify || 'Justify'}</span>
                 </button>
               </div>
             </>

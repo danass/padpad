@@ -45,6 +45,7 @@ import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-ex
 import { FontSize } from '@/lib/editor/font-size-extension'
 import { LineHeight } from '@/lib/editor/line-height-extension'
 import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
+import ContextMenu from '@/components/editor/ContextMenu'
 import HistoryPanel from '@/components/editor/HistoryPanel'
 import LinkEditor from '@/components/editor/LinkEditor'
 import { useEditorStore } from '@/store/editorStore'
@@ -68,6 +69,7 @@ export default function DocumentPage() {
   const [birthDate, setBirthDate] = useState(null)
   const [showAutoPublicModal, setShowAutoPublicModal] = useState(false)
   const [linkEditorPosition, setLinkEditorPosition] = useState(null)
+  const [mounted, setMounted] = useState(false)
   const autosaveTimeoutRef = useRef(null)
   const snapshotIntervalRef = useRef(null)
   const lastSnapshotContentRef = useRef(null)
@@ -391,10 +393,18 @@ export default function DocumentPage() {
     },
     onUpdate: ({ editor }) => {
       const content = editor.getJSON()
-      setCurrentContent(content)
-      handleAutosave(content)
+      // Use queueMicrotask to avoid flushSync error during render
+      queueMicrotask(() => {
+        setCurrentContent(content)
+        handleAutosave(content)
+      })
     },
   })
+
+  // Set mounted state to prevent flushSync errors during hydration
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Listen for showLinkEditor event from toolbar
   useEffect(() => {
@@ -420,6 +430,43 @@ export default function DocumentPage() {
         if (editor) {
           const content = editor.getJSON()
           handleAutosave(content)
+        }
+      }
+      
+      // Cmd/Ctrl + K to insert link
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        if (editor) {
+          const { selection } = editor.state
+          // Check if there's a selection
+          if (!selection.empty) {
+            // Get position for link editor
+            const view = editor.view
+            const coords = view.coordsAtPos(selection.from)
+            const editorContainer = view.dom.closest('.prose') || view.dom.parentElement
+            const containerRect = editorContainer?.getBoundingClientRect()
+            if (containerRect) {
+              setLinkEditorPosition({
+                top: coords.bottom - containerRect.top + 8,
+                left: coords.left - containerRect.left,
+              })
+            } else {
+              setLinkEditorPosition({
+                top: coords.bottom + 8,
+                left: coords.left,
+              })
+            }
+          } else {
+            // No selection - prompt for URL directly
+            const url = window.prompt('Link URL:')
+            if (url) {
+              let formattedUrl = url.trim()
+              if (formattedUrl && !/^https?:\/\//i.test(formattedUrl)) {
+                formattedUrl = `https://${formattedUrl}`
+              }
+              editor.chain().focus().setLink({ href: formattedUrl }).run()
+            }
+          }
         }
       }
       
@@ -1035,10 +1082,15 @@ export default function DocumentPage() {
           }
         }
         
-        editor.commands.setContent(parsedContent)
+        // Use queueMicrotask to avoid flushSync error
+        queueMicrotask(() => {
+          requestAnimationFrame(() => {
+            editor.commands.setContent(parsedContent)
+            showToast('Document restored', 'success')
+          })
+        })
         // Don't close the history panel after restore - let user close it manually
         // setShowHistory(false)
-        showToast('Document restored', 'success')
       } catch (error) {
         console.error('Error restoring content:', error)
         showToast('Failed to restore: ' + error.message, 'error')
@@ -1321,7 +1373,8 @@ export default function DocumentPage() {
               <GoogleDocsToolbar editor={editor} />
             </div>
             <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8 relative">
-              <EditorContent editor={editor} />
+              {mounted && <EditorContent editor={editor} />}
+              <ContextMenu editor={editor} />
               {linkEditorPosition && (
                 <LinkEditor
                   editor={editor}

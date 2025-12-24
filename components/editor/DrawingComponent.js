@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { NodeViewWrapper } from '@tiptap/react'
 import { Undo2, Download, Move, Trash2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function DrawingComponent({ node, updateAttributes, deleteNode, editor, getPos }) {
+  const { t } = useLanguage()
   const canvasRef = useRef(null)
   const containerRef = useRef(null)
   const [isDrawing, setIsDrawing] = useState(false)
@@ -664,21 +666,21 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                 <button
                   onClick={(e) => { e.stopPropagation(); handleAlign('left') }}
                   className={`p-2 rounded transition-colors ${align === 'left' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-                  title="Align left"
+                  title={t?.alignLeft || 'Align left'}
                 >
                   <AlignLeft className="w-4 h-4 text-gray-600" />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleAlign('center') }}
                   className={`p-2 rounded transition-colors ${align === 'center' || !align ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-                  title="Align center"
+                  title={t?.alignCenter || 'Align center'}
                 >
                   <AlignCenter className="w-4 h-4 text-gray-600" />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleAlign('right') }}
                   className={`p-2 rounded transition-colors ${align === 'right' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-                  title="Align right"
+                  title={t?.alignRight || 'Align right'}
                 >
                   <AlignRight className="w-4 h-4 text-gray-600" />
                 </button>
@@ -691,7 +693,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                 handleUndo()
               }}
               className="p-2 hover:bg-gray-100 rounded transition-colors"
-              title="Undo last stroke"
+              title={t?.undoLastStroke || 'Undo last stroke'}
             >
               <Undo2 className="w-4 h-4 text-gray-600" />
             </button>
@@ -701,7 +703,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                 handleExportPNG()
               }}
               className="p-2 hover:bg-gray-100 rounded transition-colors"
-              title="Export as PNG"
+              title={t?.exportAsPng || 'Export as PNG'}
             >
               <Download className="w-4 h-4 text-gray-600" />
             </button>
@@ -712,7 +714,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                   disableAbsolutePosition()
                 }}
                 className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title="Remettre dans le flux du texte"
+                title={t?.returnToFlow || 'Return to text flow'}
               >
                 <AlignLeft className="w-4 h-4 text-gray-600" />
               </button>
@@ -723,7 +725,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                   enableAbsolutePosition()
                 }}
                 className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title="Rendre absolu"
+                title={t?.makeAbsolute || 'Make absolute'}
               >
                 <Move className="w-4 h-4 text-gray-600" />
               </button>
@@ -734,7 +736,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                 deleteNode()
               }}
               className="p-2 hover:bg-gray-100 rounded transition-colors"
-              title="Delete"
+              title={t?.delete || 'Delete'}
             >
               <Trash2 className="w-4 h-4 text-red-600" />
             </button>

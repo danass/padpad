@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { ArrowUp, ArrowDown, GripVertical, Trash2, Copy } from 'lucide-react'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function BlockMenu({ editor, blockPos, blockType, onClose }) {
+  const { t } = useLanguage()
   const [showMenu, setShowMenu] = useState(false)
   const menuRef = useRef(null)
 
@@ -123,14 +125,14 @@ export default function BlockMenu({ editor, blockPos, blockType, onClose }) {
       <button
         onClick={handleMoveUp}
         className="p-1.5 rounded hover:bg-gray-100 text-gray-700 transition-colors"
-        title="Move up"
+        title={t?.moveUp || 'Move up'}
       >
         <ArrowUp className="w-4 h-4" />
       </button>
       <button
         onClick={handleMoveDown}
         className="p-1.5 rounded hover:bg-gray-100 text-gray-700 transition-colors"
-        title="Move down"
+        title={t?.moveDown || 'Move down'}
       >
         <ArrowDown className="w-4 h-4" />
       </button>
@@ -138,14 +140,14 @@ export default function BlockMenu({ editor, blockPos, blockType, onClose }) {
       <button
         onClick={handleDuplicate}
         className="p-1.5 rounded hover:bg-gray-100 text-gray-700 transition-colors"
-        title="Duplicate"
+        title={t?.duplicate || 'Duplicate'}
       >
         <Copy className="w-4 h-4" />
       </button>
       <button
         onClick={handleDelete}
         className="p-1.5 rounded hover:bg-gray-100 text-red-600 transition-colors"
-        title="Delete"
+        title={t?.delete || 'Delete'}
       >
         <Trash2 className="w-4 h-4" />
       </button>

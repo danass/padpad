@@ -97,6 +97,23 @@ export async function GET(request, { params }) {
       }
     }
     
+    // Get user's testament_username for archive link
+    let archiveId = null
+    let authorName = null
+    if (document.user_id) {
+      const userResult = await sql.query(
+        'SELECT testament_username FROM users WHERE id = $1',
+        [document.user_id]
+      )
+      if (userResult.rows.length > 0 && userResult.rows[0].testament_username) {
+        archiveId = userResult.rows[0].testament_username
+        authorName = userResult.rows[0].testament_username
+      } else {
+        // Use a short hash of user_id (first 8 chars) instead of full UUID
+        archiveId = document.user_id.substring(0, 8)
+      }
+    }
+    
     return Response.json({
       document: {
         id: document.id,
@@ -104,6 +121,8 @@ export async function GET(request, { params }) {
         is_full_width: document.is_full_width || false,
         created_at: document.created_at,
         updated_at: document.updated_at,
+        archive_id: archiveId, // Use testament_username or short hash
+        author_name: authorName, // Display name if available
       },
       content,
       navigation: {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 const PRESET_COLORS = [
   '#000000', '#434343', '#666666', '#999999', '#B7B7B7', '#CCCCCC', '#D9D9D9', '#EFEFEF', '#F2F2F2', '#FFFFFF',
@@ -19,6 +20,7 @@ export default function ColorPicker({
   type = 'text', // 'text' or 'background'
   position = { top: 0, left: 0 }
 }) {
+  const { t } = useLanguage()
   const [showPicker, setShowPicker] = useState(false)
   const [customColor, setCustomColor] = useState(currentColor || (type === 'text' ? '#000000' : '#fef08a'))
   const pickerRef = useRef(null)
@@ -46,7 +48,7 @@ export default function ColorPicker({
       <button
         onClick={() => setShowPicker(!showPicker)}
         className="p-1.5 rounded-md transition-all hover:bg-gray-100 text-gray-700 flex items-center gap-1 active:scale-95"
-        title={type === 'text' ? 'Text Color' : 'Background Color'}
+        title={type === 'text' ? (t?.textColor || 'Text color') : (t?.backgroundColor || 'Background color')}
       >
         <span 
           className="w-5 h-5 rounded border-2 border-gray-300 shadow-sm"
@@ -72,7 +74,7 @@ export default function ColorPicker({
           {/* Preset Colors Grid */}
           <div className="mb-3">
             <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
-              Preset Colors
+              {t?.presetColors || 'Preset Colors'}
             </div>
             <div className="grid grid-cols-10 gap-1">
               {PRESET_COLORS.map((color) => (
@@ -94,7 +96,7 @@ export default function ColorPicker({
           {/* Custom Color Input */}
           <div className="border-t border-gray-200 pt-3">
             <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
-              Custom Color
+              {t?.customColor || 'Custom Color'}
             </div>
             <div className="flex items-center gap-2">
               <input

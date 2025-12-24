@@ -6,8 +6,20 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect, useRef } from 'react'
 import Tabs from './Tabs'
+import { useLanguage } from '@/app/i18n/LanguageContext'
+
+// Cache for admin status and avatar to reduce DB calls
+const headerCache = {
+  adminStatus: null,
+  adminCheckedAt: 0,
+  avatar: null,
+  avatarLoadedAt: 0,
+  userEmail: null,
+  CACHE_DURATION: 5 * 60 * 1000, // 5 minutes cache
+}
 
 export default function Header() {
+  const { t } = useLanguage()
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
@@ -15,6 +27,7 @@ export default function Header() {
   const [customAvatar, setCustomAvatar] = useState(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const menuRef = useRef(null)
+  const hasLoadedRef = useRef(false)
   
   const isDrive = pathname?.startsWith('/drive')
   const isDoc = pathname?.startsWith('/doc')
@@ -22,16 +35,47 @@ export default function Header() {
   
   useEffect(() => {
     if (session?.user?.email) {
-      checkAdminStatus()
-      loadAvatar()
+      // Reset cache if user changed
+      if (headerCache.userEmail !== session.user.email) {
+        headerCache.adminStatus = null
+        headerCache.adminCheckedAt = 0
+        headerCache.avatar = null
+        headerCache.avatarLoadedAt = 0
+        headerCache.userEmail = session.user.email
+        hasLoadedRef.current = false
+      }
+      
+      // Only load once per session mount
+      if (!hasLoadedRef.current) {
+        hasLoadedRef.current = true
+        checkAdminStatus()
+        loadAvatar()
+      } else {
+        // Use cached values if available
+        if (headerCache.adminStatus !== null) {
+          setIsAdmin(headerCache.adminStatus)
+        }
+        if (headerCache.avatar !== null) {
+          setCustomAvatar(headerCache.avatar)
+        }
+      }
     }
-  }, [session])
+  }, [session?.user?.email])
   
   const loadAvatar = async () => {
+    const now = Date.now()
+    // Use cache if still valid
+    if (headerCache.avatar !== null && (now - headerCache.avatarLoadedAt) < headerCache.CACHE_DURATION) {
+      setCustomAvatar(headerCache.avatar)
+      return
+    }
+    
     try {
       const response = await fetch('/api/users/avatar')
       if (response.ok) {
         const data = await response.json()
+        headerCache.avatar = data.avatar_url
+        headerCache.avatarLoadedAt = now
         setCustomAvatar(data.avatar_url)
       }
     } catch (error) {
@@ -40,14 +84,25 @@ export default function Header() {
   }
   
   const checkAdminStatus = async () => {
+    const now = Date.now()
+    // Use cache if still valid
+    if (headerCache.adminStatus !== null && (now - headerCache.adminCheckedAt) < headerCache.CACHE_DURATION) {
+      setIsAdmin(headerCache.adminStatus)
+      return
+    }
+    
     try {
       const response = await fetch('/api/admin/check')
       if (response.ok) {
         const data = await response.json()
+        headerCache.adminStatus = data.isAdmin
+        headerCache.adminCheckedAt = now
         setIsAdmin(data.isAdmin)
       }
     } catch (error) {
       // Silently fail - user is not admin
+      headerCache.adminStatus = false
+      headerCache.adminCheckedAt = now
       setIsAdmin(false)
     }
   }
@@ -88,7 +143,7 @@ export default function Header() {
               <Link
                 href="/"
                 className="p-2 text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-100 transition-colors"
-                title="New Document"
+                title={t?.newDocument || 'New Document'}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -99,7 +154,7 @@ export default function Header() {
               <Link
                 href="/drive"
                 className="p-2 text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-100 transition-colors"
-                title="Go to Drive"
+                title={t?.drive || 'Drive'}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -115,7 +170,7 @@ export default function Header() {
                 href="/auth/signin"
                 className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium transition-colors"
               >
-                Sign in
+                {t?.signIn || 'Sign in'}
               </Link>
             )}
             {session && (
@@ -162,7 +217,7 @@ export default function Header() {
                           onClick={() => setShowUserMenu(false)}
                           className="block px-4 py-2.5 md:py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                         >
-                          Settings
+                          {t?.settings || 'Settings'}
                         </Link>
                         {isAdmin && (
                           <Link
@@ -187,7 +242,7 @@ export default function Header() {
                           }}
                           className="block w-full text-left px-4 py-2.5 md:py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                         >
-                          Sign out
+                          {t?.signOut || 'Sign out'}
                         </button>
                       </div>
                     </div>
@@ -209,7 +264,7 @@ export default function Header() {
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
-              Drive
+              {t?.drive || 'Drive'}
             </Link>
             <Tabs />
           </nav>

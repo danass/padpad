@@ -6,10 +6,12 @@ import DocumentList from '@/components/drive/DocumentList'
 import FolderTree from '@/components/drive/FolderTree'
 import SearchBar from '@/components/drive/SearchBar'
 import { useToast } from '@/components/ui/toast'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function DrivePage() {
   const router = useRouter()
   const { showToast } = useToast()
+  const { t } = useLanguage()
   const [documents, setDocuments] = useState([])
   const [folders, setFolders] = useState([])
   const [loading, setLoading] = useState(true)
@@ -190,13 +192,13 @@ export default function DrivePage() {
         setDocuments(prev => prev.map(doc => 
           doc.id === id ? { ...doc, is_public: isPublic } : doc
         ))
-        showToast(isPublic ? 'Document is now public' : 'Document is now private', 'success')
+        showToast(isPublic ? (t?.nowPublic || 'Now public') : (t?.nowPrivate || 'Now private'), 'success')
       } else {
-        showToast('Failed to update document', 'error')
+        showToast(t?.failedToUpdate || 'Failed to update', 'error')
       }
     } catch (error) {
       console.error('Error toggling public:', error)
-      showToast('Failed to update document', 'error')
+      showToast(t?.failedToUpdate || 'Failed to update', 'error')
     }
   }, [showToast])
   
@@ -256,7 +258,7 @@ export default function DrivePage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8">
         <div className="mb-4 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1 md:mb-2">Drive</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1 md:mb-2">{t?.drive || 'Drive'}</h1>
           <p className="text-xs md:text-sm text-gray-500">Manage your documents and folders</p>
         </div>
         
@@ -279,14 +281,14 @@ export default function DrivePage() {
                 className="px-4 md:px-3 py-2.5 md:py-1.5 bg-gray-200 text-gray-900 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-sm font-medium transition-colors flex items-center gap-1.5 md:gap-1"
               >
                 <span className="text-base md:text-sm">+</span>
-                <span className="text-sm md:text-sm">{creatingFolder ? 'Creating...' : 'New Folder'}</span>
+                <span className="text-sm md:text-sm">{creatingFolder ? (t?.creatingFolder || 'Creating...') : (t?.newFolder || 'New Folder')}</span>
               </button>
               <button
                 onClick={createDocument}
                 disabled={creatingDoc}
                 className="px-4 md:px-3 py-2.5 md:py-1.5 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-sm font-medium transition-colors"
               >
-                {creatingDoc ? 'Creating...' : '+ New Document'}
+                {creatingDoc ? (t?.creatingFolder || 'Creating...') : `+ ${t?.newDocument || 'New Document'}`}
               </button>
             </div>
           </div>

@@ -27,6 +27,7 @@ import {
   Type,
 } from 'lucide-react'
 import Tooltip from '@/components/ui/Tooltip'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 const FONT_FAMILIES = [
   'Arial',
@@ -73,6 +74,7 @@ const HIGHLIGHT_COLORS = [
 ]
 
 export default function GoogleDocsToolbar({ editor }) {
+  const { t } = useLanguage()
   const [showFontFamily, setShowFontFamily] = useState(false)
   const [showFontSize, setShowFontSize] = useState(false)
   const [showLineHeight, setShowLineHeight] = useState(false)
@@ -720,7 +722,7 @@ export default function GoogleDocsToolbar({ editor }) {
             handleFontFamilyChange(FONT_FAMILIES[prevIndex])
           }}
           className="p-1.5 h-8 rounded-l border border-r-0 border-gray-300 hover:bg-gray-100 flex items-center justify-center"
-          title="Police précédente"
+          title={t?.prevFont || 'Previous font'}
         >
           <ChevronLeft className="w-3 h-3 text-gray-500" />
         </button>
@@ -845,7 +847,7 @@ export default function GoogleDocsToolbar({ editor }) {
             handleFontFamilyChange(FONT_FAMILIES[nextIndex])
           }}
           className="p-1.5 h-8 rounded-r border border-l-0 border-gray-300 hover:bg-gray-100 flex items-center justify-center"
-          title="Police suivante"
+          title={t?.nextFont || 'Next font'}
         >
           <ChevronRight className="w-3 h-3 text-gray-500" />
         </button>
@@ -964,7 +966,7 @@ export default function GoogleDocsToolbar({ editor }) {
 
       {/* Paint Mode Toggle */}
       <div className="relative">
-        <Tooltip label="Mode pinceau">
+        <Tooltip label={t?.brushMode || 'Brush mode'}>
           <button
             onClick={togglePaintMode}
             className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
@@ -1008,7 +1010,7 @@ export default function GoogleDocsToolbar({ editor }) {
       <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Formatting Buttons */}
-      <Tooltip label="Gras" shortcut={['⌘', 'B']}>
+      <Tooltip label={t?.bold || 'Bold'} shortcut={['⌘', 'B']}>
         <button
           onClick={() => {
             const newBold = !editor.isActive('bold')
@@ -1024,7 +1026,7 @@ export default function GoogleDocsToolbar({ editor }) {
         </button>
       </Tooltip>
       
-      <Tooltip label="Italique" shortcut={['⌘', 'I']}>
+      <Tooltip label={t?.italic || 'Italic'} shortcut={['⌘', 'I']}>
         <button
           onClick={() => {
             const newItalic = !editor.isActive('italic')
@@ -1040,7 +1042,7 @@ export default function GoogleDocsToolbar({ editor }) {
         </button>
       </Tooltip>
       
-      <Tooltip label="Souligné" shortcut={['⌘', 'U']}>
+      <Tooltip label={t?.underline || 'Underline'} shortcut={['⌘', 'U']}>
         <button
           onClick={() => {
             const newUnderline = !editor.isActive('underline')
@@ -1056,7 +1058,7 @@ export default function GoogleDocsToolbar({ editor }) {
         </button>
       </Tooltip>
 
-      <Tooltip label="Effacer le formatage">
+      <Tooltip label={t?.clearFormatting || 'Clear formatting'}>
         <button
           onClick={() => {
             editor.chain().focus()
@@ -1082,9 +1084,15 @@ export default function GoogleDocsToolbar({ editor }) {
 
       {/* Text Color */}
       <div className="relative" ref={textColorRef}>
-        <Tooltip label="Couleur du texte">
+        <Tooltip label={t?.textColor || 'Text color'}>
           <button
-            onClick={() => setShowTextColor(!showTextColor)}
+            onClick={() => {
+              if (textColorRef.current) {
+                const rect = textColorRef.current.getBoundingClientRect()
+                setTextColorPosition({ top: rect.bottom + 4, left: rect.left })
+              }
+              setShowTextColor(!showTextColor)
+            }}
             className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
               showTextColor ? 'bg-gray-200' : ''
             }`}
@@ -1110,14 +1118,19 @@ export default function GoogleDocsToolbar({ editor }) {
               style={{ zIndex: 60 }}
             />
             <div 
-              className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px] z-[70]" 
+              className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]" 
+              style={{ 
+                zIndex: 70,
+                top: `${textColorPosition.top}px`,
+                left: `${textColorPosition.left}px`
+              }}
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
             >
               {/* Preset Colors Grid */}
               <div className="mb-3">
                 <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
-                  Preset Colors
+                  {t?.presetColors || 'Preset Colors'}
                 </div>
                 <div className="grid grid-cols-10 gap-1">
                   {PRESET_COLORS.map((color) => (
@@ -1142,7 +1155,7 @@ export default function GoogleDocsToolbar({ editor }) {
               {/* Custom Color */}
               <div className="border-t border-gray-200 pt-3">
                 <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
-                  Custom Color
+                  {t?.customColor || 'Custom Color'}
                 </div>
                 <div className="flex items-center gap-2">
                   <input
@@ -1183,9 +1196,15 @@ export default function GoogleDocsToolbar({ editor }) {
 
       {/* Highlight Color */}
       <div className="relative" ref={highlightColorRef}>
-        <Tooltip label="Surligneur">
+        <Tooltip label={t?.highlighter || 'Highlighter'}>
           <button
-            onClick={() => setShowHighlightColor(!showHighlightColor)}
+            onClick={() => {
+              if (highlightColorRef.current) {
+                const rect = highlightColorRef.current.getBoundingClientRect()
+                setHighlightColorPosition({ top: rect.bottom + 4, left: rect.left })
+              }
+              setShowHighlightColor(!showHighlightColor)
+            }}
             className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
               showHighlightColor ? 'bg-gray-200' : ''
             }`}
@@ -1211,14 +1230,19 @@ export default function GoogleDocsToolbar({ editor }) {
               style={{ zIndex: 60 }}
             />
             <div 
-              className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px] z-[70]" 
+              className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]" 
+              style={{ 
+                zIndex: 70,
+                top: `${highlightColorPosition.top}px`,
+                left: `${highlightColorPosition.left}px`
+              }}
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
             >
               {/* Preset Colors Grid */}
               <div className="mb-3">
                 <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
-                  Preset Colors
+                  {t?.presetColors || 'Preset Colors'}
                 </div>
                 <div className="grid grid-cols-10 gap-1">
                   {PRESET_COLORS.map((color) => (
@@ -1243,7 +1267,7 @@ export default function GoogleDocsToolbar({ editor }) {
               {/* Custom Color */}
               <div className="border-t border-gray-200 pt-3">
                 <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
-                  Custom Color
+                  {t?.customColor || 'Custom Color'}
                 </div>
                 <div className="flex items-center gap-2">
                   <input
@@ -1286,7 +1310,7 @@ export default function GoogleDocsToolbar({ editor }) {
 
       {/* Alignment */}
       <div className="relative" ref={alignRef}>
-        <Tooltip label="Alignement">
+        <Tooltip label={t?.alignment || 'Alignment'}>
           <button
             onClick={() => {
               if (alignRef.current) {
@@ -1327,7 +1351,7 @@ export default function GoogleDocsToolbar({ editor }) {
                 className={`p-2 rounded hover:bg-gray-100 ${
                   currentAlign === 'left' ? 'bg-gray-200' : ''
                 }`}
-                title="Gauche"
+                title={t?.left || 'Left'}
               >
                 <AlignLeft className="w-4 h-4" />
               </button>
@@ -1336,7 +1360,7 @@ export default function GoogleDocsToolbar({ editor }) {
                 className={`p-2 rounded hover:bg-gray-100 ${
                   currentAlign === 'center' ? 'bg-gray-200' : ''
                 }`}
-                title="Centre"
+                title={t?.center || 'Center'}
               >
                 <AlignCenter className="w-4 h-4" />
               </button>
@@ -1345,7 +1369,7 @@ export default function GoogleDocsToolbar({ editor }) {
                 className={`p-2 rounded hover:bg-gray-100 ${
                   currentAlign === 'right' ? 'bg-gray-200' : ''
                 }`}
-                title="Droite"
+                title={t?.right || 'Right'}
               >
                 <AlignRight className="w-4 h-4" />
               </button>
@@ -1354,7 +1378,7 @@ export default function GoogleDocsToolbar({ editor }) {
                 className={`p-2 rounded hover:bg-gray-100 ${
                   currentAlign === 'justify' ? 'bg-gray-200' : ''
                 }`}
-                title="Justifié"
+                title={t?.justified || 'Justified'}
               >
                 <AlignJustify className="w-4 h-4" />
               </button>
@@ -1366,7 +1390,7 @@ export default function GoogleDocsToolbar({ editor }) {
       <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Lists */}
-      <Tooltip label="Liste à puces" shortcut={['⌘', '⇧', '8']}>
+      <Tooltip label={t?.bulletList || 'Bullet list'} shortcut={['⌘', '⇧', '8']}>
         <button
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
@@ -1377,7 +1401,7 @@ export default function GoogleDocsToolbar({ editor }) {
         </button>
       </Tooltip>
       
-      <Tooltip label="Liste numérotée" shortcut={['⌘', '⇧', '7']}>
+      <Tooltip label={t?.numberedList || 'Numbered list'} shortcut={['⌘', '⇧', '7']}>
         <button
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
@@ -1391,7 +1415,7 @@ export default function GoogleDocsToolbar({ editor }) {
       <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Image */}
-      <Tooltip label="Insérer une image">
+      <Tooltip label={t?.insertImage || 'Insert image'}>
         <button
           onClick={() => {
             const input = document.createElement('input')
@@ -1458,7 +1482,7 @@ export default function GoogleDocsToolbar({ editor }) {
       </Tooltip>
 
       {/* Drawing */}
-      <Tooltip label="Zone de dessin">
+      <Tooltip label={t?.drawingArea || 'Drawing area'}>
         <button
           onClick={() => {
             if (editor && editor.can().setDrawing) {
@@ -1483,7 +1507,7 @@ export default function GoogleDocsToolbar({ editor }) {
       </Tooltip>
 
       {/* Link */}
-      <Tooltip label="Insérer un lien" shortcut={['⌘', 'K']}>
+      <Tooltip label={t?.insertLink || 'Insert link'} shortcut={['⌘', 'K']}>
         <button
           onClick={() => {
             // Get selection position to show LinkEditor
@@ -1531,7 +1555,7 @@ export default function GoogleDocsToolbar({ editor }) {
 
       {/* Undo/Redo - Wrapped together */}
       <div className="flex items-center flex-nowrap">
-        <Tooltip label="Annuler" shortcut={['⌘', 'Z']}>
+        <Tooltip label={t?.undo || 'Undo'} shortcut={['⌘', 'Z']}>
           <button
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().chain().focus().undo().run()}
@@ -1541,7 +1565,7 @@ export default function GoogleDocsToolbar({ editor }) {
           </button>
         </Tooltip>
         
-        <Tooltip label="Rétablir" shortcut={['⌘', '⇧', 'Z']}>
+        <Tooltip label={t?.redo || 'Redo'} shortcut={['⌘', '⇧', 'Z']}>
           <button
             onClick={() => editor.chain().focus().redo().run()}
             disabled={!editor.can().chain().focus().redo().run()}

@@ -54,6 +54,23 @@ body {
   pointer-events: none;
 }
 
+/* Translated placeholders based on html lang attribute */
+html[lang="fr"] .ProseMirror p.is-editor-empty:first-child::before {
+  content: "Commencez à écrire... Créez votre document ici";
+}
+
+html[lang="es"] .ProseMirror p.is-editor-empty:first-child::before {
+  content: "Empieza a escribir... Crea tu documento aquí";
+}
+
+html[lang="zh"] .ProseMirror p.is-editor-empty:first-child::before {
+  content: "开始写作... 在这里创建您的文档";
+}
+
+html[lang="ru"] .ProseMirror p.is-editor-empty:first-child::before {
+  content: "Начните писать... Создайте свой документ здесь";
+}
+
 .ProseMirror h1 {
   font-size: 2em;
   font-weight: 700;

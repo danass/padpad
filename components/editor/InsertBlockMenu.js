@@ -1,18 +1,20 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-
-const blockTypes = [
-  { type: 'heading1', icon: '#', label: 'Headings' },
-  { type: 'heading2', icon: '##', label: 'Headings' },
-  { type: 'heading3', icon: '###', label: 'Headings' },
-  { type: 'bulletList', icon: '-', label: 'Lists' },
-  { type: 'orderedList', icon: '1.', label: 'Lists' },
-  { type: 'blockquote', icon: '>', label: 'Quotes' },
-  { type: 'codeBlock', icon: '`', label: 'Code' },
-]
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function InsertBlockMenu({ editor, position, onClose }) {
+  const { t } = useLanguage()
+  
+  const blockTypes = [
+    { type: 'heading1', icon: '#', label: t?.heading1 || 'Heading 1' },
+    { type: 'heading2', icon: '##', label: t?.heading2 || 'Heading 2' },
+    { type: 'heading3', icon: '###', label: t?.heading3 || 'Heading 3' },
+    { type: 'bulletList', icon: '-', label: t?.bulletList || 'Bullet list' },
+    { type: 'orderedList', icon: '1.', label: t?.numberedList || 'Numbered list' },
+    { type: 'blockquote', icon: '>', label: t?.quote || 'Quote' },
+    { type: 'codeBlock', icon: '`', label: t?.codeBlock || 'Code block' },
+  ]
   const [selectedIndex, setSelectedIndex] = useState(0)
   const menuRef = useRef(null)
 
@@ -82,7 +84,7 @@ export default function InsertBlockMenu({ editor, position, onClose }) {
       }}
     >
       <div className="px-2 py-1 text-xs font-semibold text-gray-500 mb-1">
-        Insert block
+        {t?.blocks || 'Insert block'}
       </div>
       {blockTypes.map((blockType, index) => (
         <button
@@ -101,6 +103,7 @@ export default function InsertBlockMenu({ editor, position, onClose }) {
     </div>
   )
 }
+
 
 
 

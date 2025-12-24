@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { NodeViewWrapper } from '@tiptap/react'
 import { AlignLeft, AlignCenter, AlignRight, Trash2 } from 'lucide-react'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function ResizableImageComponent({ node, updateAttributes, deleteNode, editor, getPos }) {
+  const { t } = useLanguage()
   const [isResizing, setIsResizing] = useState(false)
   const [resizeCorner, setResizeCorner] = useState(null) // 'tl', 'tr', 'bl', 'br'
   const [showMenu, setShowMenu] = useState(false)
@@ -274,32 +276,32 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
               transform: 'translate(-50%, 10px)',
             }}
           >
-            <div className="text-xs font-semibold text-gray-500 mb-2 px-2">Alignement</div>
+            <div className="text-xs font-semibold text-gray-500 mb-2 px-2">{t?.alignment || 'Alignment'}</div>
             <div className="flex gap-1 mb-2">
               <button
                 onClick={() => handleAlign('left')}
                 className={`p-2 rounded hover:bg-gray-100 ${align === 'left' ? 'bg-gray-200' : ''}`}
-                title="Align Left"
+                title={t?.alignLeft || 'Align left'}
               >
                 <AlignLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleAlign('center')}
                 className={`p-2 rounded hover:bg-gray-100 ${align === 'center' || !align ? 'bg-gray-200' : ''}`}
-                title="Align Center"
+                title={t?.alignCenter || 'Align center'}
               >
                 <AlignCenter className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleAlign('right')}
                 className={`p-2 rounded hover:bg-gray-100 ${align === 'right' ? 'bg-gray-200' : ''}`}
-                title="Align Right"
+                title={t?.alignRight || 'Align right'}
               >
                 <AlignRight className="w-4 h-4" />
               </button>
             </div>
             <div className="border-t border-gray-200 my-2"></div>
-            <div className="text-xs font-semibold text-gray-500 mb-2 px-2">Largeur</div>
+            <div className="text-xs font-semibold text-gray-500 mb-2 px-2">{t?.widthLabel || 'Width'}</div>
             <div className="flex gap-1 mb-2">
               <button
                 onClick={() => getActiveWidthPreset() !== '1/3' && handleWidthPreset('1/3')}
@@ -308,7 +310,7 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
                     ? 'bg-gray-200 border-gray-400 cursor-default' 
                     : 'hover:bg-gray-100 border-gray-200'
                 }`}
-                title="1/3 de la largeur"
+                title={t?.oneThirdWidth || '1/3 of width'}
               >
                 ⅓
               </button>
@@ -319,7 +321,7 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
                     ? 'bg-gray-200 border-gray-400 cursor-default' 
                     : 'hover:bg-gray-100 border-gray-200'
                 }`}
-                title="2/3 de la largeur"
+                title={t?.twoThirdsWidth || '2/3 of width'}
               >
                 ⅔
               </button>
@@ -330,7 +332,7 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
                     ? 'bg-gray-200 border-gray-400 cursor-default' 
                     : 'hover:bg-gray-100 border-gray-200'
                 }`}
-                title="Pleine largeur"
+                title={t?.fullWidthLabel || 'Full width'}
               >
                 100%
               </button>
@@ -341,7 +343,7 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
               className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
             >
               <Trash2 className="w-4 h-4" />
-              Supprimer
+              {t?.delete || 'Delete'}
             </button>
           </div>
         )}

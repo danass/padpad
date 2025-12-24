@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Link as LinkIcon, Pencil, Unlink } from 'lucide-react'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function LinkEditor({ editor, position, onClose }) {
+  const { t } = useLanguage()
   const [url, setUrl] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const inputRef = useRef(null)
@@ -111,20 +113,20 @@ export default function LinkEditor({ editor, position, onClose }) {
                   <LinkIcon className="w-4 h-4 text-gray-500" />
                 </div>
                 <div className="flex-1 px-2 py-2 text-sm text-gray-900 border-l border-gray-200 underline">
-                  {url || 'Aucun lien'}
+                  {url || (t?.noLink || 'No link')}
                 </div>
                 <div className="flex items-center gap-1 pr-2 border-l border-gray-200">
                   <button
                     onClick={handleModify}
                     className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-                    title="Modifier"
+                    title={t?.modify || 'Modify'}
                   >
                     <Pencil className="w-4 h-4 text-gray-600" />
                   </button>
                   <button
                     onClick={handleBreakLink}
                     className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-                    title="Supprimer le lien"
+                    title={t?.removeLink || 'Remove link'}
                   >
                     <Unlink className="w-4 h-4 text-gray-600" />
                   </button>
@@ -134,7 +136,7 @@ export default function LinkEditor({ editor, position, onClose }) {
                 onClick={handleDelete}
                 className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors text-left"
               >
-                Supprimer le lien
+                {t?.removeLink || 'Remove link'}
               </button>
             </>
           ) : (
@@ -151,7 +153,7 @@ export default function LinkEditor({ editor, position, onClose }) {
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Entrer l'URL"
+                    placeholder={t?.enterUrl || 'Enter URL'}
                     className="w-full bg-transparent border-none outline-none text-sm"
                   />
                 </div>
@@ -160,7 +162,7 @@ export default function LinkEditor({ editor, position, onClose }) {
                     onClick={handleSave}
                     className="px-3 py-1.5 text-sm bg-gray-800 text-white rounded-md hover:bg-gray-900 transition-colors"
                   >
-                    Sauvegarder
+                    {t?.save || 'Save'}
                   </button>
                 </div>
               </div>
@@ -168,7 +170,7 @@ export default function LinkEditor({ editor, position, onClose }) {
                 onClick={() => setIsEditing(false)}
                 className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors text-left"
               >
-                Annuler
+                {t?.cancel || 'Cancel'}
               </button>
             </div>
           )}
@@ -187,7 +189,7 @@ export default function LinkEditor({ editor, position, onClose }) {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Entrer l'URL"
+                placeholder={t?.enterUrl || 'Enter URL'}
                 className="w-full bg-transparent border-none outline-none text-sm"
               />
             </div>

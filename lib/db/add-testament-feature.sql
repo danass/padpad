@@ -16,3 +16,4 @@ CREATE INDEX IF NOT EXISTS idx_documents_auto_public_date ON documents(auto_publ
 -- Create index for birth_date
 CREATE INDEX IF NOT EXISTS idx_users_birth_date ON users(birth_date) WHERE birth_date IS NOT NULL;
 
+

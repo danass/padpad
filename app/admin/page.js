@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function AdminPage() {
   const { data: session } = useSession()
   const router = useRouter()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [stats, setStats] = useState(null)
@@ -125,7 +127,7 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Loading...</div>
+        <div className="text-gray-600">{t?.loadingText || 'Loading...'}</div>
       </div>
     )
   }
@@ -138,8 +140,8 @@ export default function AdminPage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Panel</h1>
-          <p className="text-gray-600">Manage documents, users, and admin access</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t?.adminPanel || 'Admin Panel'}</h1>
+          <p className="text-gray-600">{t?.manageDocsUsersAdmins || 'Manage documents, users, and admin access'}</p>
         </div>
 
         {/* Tabs */}
@@ -153,7 +155,7 @@ export default function AdminPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              Statistics
+              {t?.statistics || 'Statistics'}
             </button>
             <button
               onClick={() => setActiveTab('documents')}
@@ -163,7 +165,7 @@ export default function AdminPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              Documents
+              {t?.documents || 'Documents'}
             </button>
             <button
               onClick={() => setActiveTab('users')}
@@ -173,7 +175,7 @@ export default function AdminPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              Users & Admins
+              {t?.usersAndAdmins || 'Users & Admins'}
             </button>
           </nav>
         </div>
@@ -183,30 +185,30 @@ export default function AdminPage() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <div className="text-sm font-medium text-gray-600 mb-1">Total Documents</div>
+                <div className="text-sm font-medium text-gray-600 mb-1">{t?.totalDocuments || 'Total Documents'}</div>
                 <div className="text-3xl font-bold text-gray-900">{stats.totalDocuments}</div>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <div className="text-sm font-medium text-gray-600 mb-1">Total Users</div>
+                <div className="text-sm font-medium text-gray-600 mb-1">{t?.totalUsers || 'Total Users'}</div>
                 <div className="text-3xl font-bold text-gray-900">{stats.totalUsers}</div>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <div className="text-sm font-medium text-gray-600 mb-1">Total Snapshots</div>
+                <div className="text-sm font-medium text-gray-600 mb-1">{t?.totalSnapshots || 'Total Snapshots'}</div>
                 <div className="text-3xl font-bold text-gray-900">{stats.totalSnapshots}</div>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <div className="text-sm font-medium text-gray-600 mb-1">Recent (7 days)</div>
+                <div className="text-sm font-medium text-gray-600 mb-1">{t?.recent7Days || 'Recent (7 days)'}</div>
                 <div className="text-3xl font-bold text-gray-900">{stats.recentDocuments}</div>
               </div>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Documents by User</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t?.documentsByUser || 'Documents by User'}</h2>
               <div className="space-y-2">
                 {stats.documentsByUser.map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                    <div className="text-sm text-gray-900">{item.user_email || 'No user'}</div>
-                    <div className="text-sm font-medium text-gray-600">{item.count} documents</div>
+                    <div className="text-sm text-gray-900">{item.user_email || (t?.noUser || 'No user')}</div>
+                    <div className="text-sm font-medium text-gray-600">{item.count} {t?.documents || 'documents'}</div>
                   </div>
                 ))}
               </div>
@@ -222,14 +224,14 @@ export default function AdminPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Snapshots</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Events</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Public</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.title || 'Title'}</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.user || 'User'}</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.created || 'Created'}</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.updated || 'Updated'}</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.snapshots || 'Snapshots'}</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.events || 'Events'}</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.publicLabel || 'Public'}</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.actions || 'Actions'}</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -239,7 +241,7 @@ export default function AdminPage() {
                           <div className="text-sm font-medium text-gray-900">{doc.title}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">{doc.user_email || 'No user'}</div>
+                          <div className="text-sm text-gray-600">{doc.user_email || (t?.noUser || 'No user')}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-600">
@@ -377,4 +379,6 @@ export default function AdminPage() {
     </div>
   )
 }
+
+
 

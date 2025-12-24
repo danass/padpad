@@ -3,8 +3,10 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function FileImport({ folderId = null }) {
+  const { t } = useLanguage()
   const [dragging, setDragging] = useState(false)
   const [importing, setImporting] = useState(false)
   const fileInputRef = useRef(null)
@@ -77,11 +79,11 @@ export default function FileImport({ folderId = null }) {
       })
       
       // Navigate to document
-      showToast('File imported successfully', 'success')
+      showToast(t?.fileImported || 'File imported successfully', 'success')
       router.push(`/doc/${docId}`)
     } catch (error) {
       console.error('Error importing file:', error)
-      showToast('Failed to import file: ' + error.message, 'error')
+      showToast((t?.failedToImport || 'Failed to import file') + ': ' + error.message, 'error')
     } finally {
       setImporting(false)
     }
@@ -191,17 +193,17 @@ export default function FileImport({ folderId = null }) {
       {importing ? (
         <div>
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
-          <p>Importing...</p>
+          <p>{t?.importing || 'Importing...'}</p>
         </div>
       ) : (
         <>
-          <p className="text-lg mb-2">📄 Drop .txt or .md files here</p>
-          <p className="text-sm text-gray-500 mb-4">or</p>
+          <p className="text-lg mb-2">📄 {t?.dropFilesHere || 'Drop .txt or .md files here'}</p>
+          <p className="text-sm text-gray-500 mb-4">{t?.or || 'or'}</p>
           <button
             onClick={() => fileInputRef.current?.click()}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            Select Files
+            {t?.selectFiles || 'Select Files'}
           </button>
         </>
       )}

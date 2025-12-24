@@ -3,8 +3,10 @@
 import { useEffect, useState, useMemo } from 'react'
 import { format } from 'date-fns'
 import { Save, Edit, RotateCcw, Trash2 } from 'lucide-react'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function HistoryPanel({ documentId, onRestore, onClose }) {
+  const { t } = useLanguage()
   const [history, setHistory] = useState(null)
   const [loading, setLoading] = useState(true)
   const [restoring, setRestoring] = useState(null)
@@ -104,7 +106,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
   const handleDelete = async (snapshot, e) => {
     e.stopPropagation()
     
-    if (!confirm('Are you sure you want to delete this snapshot?')) {
+    if (!confirm(t?.confirmDeleteSnapshot || 'Are you sure you want to delete this snapshot?')) {
       return
     }
     
@@ -127,7 +129,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
       }
     } catch (error) {
       console.error('Error deleting snapshot:', error)
-      alert('Failed to delete snapshot: ' + error.message)
+      alert((t?.failedToDelete || 'Failed to delete') + ': ' + error.message)
     } finally {
       setDeleting(null)
     }
@@ -136,11 +138,12 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
   const handleDeleteAllEmpty = async () => {
     const emptySnapshots = snapshots.filter(s => s.isEmpty)
     if (emptySnapshots.length === 0) {
-      alert('No empty snapshots found')
+      alert(t?.noSnapshotsYet || 'No empty snapshots found')
       return
     }
     
-    if (!confirm(`Are you sure you want to delete ${emptySnapshots.length} empty snapshot(s)?`)) {
+    const confirmMsg = (t?.confirmDeleteEmptySnapshots || 'Are you sure you want to delete {count} empty snapshot(s)?').replace('{count}', emptySnapshots.length)
+    if (!confirm(confirmMsg)) {
       return
     }
     
@@ -162,7 +165,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
       }
     } catch (error) {
       console.error('Error deleting empty snapshots:', error)
-      alert('Failed to delete empty snapshots: ' + error.message)
+      alert((t?.failedToDelete || 'Failed to delete') + ': ' + error.message)
     }
   }
   
@@ -170,7 +173,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
     return (
       <div className="fixed inset-y-0 right-0 w-96 bg-white border-l border-gray-200 shadow-lg z-[200] p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Historique</h2>
+          <h2 className="text-xl font-semibold text-gray-900">{t?.history || 'History'}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-900 p-1 rounded-md hover:bg-gray-100 transition-colors">
             ✕
           </button>
@@ -193,7 +196,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-gray-900">Historique</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{t?.history || 'History'}</h2>
             {emptyCount > 0 && (
               <button
                 onClick={(e) => {
@@ -202,7 +205,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
                 }}
                 className="mt-2 text-xs text-red-600 hover:text-red-700 underline"
               >
-                Delete {emptyCount} empty snapshot{emptyCount > 1 ? 's' : ''}
+                {t?.deleteEmptySnapshots || `Delete ${emptyCount} empty snapshot${emptyCount > 1 ? 's' : ''}`}
               </button>
             )}
           </div>
@@ -220,9 +223,9 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
         {/* Info box */}
         <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
           <div className="text-xs text-blue-800">
-            <div className="font-semibold mb-1">📸 Snapshot</div>
+            <div className="font-semibold mb-1">📸 {t?.snapshot || 'Snapshot'}</div>
             <div className="text-blue-700">
-              Sauvegarde complète. Cliquez pour restaurer.
+              {t?.completeSave || 'Complete save. Click to restore.'}
             </div>
           </div>
         </div>
@@ -249,10 +252,10 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
                 >
                   <div className="flex items-center gap-2">
                     <Save className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm font-semibold">Snapshot</span>
+                    <span className="text-sm font-semibold">{t?.snapshot || 'Snapshot'}</span>
                     {snapshot.isEmpty && (
                       <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded">
-                        Empty
+                        {t?.empty || 'Empty'}
                       </span>
                     )}
                   </div>
@@ -264,7 +267,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
                   onClick={(e) => handleDelete(snapshot, e)}
                   disabled={deleting === snapshot.id}
                   className="text-gray-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors disabled:opacity-50 ml-2"
-                  title="Delete snapshot"
+                  title={t?.deleteSnapshot || 'Delete snapshot'}
                 >
                   {deleting === snapshot.id ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
@@ -284,7 +287,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
                   className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50 transition-colors"
                 >
                   <RotateCcw className={`w-3.5 h-3.5 ${restoring === snapshot.id ? 'animate-spin' : ''}`} />
-                  {restoring === snapshot.id ? 'Restauration...' : 'Restaurer cette version'}
+                  {restoring === snapshot.id ? (t?.restoring || 'Restoring...') : (t?.restoreThisVersion || 'Restore this version')}
                 </button>
               </div>
             </div>
@@ -292,7 +295,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
           
           {snapshots.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              Aucun snapshot pour le moment
+              {t?.noSnapshotsYet || 'No snapshots yet'}
             </div>
           )}
         </div>

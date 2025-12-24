@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { NodeViewWrapper } from '@tiptap/react'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function ImageMenu({ node, updateAttributes, deleteNode, editor, getPos }) {
+  const { t } = useLanguage()
   const [showMenu, setShowMenu] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
   const [resizeHandle, setResizeHandle] = useState(null)
@@ -113,7 +115,7 @@ export default function ImageMenu({ node, updateAttributes, deleteNode, editor, 
     return (
       <NodeViewWrapper className="image-wrapper">
         <div className="p-4 border border-dashed border-gray-300 rounded-lg text-center text-gray-500">
-          No image source
+          {t?.noImageSource || 'No image source'}
         </div>
       </NodeViewWrapper>
     )
@@ -148,7 +150,7 @@ export default function ImageMenu({ node, updateAttributes, deleteNode, editor, 
             }}
           >
             <div className="mb-2">
-              <div className="text-xs font-semibold text-gray-500 mb-1 px-2">Size</div>
+              <div className="text-xs font-semibold text-gray-500 mb-1 px-2">{t?.size || 'Size'}</div>
               <div className="flex gap-1">
                 <button
                   onClick={() => handleResize('small')}
@@ -172,13 +174,13 @@ export default function ImageMenu({ node, updateAttributes, deleteNode, editor, 
                   onClick={() => handleResize('full')}
                   className="px-2 py-1 text-xs rounded hover:bg-gray-100"
                 >
-                  Full
+                  {t?.full || 'Full'}
                 </button>
               </div>
             </div>
             
             <div className="mb-2">
-              <div className="text-xs font-semibold text-gray-500 mb-1 px-2">Align</div>
+              <div className="text-xs font-semibold text-gray-500 mb-1 px-2">{t?.align || 'Align'}</div>
               <div className="flex gap-1">
                 <button
                   onClick={() => handleAlign('left')}
@@ -213,13 +215,13 @@ export default function ImageMenu({ node, updateAttributes, deleteNode, editor, 
               onClick={handleDuplicate}
               className="w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100"
             >
-              Duplicate
+              {t?.duplicate || 'Duplicate'}
             </button>
             <button
               onClick={handleDelete}
               className="w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 text-red-600"
             >
-              Delete
+              {t?.delete || 'Delete'}
             </button>
           </div>
         )}

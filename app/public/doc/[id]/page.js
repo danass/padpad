@@ -25,15 +25,20 @@ import { Youtube } from '@/lib/editor/youtube-extension'
 import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
 import Emoji from '@tiptap/extension-emoji'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function PublicDocumentPage() {
   const params = useParams()
   const documentId = params.id
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [title, setTitle] = useState('')
   const [isFullWidth, setIsFullWidth] = useState(false)
   const [navigation, setNavigation] = useState({ prev: null, next: null })
+  const [mounted, setMounted] = useState(false)
+  const [archiveId, setArchiveId] = useState(null)
+  const [authorName, setAuthorName] = useState(null)
   
   const editor = useEditor({
     editable: false, // Read-only mode
@@ -90,6 +95,11 @@ export default function PublicDocumentPage() {
     ],
   })
   
+  // Set mounted state to prevent flushSync errors during hydration
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
   useEffect(() => {
     async function loadDocument() {
       if (!documentId) return
@@ -121,6 +131,8 @@ export default function PublicDocumentPage() {
         setTitle(document.title || '')
         setIsFullWidth(document.is_full_width || false)
         setNavigation(nav || { prev: null, next: null })
+        setArchiveId(document.archive_id || null)
+        setAuthorName(document.author_name || null)
         
         // Set editor content - wrap in queueMicrotask to avoid flushSync error
         if (editor && content) {
@@ -165,20 +177,20 @@ export default function PublicDocumentPage() {
         <div className="max-w-4xl mx-auto px-6 py-12">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              {error === 'Document not found' ? 'Document Not Found' : 'Access Denied'}
+              {error === 'Document not found' ? (t?.documentNotFound || 'Document Not Found') : (t?.accessDenied || 'Access Denied')}
             </h1>
             <p className="text-gray-600 mb-6">
               {error === 'Document not found' 
-                ? 'The document you are looking for does not exist or has been deleted.'
+                ? (t?.documentNotFoundDesc || 'The document you are looking for does not exist or has been deleted.')
                 : error === 'This document is not public'
-                ? 'This document is private and cannot be accessed publicly.'
+                ? (t?.documentPrivate || 'This document is private and cannot be accessed publicly.')
                 : error}
             </p>
             <a
               href="/"
               className="inline-block px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors"
             >
-              Go to Home
+              {t?.goHome || 'Go to Home'}
             </a>
           </div>
         </div>
@@ -193,11 +205,11 @@ export default function PublicDocumentPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-8">{title}</h1>
         )}
         <div className="max-w-none">
-          <EditorContent editor={editor} />
+          {mounted && <EditorContent editor={editor} />}
         </div>
         
         {/* Navigation between public documents */}
-        {(navigation.prev || navigation.next) && (
+        {(navigation.prev || navigation.next || archiveId) && (
           <div className="mt-12 pt-8 border-t border-gray-200">
             <div className="flex items-center justify-between">
               {navigation.prev ? (
@@ -209,11 +221,24 @@ export default function PublicDocumentPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                   <div className="text-left">
-                    <div className="text-xs text-gray-400">Previous</div>
-                    <div className="text-sm font-medium truncate max-w-[200px]">{navigation.prev.title || 'Untitled'}</div>
+                    <div className="text-xs text-gray-400">{t?.previous || 'Previous'}</div>
+                    <div className="text-sm font-medium truncate max-w-[200px]">{navigation.prev.title || (t?.noTitle || 'Untitled')}</div>
                   </div>
                 </NextLink>
               ) : <div />}
+              
+              {/* Archive link in center */}
+              {archiveId && (
+                <NextLink 
+                  href={`/public/archive/${archiveId}`}
+                  className="flex flex-col items-center text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                  <span className="text-xs">{authorName ? `@${authorName}` : (t?.allArticles || 'All articles')}</span>
+                </NextLink>
+              )}
               
               {navigation.next ? (
                 <NextLink 
@@ -221,8 +246,8 @@ export default function PublicDocumentPage() {
                   className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
                 >
                   <div className="text-right">
-                    <div className="text-xs text-gray-400">Next</div>
-                    <div className="text-sm font-medium truncate max-w-[200px]">{navigation.next.title || 'Untitled'}</div>
+                    <div className="text-xs text-gray-400">{t?.next || 'Next'}</div>
+                    <div className="text-sm font-medium truncate max-w-[200px]">{navigation.next.title || (t?.noTitle || 'Untitled')}</div>
                   </div>
                   <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
