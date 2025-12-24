@@ -145,10 +145,23 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
   }
 
   const handleDelete = () => {
-    if (confirm('Supprimer cette image ?')) {
-      deleteNode()
-    }
+    deleteNode()
     setShowMenu(false)
+  }
+  
+  const handleWidthPreset = (preset) => {
+    if (!imageRef.current) return
+    const containerWidth = imageRef.current.parentElement?.offsetWidth || 800
+    let newWidth
+    switch (preset) {
+      case '1/3': newWidth = Math.floor(containerWidth / 3); break
+      case '2/3': newWidth = Math.floor(containerWidth * 2 / 3); break
+      case 'full': newWidth = containerWidth; break
+      default: return
+    }
+    const aspectRatio = (height || imageRef.current.naturalHeight) / (width || imageRef.current.naturalWidth)
+    const newHeight = Math.floor(newWidth * aspectRatio)
+    updateAttributes({ width: newWidth, height: newHeight })
   }
 
   // Calculate aspect ratio to preserve image proportions
@@ -264,6 +277,31 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
                 title="Align Right"
               >
                 <AlignRight className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="border-t border-gray-200 my-2"></div>
+            <div className="text-xs font-semibold text-gray-500 mb-2 px-2">Largeur</div>
+            <div className="flex gap-1 mb-2">
+              <button
+                onClick={() => handleWidthPreset('1/3')}
+                className="px-3 py-1.5 text-xs rounded hover:bg-gray-100 border border-gray-200"
+                title="1/3 de la largeur"
+              >
+                ⅓
+              </button>
+              <button
+                onClick={() => handleWidthPreset('2/3')}
+                className="px-3 py-1.5 text-xs rounded hover:bg-gray-100 border border-gray-200"
+                title="2/3 de la largeur"
+              >
+                ⅔
+              </button>
+              <button
+                onClick={() => handleWidthPreset('full')}
+                className="px-3 py-1.5 text-xs rounded hover:bg-gray-100 border border-gray-200"
+                title="Pleine largeur"
+              >
+                100%
               </button>
             </div>
             <div className="border-t border-gray-200 my-2"></div>

@@ -691,9 +691,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
             <button
               onClick={(e) => {
                 e.stopPropagation()
-                if (confirm('Delete this drawing?')) {
-                  deleteNode()
-                }
+                deleteNode()
               }}
               className="p-2 hover:bg-gray-100 rounded transition-colors"
               title="Delete"

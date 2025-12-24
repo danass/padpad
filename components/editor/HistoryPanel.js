@@ -168,7 +168,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
   
   if (loading) {
     return (
-      <div className="fixed inset-y-0 right-0 w-96 bg-white border-l border-gray-200 shadow-lg z-50 p-6">
+      <div className="fixed inset-y-0 right-0 w-96 bg-white border-l border-gray-200 shadow-lg z-[200] p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Historique</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-900 p-1 rounded-md hover:bg-gray-100 transition-colors">
@@ -186,7 +186,7 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
   
   return (
     <div 
-      className="fixed inset-y-0 right-0 w-96 bg-white border-l border-gray-200 shadow-lg z-50 overflow-y-auto"
+      className="fixed inset-y-0 right-0 w-96 bg-white border-l border-gray-200 shadow-lg z-[200] overflow-y-auto"
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >

@@ -157,8 +157,14 @@ export default function GoogleDocsToolbar({ editor }) {
   const currentTextColor = activeStyle.color || editor.getAttributes('textStyle')?.color || '#000000'
   const currentHighlightColor = activeStyle.highlightColor || editor.getAttributes('highlight')?.color || null
   
-  // Get current align - check for image first, then text
+  // Get current align - check for image first, then text using isActive for accuracy
   const getCurrentAlign = () => {
+    // Use editor.isActive for accurate alignment detection
+    if (editor.isActive({ textAlign: 'center' })) return 'center'
+    if (editor.isActive({ textAlign: 'right' })) return 'right'
+    if (editor.isActive({ textAlign: 'justify' })) return 'justify'
+    
+    // Check for image alignment
     const { selection } = editor.state
     const { $from } = selection
     let imageNode = null
@@ -398,7 +404,7 @@ export default function GoogleDocsToolbar({ editor }) {
 
   const handleFontSizeDecrease = () => {
     const currentSize = fontSizeDisplay === 'inherited' ? 16 : fontSize
-    const newSize = Math.max(8, currentSize - 1)
+    const newSize = Math.max(8, currentSize - 2)
     setFontSize(newSize)
     setFontSizeDisplay(newSize.toString())
     editor.chain().focus().setFontSize(`${newSize}px`).run()
@@ -408,12 +414,28 @@ export default function GoogleDocsToolbar({ editor }) {
 
   const handleFontSizeIncrease = () => {
     const currentSize = fontSizeDisplay === 'inherited' ? 16 : fontSize
-    const newSize = Math.min(400, currentSize + 1)
+    const newSize = Math.min(400, currentSize + 2)
     setFontSize(newSize)
     setFontSizeDisplay(newSize.toString())
     editor.chain().focus().setFontSize(`${newSize}px`).run()
     setActiveStyle(prev => ({ ...prev, fontSize: newSize }))
     shouldApplyActiveStyleRef.current = true
+  }
+  
+  // Auto-repeat refs for font size buttons
+  const fontSizeIntervalRef = useRef(null)
+  const fontSizeTimeoutRef = useRef(null)
+  
+  const startFontSizeRepeat = (action) => {
+    action() // Immediate action
+    fontSizeTimeoutRef.current = setTimeout(() => {
+      fontSizeIntervalRef.current = setInterval(action, 80)
+    }, 400) // Start repeating after 400ms
+  }
+  
+  const stopFontSizeRepeat = () => {
+    if (fontSizeTimeoutRef.current) clearTimeout(fontSizeTimeoutRef.current)
+    if (fontSizeIntervalRef.current) clearInterval(fontSizeIntervalRef.current)
   }
 
   const handleTextColorChange = (color) => {
@@ -482,7 +504,7 @@ export default function GoogleDocsToolbar({ editor }) {
     
     setActiveStyle(prev => ({ ...prev, align }))
     shouldApplyActiveStyleRef.current = true
-    setShowAlign(false)
+    // Don't close dropdown - let user click outside when done
   }
 
   const handleLineHeightChange = (lineHeight) => {
@@ -832,8 +854,12 @@ export default function GoogleDocsToolbar({ editor }) {
       {/* Font Size */}
       <div className="relative flex items-center border border-gray-300 rounded h-10 md:h-8" ref={fontSizeRef}>
         <button
-          onClick={handleFontSizeDecrease}
-          className="px-2 h-full hover:bg-gray-100 text-gray-700 flex items-center"
+          onMouseDown={() => startFontSizeRepeat(handleFontSizeDecrease)}
+          onMouseUp={stopFontSizeRepeat}
+          onMouseLeave={stopFontSizeRepeat}
+          onTouchStart={() => startFontSizeRepeat(handleFontSizeDecrease)}
+          onTouchEnd={stopFontSizeRepeat}
+          className="px-2 h-full hover:bg-gray-100 text-gray-700 flex items-center select-none"
         >
           <Minus className="w-5 h-5 md:w-4 md:h-4" />
         </button>
@@ -925,136 +951,16 @@ export default function GoogleDocsToolbar({ editor }) {
           />
         </div>
         <button
-          onClick={handleFontSizeIncrease}
-          className="px-2 h-full hover:bg-gray-100 text-gray-700 flex items-center"
+          onMouseDown={() => startFontSizeRepeat(handleFontSizeIncrease)}
+          onMouseUp={stopFontSizeRepeat}
+          onMouseLeave={stopFontSizeRepeat}
+          onTouchStart={() => startFontSizeRepeat(handleFontSizeIncrease)}
+          onTouchEnd={stopFontSizeRepeat}
+          className="px-2 h-full hover:bg-gray-100 text-gray-700 flex items-center select-none"
         >
           <Plus className="w-5 h-5 md:w-4 md:h-4" />
         </button>
       </div>
-
-      {/* Line Height */}
-      <div className="relative" ref={lineHeightRef}>
-        <button
-          onClick={() => {
-            if (lineHeightRef.current) {
-              const rect = lineHeightRef.current.getBoundingClientRect()
-              setLineHeightPosition({ top: rect.bottom + 4, left: rect.left })
-            }
-            const currentIndex = LINE_HEIGHT_OPTIONS.findIndex(opt => opt.value === currentLineHeight)
-            setSelectedLineHeightIndex(currentIndex >= 0 ? currentIndex : 0)
-            setShowLineHeight(!showLineHeight)
-          }}
-          onFocus={() => {
-            // Keep dropdown active when focused
-            if (!showLineHeight && lineHeightRef.current) {
-              const rect = lineHeightRef.current.getBoundingClientRect()
-              setLineHeightPosition({ top: rect.bottom + 4, left: rect.left })
-              const currentIndex = LINE_HEIGHT_OPTIONS.findIndex(opt => opt.value === currentLineHeight)
-              setSelectedLineHeightIndex(currentIndex >= 0 ? currentIndex : 0)
-              setShowLineHeight(true)
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowDown') {
-              e.preventDefault()
-              if (!showLineHeight) {
-                setShowLineHeight(true)
-                const currentIndex = LINE_HEIGHT_OPTIONS.findIndex(opt => opt.value === currentLineHeight)
-                setSelectedLineHeightIndex(currentIndex >= 0 ? currentIndex : 0)
-              } else {
-                setSelectedLineHeightIndex(prev => Math.min(prev + 1, LINE_HEIGHT_OPTIONS.length - 1))
-              }
-            } else if (e.key === 'ArrowUp') {
-              e.preventDefault()
-              if (!showLineHeight) {
-                setShowLineHeight(true)
-                const currentIndex = LINE_HEIGHT_OPTIONS.findIndex(opt => opt.value === currentLineHeight)
-                setSelectedLineHeightIndex(currentIndex >= 0 ? currentIndex : 0)
-              } else {
-                setSelectedLineHeightIndex(prev => Math.max(prev - 1, 0))
-              }
-            } else if (e.key === 'Enter') {
-              e.preventDefault()
-              if (showLineHeight && selectedLineHeightIndex >= 0 && selectedLineHeightIndex < LINE_HEIGHT_OPTIONS.length) {
-                handleLineHeightChange(LINE_HEIGHT_OPTIONS[selectedLineHeightIndex].value)
-                setShowLineHeight(false)
-              }
-            } else if (e.key === 'Escape') {
-              e.preventDefault()
-              setShowLineHeight(false)
-            }
-          }}
-          className="px-2 md:px-2 py-2 md:py-1.5 h-10 md:h-8 min-w-[100px] md:min-w-[90px] text-left text-sm md:text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
-          title="Line Height"
-        >
-          <span className="truncate">{currentLineHeight || 'Default'}</span>
-          <ChevronDown className="w-4 h-4 md:w-3 md:h-3 text-gray-500 flex-shrink-0" />
-        </button>
-        {showLineHeight && (
-          <>
-            <div 
-              className="fixed inset-0" 
-              onClick={() => setShowLineHeight(false)}
-              style={{ zIndex: 60 }}
-            />
-            <div 
-              className="fixed bg-white border border-gray-300 rounded shadow-lg w-32" 
-              style={{ 
-                zIndex: 70,
-                position: 'fixed',
-                top: `${lineHeightPosition.top}px`,
-                left: `${lineHeightPosition.left}px`
-              }}
-              onKeyDown={(e) => {
-            if (e.key === 'ArrowDown') {
-              e.preventDefault()
-              e.stopPropagation() // Prevent cursor movement in editor
-              setSelectedLineHeightIndex(prev => Math.min(prev + 1, LINE_HEIGHT_OPTIONS.length - 1))
-            } else if (e.key === 'ArrowUp') {
-              e.preventDefault()
-              e.stopPropagation() // Prevent cursor movement in editor
-              setSelectedLineHeightIndex(prev => Math.max(prev - 1, 0))
-                } else if (e.key === 'Enter') {
-                  e.preventDefault()
-                  if (selectedLineHeightIndex >= 0 && selectedLineHeightIndex < LINE_HEIGHT_OPTIONS.length) {
-                    handleLineHeightChange(LINE_HEIGHT_OPTIONS[selectedLineHeightIndex].value)
-                    setShowLineHeight(false)
-                    setSelectedLineHeightIndex(-1)
-                  }
-                } else if (e.key === 'Escape') {
-                  e.preventDefault()
-                  setShowLineHeight(false)
-                  setSelectedLineHeightIndex(-1)
-                }
-              }}
-              tabIndex={0}
-            >
-              {LINE_HEIGHT_OPTIONS.map((option, index) => (
-                <button
-                  key={option.value || 'default'}
-                  onClick={() => {
-                    handleLineHeightChange(option.value)
-                    setShowLineHeight(false)
-                    setSelectedLineHeightIndex(-1)
-                  }}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between ${
-                    index === selectedLineHeightIndex ? 'bg-blue-50' : ''
-                  } ${currentLineHeight === option.value ? 'bg-blue-50 text-blue-600' : ''}`}
-                >
-                  <span>{option.label}</span>
-                  {currentLineHeight === option.value && (
-                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-
-      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Paint Mode Toggle */}
       <div className="relative">
