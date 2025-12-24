@@ -38,8 +38,16 @@ export default function LinkEditor({ editor, position, onClose }) {
   }, [onClose, position])
 
   const handleSave = () => {
-    if (url.trim()) {
-      editor.chain().focus().setLink({ href: url.trim() }).run()
+    let finalUrl = url.trim()
+    if (finalUrl) {
+      // Auto-add https:// if no protocol is specified
+      if (!finalUrl.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//)) {
+        // Check if it looks like a URL (contains a dot)
+        if (finalUrl.includes('.')) {
+          finalUrl = 'https://' + finalUrl
+        }
+      }
+      editor.chain().focus().setLink({ href: finalUrl }).run()
     } else {
       editor.chain().focus().unsetLink().run()
     }

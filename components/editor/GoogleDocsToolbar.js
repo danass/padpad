@@ -12,16 +12,19 @@ import {
   AlignJustify,
   List,
   ListOrdered,
-  Image,
+  ImagePlus,
   Link,
   Undo,
   Redo,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Minus,
   Plus,
   Eraser,
-  Paintbrush,
-  PenTool,
+  Highlighter,
+  Pencil,
+  Type,
 } from 'lucide-react'
 import Tooltip from '@/components/ui/Tooltip'
 
@@ -48,7 +51,7 @@ const FONT_FAMILIES = [
   'Palatino'
 ]
 
-const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 30, 36, 48, 60, 72, 96]
+const FONT_SIZES = [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 36, 40, 48, 56, 64, 72, 96]
 
 const PRESET_COLORS = [
   '#000000', '#434343', '#666666', '#999999', '#B7B7B7', '#CCCCCC', '#D9D9D9', '#EFEFEF', '#F2F2F2', '#FFFFFF',
@@ -686,66 +689,68 @@ export default function GoogleDocsToolbar({ editor }) {
 
   return (
     <div className="flex items-center gap-1 md:gap-0.5 p-2 md:p-1 bg-white overflow-x-auto flex-wrap sticky top-0 z-50" style={{ position: 'sticky', top: 0, zIndex: 50 }}>
-      {/* Font Family */}
-      <div className="relative" ref={fontFamilyRef}>
+      {/* Font Family with navigation */}
+      <div className="flex items-center">
         <button
           onClick={() => {
-            if (fontFamilyRef.current) {
-              const rect = fontFamilyRef.current.getBoundingClientRect()
-              setFontFamilyPosition({ top: rect.bottom + 4, left: rect.left })
-            }
             const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
-            setSelectedFontIndex(currentIndex >= 0 ? currentIndex : 0)
-            setShowFontFamily(!showFontFamily)
+            const prevIndex = currentIndex > 0 ? currentIndex - 1 : FONT_FAMILIES.length - 1
+            handleFontFamilyChange(FONT_FAMILIES[prevIndex])
           }}
-          onFocus={() => {
-            // Keep dropdown active when focused
-            if (!showFontFamily && fontFamilyRef.current) {
-              const rect = fontFamilyRef.current.getBoundingClientRect()
-              setFontFamilyPosition({ top: rect.bottom + 4, left: rect.left })
+          className="p-1.5 h-8 rounded-l border border-r-0 border-gray-300 hover:bg-gray-100 flex items-center justify-center"
+          title="Police précédente"
+        >
+          <ChevronLeft className="w-3 h-3 text-gray-500" />
+        </button>
+        <div className="relative" ref={fontFamilyRef}>
+          <button
+            onClick={() => {
+              if (fontFamilyRef.current) {
+                const rect = fontFamilyRef.current.getBoundingClientRect()
+                setFontFamilyPosition({ top: rect.bottom + 4, left: rect.left })
+              }
               const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
               setSelectedFontIndex(currentIndex >= 0 ? currentIndex : 0)
-              setShowFontFamily(true)
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowDown') {
-              e.preventDefault()
-              e.stopPropagation()
-              if (!showFontFamily) {
-                setShowFontFamily(true)
-                const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
-                setSelectedFontIndex(currentIndex >= 0 ? currentIndex : 0)
-              } else {
-                setSelectedFontIndex(prev => Math.min(prev + 1, FONT_FAMILIES.length - 1))
-              }
-            } else if (e.key === 'ArrowUp') {
-              e.preventDefault()
-              e.stopPropagation()
-              if (!showFontFamily) {
-                setShowFontFamily(true)
-                const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
-                setSelectedFontIndex(currentIndex >= 0 ? currentIndex : 0)
-              } else {
-                setSelectedFontIndex(prev => Math.max(prev - 1, 0))
-              }
-            } else if (e.key === 'Enter') {
-              e.preventDefault()
-              if (showFontFamily && selectedFontIndex >= 0 && selectedFontIndex < FONT_FAMILIES.length) {
-                handleFontFamilyChange(FONT_FAMILIES[selectedFontIndex])
+              setShowFontFamily(!showFontFamily)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown') {
+                e.preventDefault()
+                e.stopPropagation()
+                if (!showFontFamily) {
+                  setShowFontFamily(true)
+                  const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
+                  setSelectedFontIndex(currentIndex >= 0 ? currentIndex : 0)
+                } else {
+                  setSelectedFontIndex(prev => Math.min(prev + 1, FONT_FAMILIES.length - 1))
+                }
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault()
+                e.stopPropagation()
+                if (!showFontFamily) {
+                  setShowFontFamily(true)
+                  const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
+                  setSelectedFontIndex(currentIndex >= 0 ? currentIndex : 0)
+                } else {
+                  setSelectedFontIndex(prev => Math.max(prev - 1, 0))
+                }
+              } else if (e.key === 'Enter') {
+                e.preventDefault()
+                if (showFontFamily && selectedFontIndex >= 0 && selectedFontIndex < FONT_FAMILIES.length) {
+                  handleFontFamilyChange(FONT_FAMILIES[selectedFontIndex])
+                  setShowFontFamily(false)
+                }
+              } else if (e.key === 'Escape') {
+                e.preventDefault()
                 setShowFontFamily(false)
               }
-            } else if (e.key === 'Escape') {
-              e.preventDefault()
-              setShowFontFamily(false)
-            }
-          }}
-          className="px-2 md:px-2 py-2 md:py-1.5 h-10 md:h-8 min-w-[100px] md:min-w-[90px] text-left text-sm md:text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
-          title={currentFontFamily}
-        >
-          <span style={{ fontFamily: currentFontFamily }} className="truncate max-w-[70px]">{currentFontFamily}</span>
-          <ChevronDown className="w-4 h-4 md:w-3 md:h-3 text-gray-500 flex-shrink-0" />
-        </button>
+            }}
+            className="px-2 py-1.5 h-8 w-[130px] text-left text-xs border-y border-gray-300 hover:bg-gray-50 flex items-center justify-between gap-1"
+            title={currentFontFamily}
+          >
+            <span style={{ fontFamily: currentFontFamily }} className="truncate flex-1">{currentFontFamily}</span>
+            <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />
+          </button>
         {showFontFamily && (
           <>
             <div 
@@ -810,6 +815,18 @@ export default function GoogleDocsToolbar({ editor }) {
             </div>
           </>
         )}
+        </div>
+        <button
+          onClick={() => {
+            const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
+            const nextIndex = currentIndex < FONT_FAMILIES.length - 1 ? currentIndex + 1 : 0
+            handleFontFamilyChange(FONT_FAMILIES[nextIndex])
+          }}
+          className="p-1.5 h-8 rounded-r border border-l-0 border-gray-300 hover:bg-gray-100 flex items-center justify-center"
+          title="Police suivante"
+        >
+          <ChevronRight className="w-3 h-3 text-gray-500" />
+        </button>
       </div>
 
       {/* Font Size */}
@@ -899,17 +916,13 @@ export default function GoogleDocsToolbar({ editor }) {
             }}
             min="8"
             max="400"
-            className="w-24 md:w-20 px-2 h-full text-center text-sm md:text-xs border-x border-gray-300 focus:outline-none focus:ring-0"
+            className="w-12 px-1 h-full text-center text-sm md:text-xs border-x border-gray-300 focus:outline-none focus:ring-0 font-mono"
             style={{
               WebkitAppearance: 'textfield',
               MozAppearance: 'textfield'
             }}
+            placeholder="—"
           />
-          {fontSizeDisplay === 'inherited' && (
-            <span className="absolute inset-0 flex items-center justify-center text-xs text-gray-400 pointer-events-none px-1">
-              inherited
-            </span>
-          )}
         </div>
         <button
           onClick={handleFontSizeIncrease}
@@ -1052,7 +1065,12 @@ export default function GoogleDocsToolbar({ editor }) {
               paintMode ? 'bg-blue-100 text-blue-600' : ''
             }`}
           >
-            <Paintbrush className="w-5 h-5 md:w-4 md:h-4" />
+            {/* Paint bucket icon */}
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 11l-8-8-8.6 8.6a2 2 0 000 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11z" />
+              <path d="M5 17l-2 4" strokeLinecap="round" />
+              <path d="M21 21c0-1.5-1.5-3-3-3s-3 1.5-3 3 1.5 3 3 3 3-1.5 3-3z" fill="currentColor" />
+            </svg>
           </button>
         </Tooltip>
         
@@ -1167,16 +1185,14 @@ export default function GoogleDocsToolbar({ editor }) {
               }
               setShowTextColor(!showTextColor)
             }}
-            className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
               showTextColor ? 'bg-gray-200' : ''
             }`}
           >
-            <div className="relative">
-              <svg className="w-6 h-6 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-sm font-bold leading-none" style={{ color: currentTextColor }}>A</span>
               <div 
-                className="absolute bottom-0 left-0 right-0 h-1.5 rounded-b"
+                className="w-4 h-1 rounded-sm mt-0.5"
                 style={{ backgroundColor: currentTextColor }}
               />
             </div>
@@ -1287,14 +1303,12 @@ export default function GoogleDocsToolbar({ editor }) {
               showHighlightColor ? 'bg-gray-200' : ''
             }`}
           >
-            <div className="relative">
-              <Paintbrush className="w-5 h-5 md:w-4 md:h-4" />
-              {currentHighlightColor && (
-                <div 
-                  className="absolute bottom-0 left-0 right-0 h-1.5 rounded-b"
-                  style={{ backgroundColor: currentHighlightColor }}
-                />
-              )}
+            <div className="flex flex-col items-center justify-center">
+              <Highlighter className="w-4 h-4" />
+              <div 
+                className="w-4 h-1 rounded-sm mt-0.5"
+                style={{ backgroundColor: currentHighlightColor || '#FFFF00' }}
+              />
             </div>
           </button>
         </Tooltip>
@@ -1420,7 +1434,7 @@ export default function GoogleDocsToolbar({ editor }) {
               style={{ zIndex: 60 }}
             />
             <div 
-              className="fixed bg-white border border-gray-300 rounded shadow-lg" 
+              className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-1 flex gap-0.5" 
               style={{ 
                 zIndex: 70,
                 position: 'fixed',
@@ -1428,43 +1442,43 @@ export default function GoogleDocsToolbar({ editor }) {
                 left: `${alignPosition.left}px`
               }}
             >
-            <button
-              onClick={() => handleAlignChange('left')}
-              className={`w-full px-4 py-3 md:px-3 md:py-2 hover:bg-gray-100 flex items-center justify-center ${
-                currentAlign === 'left' ? 'bg-blue-50 text-blue-600' : ''
-              }`}
-              title="Left"
-            >
-              <AlignLeft className="w-6 h-6 md:w-4 md:h-4" />
-            </button>
-            <button
-              onClick={() => handleAlignChange('center')}
-              className={`w-full px-4 py-3 md:px-3 md:py-2 hover:bg-gray-100 flex items-center justify-center ${
-                currentAlign === 'center' ? 'bg-blue-50 text-blue-600' : ''
-              }`}
-              title="Center"
-            >
-              <AlignCenter className="w-6 h-6 md:w-4 md:h-4" />
-            </button>
-            <button
-              onClick={() => handleAlignChange('right')}
-              className={`w-full px-4 py-3 md:px-3 md:py-2 hover:bg-gray-100 flex items-center justify-center ${
-                currentAlign === 'right' ? 'bg-blue-50 text-blue-600' : ''
-              }`}
-              title="Right"
-            >
-              <AlignRight className="w-6 h-6 md:w-4 md:h-4" />
-            </button>
-            <button
-              onClick={() => handleAlignChange('justify')}
-              className={`w-full px-4 py-3 md:px-3 md:py-2 hover:bg-gray-100 flex items-center justify-center ${
-                currentAlign === 'justify' ? 'bg-blue-50 text-blue-600' : ''
-              }`}
-              title="Justify"
-            >
-              <AlignJustify className="w-6 h-6 md:w-4 md:h-4" />
-            </button>
-          </div>
+              <button
+                onClick={() => handleAlignChange('left')}
+                className={`p-2 rounded hover:bg-gray-100 ${
+                  currentAlign === 'left' ? 'bg-gray-200' : ''
+                }`}
+                title="Gauche"
+              >
+                <AlignLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleAlignChange('center')}
+                className={`p-2 rounded hover:bg-gray-100 ${
+                  currentAlign === 'center' ? 'bg-gray-200' : ''
+                }`}
+                title="Centre"
+              >
+                <AlignCenter className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleAlignChange('right')}
+                className={`p-2 rounded hover:bg-gray-100 ${
+                  currentAlign === 'right' ? 'bg-gray-200' : ''
+                }`}
+                title="Droite"
+              >
+                <AlignRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleAlignChange('justify')}
+                className={`p-2 rounded hover:bg-gray-100 ${
+                  currentAlign === 'justify' ? 'bg-gray-200' : ''
+                }`}
+                title="Justifié"
+              >
+                <AlignJustify className="w-4 h-4" />
+              </button>
+            </div>
           </>
         )}
       </div>
@@ -1551,7 +1565,7 @@ export default function GoogleDocsToolbar({ editor }) {
           }}
           className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
         >
-          <Image className="w-5 h-5 md:w-4 md:h-4" />
+          <ImagePlus className="w-4 h-4" />
         </button>
       </Tooltip>
 
@@ -1569,9 +1583,14 @@ export default function GoogleDocsToolbar({ editor }) {
               console.warn('Drawing extension not available')
             }
           }}
-          className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
+          className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center relative"
         >
-          <PenTool className="w-5 h-5 md:w-4 md:h-4" />
+          {/* Custom drawing canvas icon */}
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M7 17c3-3 5-8 10-10" strokeLinecap="round" />
+            <circle cx="17" cy="7" r="1.5" fill="currentColor" stroke="none" />
+          </svg>
         </button>
       </Tooltip>
 
