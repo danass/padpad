@@ -11,13 +11,19 @@ export async function middleware(request) {
     return NextResponse.next()
   }
 
-  // Allow access to auth pages, API auth routes, migration routes, public routes, and root page
+  // Allow access to auth pages, API auth routes, migration routes, public routes, SEO routes, and root page
   if (pathname === '/' ||
-      pathname.startsWith('/auth') || 
-      pathname.startsWith('/api/auth') || 
-      pathname.startsWith('/api/migrate') ||
-      pathname.startsWith('/public') ||
-      pathname.startsWith('/api/public')) {
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api/migrate') ||
+    pathname.startsWith('/public') ||
+    pathname.startsWith('/api/public') ||
+    pathname.startsWith('/online-text-editor') ||
+    pathname.startsWith('/features') ||
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml' ||
+    pathname === '/privacy' ||
+    pathname === '/terms') {
     return NextResponse.next()
   }
 
@@ -33,7 +39,7 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    '/((?!api/auth|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)',
   ],
 }
 

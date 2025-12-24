@@ -667,6 +667,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                   onClick={(e) => { e.stopPropagation(); handleAlign('left') }}
                   className={`p-2 rounded transition-colors ${align === 'left' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
                   title={t?.alignLeft || 'Align left'}
+                  aria-label={t?.alignLeft || 'Align left'}
                 >
                   <AlignLeft className="w-4 h-4 text-gray-600" />
                 </button>
@@ -674,6 +675,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                   onClick={(e) => { e.stopPropagation(); handleAlign('center') }}
                   className={`p-2 rounded transition-colors ${align === 'center' || !align ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
                   title={t?.alignCenter || 'Align center'}
+                  aria-label={t?.alignCenter || 'Align center'}
                 >
                   <AlignCenter className="w-4 h-4 text-gray-600" />
                 </button>
@@ -681,6 +683,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                   onClick={(e) => { e.stopPropagation(); handleAlign('right') }}
                   className={`p-2 rounded transition-colors ${align === 'right' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
                   title={t?.alignRight || 'Align right'}
+                  aria-label={t?.alignRight || 'Align right'}
                 >
                   <AlignRight className="w-4 h-4 text-gray-600" />
                 </button>
@@ -694,6 +697,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
               }}
               className="p-2 hover:bg-gray-100 rounded transition-colors"
               title={t?.undoLastStroke || 'Undo last stroke'}
+              aria-label={t?.undoLastStroke || 'Undo last stroke'}
             >
               <Undo2 className="w-4 h-4 text-gray-600" />
             </button>
@@ -704,6 +708,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
               }}
               className="p-2 hover:bg-gray-100 rounded transition-colors"
               title={t?.exportAsPng || 'Export as PNG'}
+              aria-label={t?.exportAsPng || 'Export as PNG'}
             >
               <Download className="w-4 h-4 text-gray-600" />
             </button>
@@ -715,6 +720,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                 }}
                 className="p-2 hover:bg-gray-100 rounded transition-colors"
                 title={t?.returnToFlow || 'Return to text flow'}
+                aria-label={t?.returnToFlow || 'Return to text flow'}
               >
                 <AlignLeft className="w-4 h-4 text-gray-600" />
               </button>
@@ -726,6 +732,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                 }}
                 className="p-2 hover:bg-gray-100 rounded transition-colors"
                 title={t?.makeAbsolute || 'Make absolute'}
+                aria-label={t?.makeAbsolute || 'Make absolute'}
               >
                 <Move className="w-4 h-4 text-gray-600" />
               </button>
@@ -737,6 +744,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
               }}
               className="p-2 hover:bg-gray-100 rounded transition-colors"
               title={t?.delete || 'Delete'}
+              aria-label={t?.delete || 'Delete'}
             >
               <Trash2 className="w-4 h-4 text-red-600" />
             </button>

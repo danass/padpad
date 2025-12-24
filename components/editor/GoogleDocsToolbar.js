@@ -772,6 +772,7 @@ export default function GoogleDocsToolbar({ editor }) {
             }}
             className="px-2 py-1.5 h-8 w-[130px] text-left text-xs border-y border-gray-300 hover:bg-gray-50 flex items-center justify-between gap-1"
             title={currentFontFamily}
+            aria-label={`Font family: ${currentFontFamily}`}
           >
             <span style={{ fontFamily: currentFontFamily }} className="truncate flex-1">{currentFontFamily}</span>
             <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />
@@ -828,6 +829,7 @@ export default function GoogleDocsToolbar({ editor }) {
                   index === selectedFontIndex ? 'bg-blue-50' : ''
                 } ${currentFontFamily === font ? 'font-semibold' : ''}`}
                 style={{ fontFamily: font }}
+                aria-label={`Select font ${font}`}
               >
                 <span>{font}</span>
                 {currentFontFamily === font && (
@@ -953,6 +955,7 @@ export default function GoogleDocsToolbar({ editor }) {
               MozAppearance: 'textfield'
             }}
             placeholder="—"
+            aria-label="Font size"
           />
         </div>
         <button
@@ -1155,6 +1158,7 @@ export default function GoogleDocsToolbar({ editor }) {
                       }`}
                       style={{ backgroundColor: color }}
                       title={color}
+                      aria-label={`Select text color ${color}`}
                     />
                   ))}
                 </div>
@@ -1171,6 +1175,7 @@ export default function GoogleDocsToolbar({ editor }) {
                     value={currentTextColor}
                     onChange={(e) => handleTextColorChange(e.target.value)}
                     className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
+                    aria-label="Custom text color picker"
                   />
                   <input
                     type="text"
@@ -1194,6 +1199,7 @@ export default function GoogleDocsToolbar({ editor }) {
                     className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-black"
                     placeholder="#000000"
                     maxLength={7}
+                    aria-label="Custom text color hex code"
                   />
                 </div>
               </div>
@@ -1268,6 +1274,7 @@ export default function GoogleDocsToolbar({ editor }) {
                       }`}
                       style={{ backgroundColor: color }}
                       title={color}
+                      aria-label={`Select highlight color ${color}`}
                     />
                   ))}
                 </div>
@@ -1284,6 +1291,7 @@ export default function GoogleDocsToolbar({ editor }) {
                     value={currentHighlightColor || '#fef08a'}
                     onChange={(e) => handleHighlightColorChange(e.target.value)}
                     className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
+                    aria-label="Custom highlight color picker"
                   />
                   <input
                     type="text"
@@ -1307,6 +1315,7 @@ export default function GoogleDocsToolbar({ editor }) {
                     className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-black"
                     placeholder="#fef08a"
                     maxLength={7}
+                    aria-label="Custom highlight color hex code"
                   />
                 </div>
               </div>
@@ -1501,6 +1510,7 @@ export default function GoogleDocsToolbar({ editor }) {
       {/* Drawing */}
       <Tooltip label={t?.drawingArea || 'Drawing area'}>
         <button
+          aria-label={t?.drawingArea || 'Drawing area'}
           onClick={() => {
             if (editor && editor.can().setDrawing) {
               // Responsive size: smaller on mobile

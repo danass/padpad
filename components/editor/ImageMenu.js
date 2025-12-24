@@ -187,6 +187,7 @@ export default function ImageMenu({ node, updateAttributes, deleteNode, editor, 
                   className={`px-2 py-1 text-xs rounded ${
                     align === 'left' ? 'bg-gray-100' : 'hover:bg-gray-100'
                   }`}
+                  aria-label={t?.alignLeft || 'Align left'}
                 >
                   ←
                 </button>
@@ -195,6 +196,7 @@ export default function ImageMenu({ node, updateAttributes, deleteNode, editor, 
                   className={`px-2 py-1 text-xs rounded ${
                     align === 'center' ? 'bg-gray-100' : 'hover:bg-gray-100'
                   }`}
+                  aria-label={t?.alignCenter || 'Align center'}
                 >
                   ↕
                 </button>
@@ -203,6 +205,7 @@ export default function ImageMenu({ node, updateAttributes, deleteNode, editor, 
                   className={`px-2 py-1 text-xs rounded ${
                     align === 'right' ? 'bg-gray-100' : 'hover:bg-gray-100'
                   }`}
+                  aria-label={t?.alignRight || 'Align right'}
                 >
                   →
                 </button>
@@ -214,12 +217,14 @@ export default function ImageMenu({ node, updateAttributes, deleteNode, editor, 
             <button
               onClick={handleDuplicate}
               className="w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100"
+              aria-label={t?.duplicate || 'Duplicate'}
             >
               {t?.duplicate || 'Duplicate'}
             </button>
             <button
               onClick={handleDelete}
               className="w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 text-red-600"
+              aria-label={t?.delete || 'Delete'}
             >
               {t?.delete || 'Delete'}
             </button>

@@ -73,6 +73,7 @@ export default function DragHandle({ editor, onAddClick, onOptionsClick }) {
         }}
         className="drag-handle-button drag-handle-add"
         title={t?.addContent || 'Add content'}
+        aria-label={t?.addContent || 'Add content'}
         style={{
           width: '20px',
           height: '20px',
@@ -98,6 +99,7 @@ export default function DragHandle({ editor, onAddClick, onOptionsClick }) {
         }}
         className="drag-handle-button drag-handle-options"
         title={t?.options || 'Options'}
+        aria-label={t?.options || 'Options'}
         style={{
           width: '20px',
           height: '20px',
