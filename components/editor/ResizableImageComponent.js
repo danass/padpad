@@ -198,7 +198,7 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
               touchAction: 'none'
             }}
             onClick={handleImageClick}
-            className="rounded-lg transition-all group-hover:ring-2 group-hover:ring-blue-400"
+            className={`rounded-lg transition-all ${editor.isEditable ? 'group-hover:ring-2 group-hover:ring-blue-400' : ''}`}
             draggable={false}
             onTouchStart={(e) => {
               // Prevent scroll when touching image on mobile

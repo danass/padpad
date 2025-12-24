@@ -601,7 +601,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                 startDrawing(e)
               }
             }}
-            className="transition-all group-hover:ring-2 group-hover:ring-blue-400"
+            className={`transition-all ${editor.isEditable ? 'group-hover:ring-2 group-hover:ring-blue-400' : ''}`}
           />
           
           {/* Resize handles */}
