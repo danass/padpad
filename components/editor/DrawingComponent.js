@@ -504,10 +504,10 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
   }
 
   return (
-    <NodeViewWrapper className="drawing-wrapper" data-drag-handle={editor.isEditable ? '' : undefined}>
+    <NodeViewWrapper className="drawing-wrapper block" data-drag-handle={editor.isEditable ? '' : undefined}>
       <div 
         ref={containerRef}
-        className="group relative inline-block"
+        className="group relative block"
         style={containerStyle}
         onMouseEnter={() => setShowHoverMenu(true)}
         onMouseLeave={() => setShowHoverMenu(false)}
