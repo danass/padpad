@@ -151,17 +151,36 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
   
   const handleWidthPreset = (preset) => {
     if (!imageRef.current) return
-    const containerWidth = imageRef.current.parentElement?.offsetWidth || 800
+    // Find the editor/prose container for accurate width
+    const proseElement = imageRef.current.closest('.prose') || 
+                         imageRef.current.closest('.ProseMirror') ||
+                         imageRef.current.closest('[class*="editor"]')
+    const containerWidth = proseElement?.offsetWidth || 800
     let newWidth
     switch (preset) {
       case '1/3': newWidth = Math.floor(containerWidth / 3); break
       case '2/3': newWidth = Math.floor(containerWidth * 2 / 3); break
-      case 'full': newWidth = containerWidth; break
+      case 'full': newWidth = containerWidth - 32; break // Subtract padding
       default: return
     }
-    const aspectRatio = (height || imageRef.current.naturalHeight) / (width || imageRef.current.naturalWidth)
+    const aspectRatio = (imageRef.current.naturalHeight || height) / (imageRef.current.naturalWidth || width || 1)
     const newHeight = Math.floor(newWidth * aspectRatio)
     updateAttributes({ width: newWidth, height: newHeight })
+    setShowMenu(false)
+  }
+  
+  // Determine which width preset is currently active
+  const getActiveWidthPreset = () => {
+    if (!imageRef.current || !width) return null
+    const proseElement = imageRef.current.closest('.prose') || 
+                         imageRef.current.closest('.ProseMirror') ||
+                         imageRef.current.closest('[class*="editor"]')
+    const containerWidth = proseElement?.offsetWidth || 800
+    const tolerance = 20 // Allow some tolerance for rounding
+    if (Math.abs(width - Math.floor(containerWidth / 3)) < tolerance) return '1/3'
+    if (Math.abs(width - Math.floor(containerWidth * 2 / 3)) < tolerance) return '2/3'
+    if (Math.abs(width - (containerWidth - 32)) < tolerance) return 'full'
+    return null
   }
 
   // Calculate aspect ratio to preserve image proportions
@@ -283,22 +302,34 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
             <div className="text-xs font-semibold text-gray-500 mb-2 px-2">Largeur</div>
             <div className="flex gap-1 mb-2">
               <button
-                onClick={() => handleWidthPreset('1/3')}
-                className="px-3 py-1.5 text-xs rounded hover:bg-gray-100 border border-gray-200"
+                onClick={() => getActiveWidthPreset() !== '1/3' && handleWidthPreset('1/3')}
+                className={`px-3 py-1.5 text-xs rounded border transition-colors ${
+                  getActiveWidthPreset() === '1/3' 
+                    ? 'bg-gray-200 border-gray-400 cursor-default' 
+                    : 'hover:bg-gray-100 border-gray-200'
+                }`}
                 title="1/3 de la largeur"
               >
                 ⅓
               </button>
               <button
-                onClick={() => handleWidthPreset('2/3')}
-                className="px-3 py-1.5 text-xs rounded hover:bg-gray-100 border border-gray-200"
+                onClick={() => getActiveWidthPreset() !== '2/3' && handleWidthPreset('2/3')}
+                className={`px-3 py-1.5 text-xs rounded border transition-colors ${
+                  getActiveWidthPreset() === '2/3' 
+                    ? 'bg-gray-200 border-gray-400 cursor-default' 
+                    : 'hover:bg-gray-100 border-gray-200'
+                }`}
                 title="2/3 de la largeur"
               >
                 ⅔
               </button>
               <button
-                onClick={() => handleWidthPreset('full')}
-                className="px-3 py-1.5 text-xs rounded hover:bg-gray-100 border border-gray-200"
+                onClick={() => getActiveWidthPreset() !== 'full' && handleWidthPreset('full')}
+                className={`px-3 py-1.5 text-xs rounded border transition-colors ${
+                  getActiveWidthPreset() === 'full' 
+                    ? 'bg-gray-200 border-gray-400 cursor-default' 
+                    : 'hover:bg-gray-100 border-gray-200'
+                }`}
                 title="Pleine largeur"
               >
                 100%

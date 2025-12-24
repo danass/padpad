@@ -1148,7 +1148,7 @@ export default function DocumentPage() {
                         showToast('URL copied', 'success')
                       }
                     }}
-                    className="p-1.5 border border-green-200 bg-green-50 rounded-md hover:bg-green-100 text-green-700 transition-colors"
+                    className="p-1.5 border border-gray-200 rounded-md hover:bg-gray-50 text-gray-700 transition-colors"
                     title="Copy public URL"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

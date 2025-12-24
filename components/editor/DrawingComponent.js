@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { NodeViewWrapper } from '@tiptap/react'
-import { Undo2, Download, Move, Trash2, AlignLeft } from 'lucide-react'
+import { Undo2, Download, Move, Trash2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 
 export default function DrawingComponent({ node, updateAttributes, deleteNode, editor, getPos }) {
   const canvasRef = useRef(null)
@@ -24,7 +24,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
   const hasMovedRef = useRef(false)
   const [maxWidth, setMaxWidth] = useState(null)
 
-  const { paths, width, height, x, y } = node.attrs
+  const { paths, width, height, x, y, align = 'center' } = node.attrs
   
   // Calculate responsive width for mobile
   useEffect(() => {
@@ -479,15 +479,28 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
     }
   }, [isResizing, resizeCorner, resizeStart, updateAttributes])
 
-  // Calculate container style for absolute positioning
+  // Calculate container style for absolute positioning and alignment
+  const getAlignMargin = () => {
+    if (isAbsolute) return undefined
+    switch (align) {
+      case 'left': return '0 auto 0 0'
+      case 'right': return '0 0 0 auto'
+      default: return '0 auto' // center
+    }
+  }
+  
   const containerStyle = {
     position: (x !== null && x !== undefined && y !== null && y !== undefined) ? 'absolute' : 'relative',
     left: (x !== null && x !== undefined) ? `${x}px` : undefined,
     top: (y !== null && y !== undefined) ? `${y}px` : undefined,
-    width: isAbsolute ? `${displayWidth}px` : '100%',
+    width: isAbsolute ? `${displayWidth}px` : 'fit-content',
     maxWidth: '100%',
-    textAlign: 'center',
+    margin: getAlignMargin(),
     zIndex: 5, // Low z-index for drawing canvas, below header/toolbar
+  }
+  
+  const handleAlign = (newAlign) => {
+    updateAttributes({ align: newAlign })
   }
 
   return (
@@ -645,6 +658,33 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
           {/* Hover menu - positioned relative to canvas container */}
           {editor.isEditable && showHoverMenu && (
             <div className="absolute bottom-2 right-2 bg-white border border-gray-200 rounded-lg shadow-lg p-1 flex gap-1 z-20">
+            {/* Alignment buttons - only show when not absolute */}
+            {!isAbsolute && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleAlign('left') }}
+                  className={`p-2 rounded transition-colors ${align === 'left' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                  title="Align left"
+                >
+                  <AlignLeft className="w-4 h-4 text-gray-600" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleAlign('center') }}
+                  className={`p-2 rounded transition-colors ${align === 'center' || !align ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                  title="Align center"
+                >
+                  <AlignCenter className="w-4 h-4 text-gray-600" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleAlign('right') }}
+                  className={`p-2 rounded transition-colors ${align === 'right' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                  title="Align right"
+                >
+                  <AlignRight className="w-4 h-4 text-gray-600" />
+                </button>
+                <div className="w-px h-6 bg-gray-200 mx-0.5" />
+              </>
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation()
