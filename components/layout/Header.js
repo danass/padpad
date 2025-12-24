@@ -28,11 +28,11 @@ export default function Header() {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const menuRef = useRef(null)
   const hasLoadedRef = useRef(false)
-  
+
   const isDrive = pathname?.startsWith('/drive')
   const isDoc = pathname?.startsWith('/doc')
   const isAdminPage = pathname?.startsWith('/admin')
-  
+
   useEffect(() => {
     if (session?.user?.email) {
       // Reset cache if user changed
@@ -44,7 +44,7 @@ export default function Header() {
         headerCache.userEmail = session.user.email
         hasLoadedRef.current = false
       }
-      
+
       // Only load once per session mount
       if (!hasLoadedRef.current) {
         hasLoadedRef.current = true
@@ -61,7 +61,7 @@ export default function Header() {
       }
     }
   }, [session?.user?.email])
-  
+
   const loadAvatar = async () => {
     const now = Date.now()
     // Use cache if still valid
@@ -69,7 +69,7 @@ export default function Header() {
       setCustomAvatar(headerCache.avatar)
       return
     }
-    
+
     try {
       const response = await fetch('/api/users/avatar')
       if (response.ok) {
@@ -82,7 +82,7 @@ export default function Header() {
       // Silently fail
     }
   }
-  
+
   const checkAdminStatus = async () => {
     const now = Date.now()
     // Use cache if still valid
@@ -90,7 +90,7 @@ export default function Header() {
       setIsAdmin(headerCache.adminStatus)
       return
     }
-    
+
     try {
       const response = await fetch('/api/admin/check')
       if (response.ok) {
@@ -122,7 +122,7 @@ export default function Header() {
       }
     }
   }, [showUserMenu])
-  
+
   return (
     <header className="border-b border-gray-200 bg-white relative z-[100]">
       <div className="max-w-full mx-auto">
@@ -131,9 +131,9 @@ export default function Header() {
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2" title={t?.appName || 'TextPad - Online Text Pad'}>
               <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
-                <img 
-                  src="/padpad.png" 
-                  alt="textpad logo" 
+                <img
+                  src="/padpad.svg"
+                  alt="textpad logo"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -162,7 +162,7 @@ export default function Header() {
               </Link>
             )}
           </div>
-          
+
           {/* Right side - Actions */}
           <div className="flex items-center gap-3">
             {!session && (
@@ -181,9 +181,9 @@ export default function Header() {
                   className="w-8 h-8 md:w-9 md:h-9 rounded-full overflow-hidden flex items-center justify-center bg-gray-200 hover:ring-2 hover:ring-gray-300 transition-all cursor-pointer"
                 >
                   {customAvatar ? (
-                    <img 
-                      src={customAvatar} 
-                      alt={session.user?.name || 'User'} 
+                    <img
+                      src={customAvatar}
+                      alt={session.user?.name || 'User'}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         // Fallback to default if custom avatar fails to load
@@ -191,24 +191,24 @@ export default function Header() {
                       }}
                     />
                   ) : session.user?.image ? (
-                    <img 
-                      src={session.user.image} 
-                      alt={session.user.name || 'User'} 
+                    <img
+                      src={session.user.image}
+                      alt={session.user.name || 'User'}
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <img 
+                    <img
                       src={`https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(session.user?.email || session.user?.name || 'user')}`}
-                      alt={session.user?.name || 'User'} 
+                      alt={session.user?.name || 'User'}
                       className="w-full h-full object-cover"
                     />
                   )}
                 </button>
-                
+
                 {showUserMenu && (
                   <>
-                    <div 
-                      className="fixed inset-0 z-10" 
+                    <div
+                      className="fixed inset-0 z-10"
                       onClick={() => setShowUserMenu(false)}
                     />
                     <div className="absolute right-0 mt-2 w-48 md:w-56 bg-white border border-gray-200 rounded-md shadow-lg z-20">
@@ -225,11 +225,10 @@ export default function Header() {
                           <Link
                             href="/admin"
                             onClick={() => setShowUserMenu(false)}
-                            className={`block px-4 py-2.5 md:py-2 text-sm transition-colors ${
-                              isAdminPage
+                            className={`block px-4 py-2.5 md:py-2 text-sm transition-colors ${isAdminPage
                                 ? 'bg-gray-100 text-gray-900 font-medium'
                                 : 'text-gray-700 hover:bg-gray-100'
-                            }`}
+                              }`}
                             title="Admin Panel"
                           >
                             Admin
@@ -255,17 +254,16 @@ export default function Header() {
             )}
           </div>
         </div>
-        
+
         {/* Secondary navigation tabs and document tabs on same line */}
         {session && (isDrive || isDoc) && (
           <nav className="flex items-center gap-1 px-6 border-t border-gray-100 overflow-x-auto">
             <Link
               href="/drive"
-              className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 flex-shrink-0 ${
-                isDrive && !isDoc
+              className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 flex-shrink-0 ${isDrive && !isDoc
                   ? 'border-gray-900 text-gray-900'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
               title={t?.drive || 'Drive'}
             >
               {t?.drive || 'Drive'}

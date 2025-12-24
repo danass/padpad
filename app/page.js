@@ -448,7 +448,7 @@ export default function Home() {
                     style={{ opacity: showWatermark ? 0.1 : 0 }}
                   >
                     <img
-                      src="/padpad.png"
+                      src="/padpad.svg"
                       // alt="textpad watermark" 
                       className="w-64 h-64 md:w-96 md:h-96 object-contain"
                     />

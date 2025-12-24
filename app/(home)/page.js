@@ -442,7 +442,7 @@ export default function Home() {
                       <source srcSet="/padpad.avif" type="image/avif" />
                       <source srcSet="/padpad.webp" type="image/webp" />
                       <img
-                        src="/padpad.png"
+                        src="/padpad.svg"
                         className="w-64 h-64 md:w-96 md:h-96 object-contain"
                         width="384"
                         height="384"
