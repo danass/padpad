@@ -73,25 +73,26 @@ export async function GET(request, { params }) {
     let nextDoc = null
     
     if (document.user_id) {
-      // Get previous document (older)
+      // Get previous document (older) - exclude current document
       const prevResult = await sql.query(
         `SELECT id, title FROM documents 
-         WHERE user_id = $1 AND is_public = true AND updated_at < $2
-         ORDER BY updated_at DESC LIMIT 1`,
-        [document.user_id, document.updated_at]
+         WHERE user_id = $1 AND is_public = true AND id != $2 AND updated_at <= $3
+         ORDER BY updated_at DESC, id DESC LIMIT 1`,
+        [document.user_id, document.id, document.updated_at]
       )
       if (prevResult.rows.length > 0) {
         prevDoc = prevResult.rows[0]
       }
       
-      // Get next document (newer)
+      // Get next document (newer) - exclude current document
       const nextResult = await sql.query(
         `SELECT id, title FROM documents 
-         WHERE user_id = $1 AND is_public = true AND updated_at > $2
-         ORDER BY updated_at ASC LIMIT 1`,
-        [document.user_id, document.updated_at]
+         WHERE user_id = $1 AND is_public = true AND id != $2 AND updated_at >= $3
+         ORDER BY updated_at ASC, id ASC LIMIT 1`,
+        [document.user_id, document.id, document.updated_at]
       )
-      if (nextResult.rows.length > 0) {
+      // Filter out current document if it somehow got included
+      if (nextResult.rows.length > 0 && nextResult.rows[0].id !== document.id) {
         nextDoc = nextResult.rows[0]
       }
     }

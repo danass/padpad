@@ -1178,13 +1178,7 @@ export default function GoogleDocsToolbar({ editor }) {
       <div className="relative" ref={textColorRef}>
         <Tooltip label="Couleur du texte">
           <button
-            onClick={() => {
-              if (textColorRef.current) {
-                const rect = textColorRef.current.getBoundingClientRect()
-                setTextColorPosition({ top: rect.bottom + 4, left: rect.left })
-              }
-              setShowTextColor(!showTextColor)
-            }}
+            onClick={() => setShowTextColor(!showTextColor)}
             className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
               showTextColor ? 'bg-gray-200' : ''
             }`}
@@ -1203,7 +1197,6 @@ export default function GoogleDocsToolbar({ editor }) {
             <div 
               className="fixed inset-0" 
               onClick={(e) => {
-                // Only close if clicking on the overlay, not on the color picker itself
                 if (e.target === e.currentTarget) {
                   setShowTextColor(false)
                 }
@@ -1211,15 +1204,9 @@ export default function GoogleDocsToolbar({ editor }) {
               style={{ zIndex: 60 }}
             />
             <div 
-              className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]" 
+              className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px] z-[70]" 
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
-              style={{ 
-                zIndex: 70,
-                position: 'fixed',
-                top: `${textColorPosition.top}px`,
-                left: `${textColorPosition.left}px`
-              }}
             >
               {/* Preset Colors Grid */}
               <div className="mb-3">
@@ -1292,13 +1279,7 @@ export default function GoogleDocsToolbar({ editor }) {
       <div className="relative" ref={highlightColorRef}>
         <Tooltip label="Surligneur">
           <button
-            onClick={() => {
-              if (highlightColorRef.current) {
-                const rect = highlightColorRef.current.getBoundingClientRect()
-                setHighlightColorPosition({ top: rect.bottom + 4, left: rect.left })
-              }
-              setShowHighlightColor(!showHighlightColor)
-            }}
+            onClick={() => setShowHighlightColor(!showHighlightColor)}
             className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
               showHighlightColor ? 'bg-gray-200' : ''
             }`}
@@ -1317,7 +1298,6 @@ export default function GoogleDocsToolbar({ editor }) {
             <div 
               className="fixed inset-0" 
               onClick={(e) => {
-                // Only close if clicking on the overlay, not on the color picker itself
                 if (e.target === e.currentTarget) {
                   setShowHighlightColor(false)
                 }
@@ -1325,15 +1305,9 @@ export default function GoogleDocsToolbar({ editor }) {
               style={{ zIndex: 60 }}
             />
             <div 
-              className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]" 
+              className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px] z-[70]" 
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
-              style={{ 
-                zIndex: 70,
-                position: 'fixed',
-                top: `${highlightColorPosition.top}px`,
-                left: `${highlightColorPosition.left}px`
-              }}
             >
               {/* Preset Colors Grid */}
               <div className="mb-3">

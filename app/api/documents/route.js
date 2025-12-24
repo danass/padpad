@@ -21,7 +21,8 @@ export async function GET(request) {
         d.updated_at,
         d.current_snapshot_id,
         d.content_text,
-        d.auto_public_date
+        d.auto_public_date,
+        d.is_public
       FROM documents d
       WHERE d.user_id = $1
     `

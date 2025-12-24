@@ -508,7 +508,9 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
               width: `${displayWidth}px`,
               height: `${displayHeight}px`,
               maxWidth: '100%',
-              border: isSelected ? `2px solid ${currentColorRef.current}` : '1px solid #e5e7eb',
+              border: editor.isEditable 
+                ? (isSelected ? `2px solid ${currentColorRef.current}` : '1px solid #e5e7eb')
+                : 'none',
               borderRadius: '0.5rem',
               backgroundColor: 'transparent',
               cursor: editor.isEditable ? (isDragging ? 'grabbing' : (isResizing ? 'nwse-resize' : 'crosshair')) : 'default',
