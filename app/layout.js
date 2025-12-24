@@ -2,29 +2,57 @@ import './globals.css'
 import { LanguageProvider } from '@/app/i18n/LanguageContext'
 
 export const metadata = {
-  title: 'Online Text Editor – Simple & Collaborative | Textpad',
-  description: 'Simple online text editor to write, edit and share text instantly. No account required. Collaborative and fast.',
-  keywords: 'online text editor, textpad online, online notepad, simple text editor, collaborative text editor, share text online',
+  title: 'Textpad – Free Online Text Editor & Personal Blog',
+  description: 'Write, edit and share text instantly with Textpad. Create your own public blog with a custom subdomain. Save documents, version history, organize in folders. No account needed to start.',
+  keywords: 'online text editor, textpad, online notepad, personal blog, public blog, text sharing, document editor, free notepad, share text online, version history',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
-    title: 'Online Text Editor – Simple & Collaborative | Textpad',
-    description: 'Simple online text editor to write, edit and share text instantly. No account required. Collaborative and fast.',
+    title: 'Textpad – Free Online Text Editor & Personal Blog',
+    description: 'Write, edit and share text instantly with Textpad. Create your own public blog with a custom subdomain. Save documents, version history, organize in folders.',
     type: 'website',
     url: 'https://textpad.cloud',
+    siteName: 'Textpad',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Online Text Editor – Simple & Collaborative | Textpad',
-    description: 'Simple online text editor to write, edit and share text instantly. No account required. Collaborative and fast.',
+    title: 'Textpad – Free Online Text Editor & Personal Blog',
+    description: 'Write, edit and share text instantly with Textpad. Create your own public blog with a custom subdomain. Save documents, version history, organize in folders.',
+  },
+  alternates: {
+    canonical: 'https://textpad.cloud',
   },
 }
 
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
+}
+
+// JSON-LD structured data
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Textpad',
+  url: 'https://textpad.cloud',
+  description: 'Free online text editor with personal blog, document sharing, version history and folder organization.',
+  applicationCategory: 'Productivity',
+  operatingSystem: 'Any',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+  },
+  featureList: [
+    'Online text editing',
+    'Personal blog with custom subdomain',
+    'Document sharing via link',
+    'Version history',
+    'Folder organization',
+    'No account required to start',
+  ],
 }
 
 // Root layout - minimal, shared by all route groups
@@ -35,6 +63,10 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Lato:wght@300;400;700&family=Open+Sans:wght@300;400;600;700&family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body className="bg-white min-h-screen flex flex-col" suppressHydrationWarning>
         <LanguageProvider>
