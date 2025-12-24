@@ -83,6 +83,24 @@ export default function FolderPage() {
     }
   }
   
+  async function togglePublic(id, isPublic) {
+    try {
+      const response = await fetch(`/api/documents/${id}/public`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_public: isPublic })
+      })
+      
+      if (response.ok) {
+        setDocuments(prev => prev.map(doc => 
+          doc.id === id ? { ...doc, is_public: isPublic } : doc
+        ))
+      }
+    } catch (error) {
+      console.error('Error deleting document:', error)
+    }
+  }
+  
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -158,6 +176,7 @@ export default function FolderPage() {
               <DocumentList 
                 documents={documents} 
                 onDelete={deleteDocument}
+                onTogglePublic={togglePublic}
                 onCreateFolder={async (name) => {
                   const response = await fetch('/api/folders', {
                     method: 'POST',

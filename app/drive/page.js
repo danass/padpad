@@ -177,6 +177,29 @@ export default function DrivePage() {
     }
   }, [loadData, showToast])
   
+  const togglePublic = useCallback(async (id, isPublic) => {
+    try {
+      const response = await fetch(`/api/documents/${id}/public`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_public: isPublic })
+      })
+      
+      if (response.ok) {
+        // Update local state immediately
+        setDocuments(prev => prev.map(doc => 
+          doc.id === id ? { ...doc, is_public: isPublic } : doc
+        ))
+        showToast(isPublic ? 'Document is now public' : 'Document is now private', 'success')
+      } else {
+        showToast('Failed to update document', 'error')
+      }
+    } catch (error) {
+      console.error('Error toggling public:', error)
+      showToast('Failed to update document', 'error')
+    }
+  }, [showToast])
+  
   const deleteFolder = useCallback(async (id) => {
     try {
       const response = await fetch(`/api/folders/${id}`, {
@@ -287,6 +310,7 @@ export default function DrivePage() {
             }}
             onCreateFolder={createFolder}
             onMove={moveItem}
+            onTogglePublic={togglePublic}
             currentFolderId={null}
             parentFolderId={null}
           />

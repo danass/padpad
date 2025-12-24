@@ -1503,9 +1503,13 @@ export default function GoogleDocsToolbar({ editor }) {
             const input = document.createElement('input')
             input.type = 'file'
             input.accept = 'image/*'
-            input.capture = 'environment' // Allow camera on mobile
+            // Don't use capture - let user choose between camera and gallery
+            // Append to body to prevent garbage collection on some mobile browsers
+            input.style.display = 'none'
+            document.body.appendChild(input)
+            
             input.onchange = (e) => {
-              const file = e.target.files[0]
+              const file = e.target.files?.[0]
               if (file) {
                 const reader = new FileReader()
                 reader.onload = () => {
@@ -1514,14 +1518,35 @@ export default function GoogleDocsToolbar({ editor }) {
                     type: 'image',
                     attrs: { src: reader.result, alt: file.name },
                   }).run()
+                  // Cleanup
+                  if (input.parentNode) {
+                    document.body.removeChild(input)
+                  }
                 }
                 reader.onerror = () => {
                   console.error('Error reading file')
                   alert('Failed to load image')
+                  // Cleanup
+                  if (input.parentNode) {
+                    document.body.removeChild(input)
+                  }
                 }
                 reader.readAsDataURL(file)
+              } else {
+                // No file selected, cleanup
+                if (input.parentNode) {
+                  document.body.removeChild(input)
+                }
               }
             }
+            
+            // Also cleanup if user cancels
+            input.addEventListener('cancel', () => {
+              if (input.parentNode) {
+                document.body.removeChild(input)
+              }
+            })
+            
             input.click()
           }}
           className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
@@ -1535,7 +1560,11 @@ export default function GoogleDocsToolbar({ editor }) {
         <button
           onClick={() => {
             if (editor && editor.can().setDrawing) {
-              editor.chain().focus().setDrawing({ paths: [], width: 400, height: 300 }).run()
+              // Responsive size: smaller on mobile
+              const isMobile = window.innerWidth < 768
+              const width = isMobile ? Math.min(window.innerWidth - 48, 320) : 400
+              const height = isMobile ? Math.round(width * 0.75) : 300
+              editor.chain().focus().setDrawing({ paths: [], width, height }).run()
             } else {
               console.warn('Drawing extension not available')
             }

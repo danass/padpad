@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import NextLink from 'next/link'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -31,6 +32,7 @@ export default function PublicDocumentPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [title, setTitle] = useState('')
+  const [navigation, setNavigation] = useState({ prev: null, next: null })
   
   const editor = useEditor({
     editable: false, // Read-only mode
@@ -113,9 +115,10 @@ export default function PublicDocumentPage() {
         }
         
         const data = await response.json()
-        const { document, content } = data
+        const { document, content, navigation: nav } = data
         
         setTitle(document.title)
+        setNavigation(nav || { prev: null, next: null })
         
         // Set editor content - wrap in queueMicrotask to avoid flushSync error
         if (editor && content) {
@@ -188,6 +191,43 @@ export default function PublicDocumentPage() {
         <div className="max-w-none">
           <EditorContent editor={editor} />
         </div>
+        
+        {/* Navigation between public documents */}
+        {(navigation.prev || navigation.next) && (
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              {navigation.prev ? (
+                <NextLink 
+                  href={`/public/doc/${navigation.prev.id}`}
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
+                >
+                  <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <div className="text-left">
+                    <div className="text-xs text-gray-400">Previous</div>
+                    <div className="text-sm font-medium truncate max-w-[200px]">{navigation.prev.title || 'Untitled'}</div>
+                  </div>
+                </NextLink>
+              ) : <div />}
+              
+              {navigation.next ? (
+                <NextLink 
+                  href={`/public/doc/${navigation.next.id}`}
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
+                >
+                  <div className="text-right">
+                    <div className="text-xs text-gray-400">Next</div>
+                    <div className="text-sm font-medium truncate max-w-[200px]">{navigation.next.title || 'Untitled'}</div>
+                  </div>
+                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </NextLink>
+              ) : <div />}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

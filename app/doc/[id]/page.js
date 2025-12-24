@@ -1252,10 +1252,10 @@ export default function DocumentPage() {
               {showExportMenu && (
                 <>
                   <div 
-                    className="fixed inset-0 z-20" 
+                    className="fixed inset-0 z-[150]" 
                     onClick={() => setShowExportMenu(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-30">
+                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-[160]">
                     <button
                       onClick={() => {
                         handleExport('md')

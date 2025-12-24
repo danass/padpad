@@ -22,8 +22,29 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 })
   const clickStartRef = useRef(null)
   const hasMovedRef = useRef(false)
+  const [maxWidth, setMaxWidth] = useState(null)
 
   const { paths, width, height, x, y } = node.attrs
+  
+  // Calculate responsive width for mobile
+  useEffect(() => {
+    const updateMaxWidth = () => {
+      if (typeof window !== 'undefined') {
+        // Leave some padding on mobile
+        const availableWidth = window.innerWidth - 48
+        setMaxWidth(availableWidth < 400 ? availableWidth : null)
+      }
+    }
+    updateMaxWidth()
+    window.addEventListener('resize', updateMaxWidth)
+    return () => window.removeEventListener('resize', updateMaxWidth)
+  }, [])
+  
+  // Calculate actual display dimensions (constrained by maxWidth on mobile)
+  const displayWidth = maxWidth && width > maxWidth ? maxWidth : (width || 400)
+  const displayHeight = maxWidth && width > maxWidth 
+    ? Math.round((height || 300) * (maxWidth / (width || 400)))
+    : (height || 300)
   
   // Ensure paths is always an array
   const savedPaths = Array.isArray(paths) ? paths : []
@@ -124,7 +145,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
         ctx.stroke()
       }
     })
-  }, [savedPaths, isDrawing, currentPath, width, height])
+  }, [savedPaths, isDrawing, currentPath, width, height, displayWidth, displayHeight])
 
   // Get point from event
   const getPointFromEvent = (e) => {
@@ -463,7 +484,8 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
     position: (x !== null && x !== undefined && y !== null && y !== undefined) ? 'absolute' : 'relative',
     left: (x !== null && x !== undefined) ? `${x}px` : undefined,
     top: (y !== null && y !== undefined) ? `${y}px` : undefined,
-    width: isAbsolute ? `${width || 400}px` : '100%',
+    width: isAbsolute ? `${displayWidth}px` : '100%',
+    maxWidth: '100%',
     textAlign: 'center',
     zIndex: 5, // Low z-index for drawing canvas, below header/toolbar
   }
@@ -477,14 +499,15 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
         onMouseEnter={() => setShowHoverMenu(true)}
         onMouseLeave={() => setShowHoverMenu(false)}
       >
-        <div className="relative" style={{ width: `${width || 400}px`, height: `${height || 300}px` }}>
+        <div className="relative" style={{ width: `${displayWidth}px`, height: `${displayHeight}px`, maxWidth: '100%' }}>
           <canvas
             ref={canvasRef}
-            width={width || 400}
-            height={height || 300}
+            width={displayWidth}
+            height={displayHeight}
             style={{
-              width: `${width || 400}px`,
-              height: `${height || 300}px`,
+              width: `${displayWidth}px`,
+              height: `${displayHeight}px`,
+              maxWidth: '100%',
               border: isSelected ? `2px solid ${currentColorRef.current}` : '1px solid #e5e7eb',
               borderRadius: '0.5rem',
               backgroundColor: 'transparent',

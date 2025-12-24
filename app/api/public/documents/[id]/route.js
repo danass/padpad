@@ -68,6 +68,34 @@ export async function GET(request, { params }) {
     // Reconstruct content
     const content = replayHistory(snapshot, events)
     
+    // Get previous and next public documents (same user, ordered by updated_at)
+    let prevDoc = null
+    let nextDoc = null
+    
+    if (document.user_id) {
+      // Get previous document (older)
+      const prevResult = await sql.query(
+        `SELECT id, title FROM documents 
+         WHERE user_id = $1 AND is_public = true AND updated_at < $2
+         ORDER BY updated_at DESC LIMIT 1`,
+        [document.user_id, document.updated_at]
+      )
+      if (prevResult.rows.length > 0) {
+        prevDoc = prevResult.rows[0]
+      }
+      
+      // Get next document (newer)
+      const nextResult = await sql.query(
+        `SELECT id, title FROM documents 
+         WHERE user_id = $1 AND is_public = true AND updated_at > $2
+         ORDER BY updated_at ASC LIMIT 1`,
+        [document.user_id, document.updated_at]
+      )
+      if (nextResult.rows.length > 0) {
+        nextDoc = nextResult.rows[0]
+      }
+    }
+    
     return Response.json({
       document: {
         id: document.id,
@@ -75,13 +103,18 @@ export async function GET(request, { params }) {
         created_at: document.created_at,
         updated_at: document.updated_at,
       },
-      content
+      content,
+      navigation: {
+        prev: prevDoc,
+        next: nextDoc
+      }
     })
   } catch (error) {
     console.error('Error fetching public document:', error)
     return Response.json({ error: error.message }, { status: 500 })
   }
 }
+
 
 
 

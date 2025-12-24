@@ -55,16 +55,14 @@ function TestamentUrlDisplay() {
     <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
       <p className="text-xs text-gray-600 mb-2">Public Testament URL:</p>
       <div className="flex items-center gap-2">
-        <code className="flex-1 text-sm font-mono bg-white px-3 py-1.5 rounded border border-gray-300 text-gray-900 break-all">
+        <code className="flex-1 text-xs sm:text-sm font-mono bg-white px-3 py-2 rounded border border-gray-300 text-gray-900 break-all">
           {publicUrl}
         </code>
         <button
           onClick={async () => {
             try {
               await navigator.clipboard.writeText(publicUrl)
-              alert('URL copied to clipboard!')
             } catch (err) {
-              // Fallback for older browsers
               const textArea = document.createElement('textarea')
               textArea.value = publicUrl
               textArea.style.position = 'fixed'
@@ -79,12 +77,14 @@ function TestamentUrlDisplay() {
                   }
                 }, 100)
               }
-              alert('URL copied to clipboard!')
             }
           }}
-          className="px-3 py-1.5 text-xs bg-black text-white rounded hover:bg-gray-800 transition-colors whitespace-nowrap"
+          className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 flex items-center justify-center transition-all flex-shrink-0"
+          title="Copy URL"
         >
-          Copy
+          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
         </button>
       </div>
       <p className="text-xs text-gray-500 mt-2">
@@ -149,6 +149,8 @@ export default function SettingsPage() {
   
   const handleSaveAvatar = async () => {
     setSavingAvatar(true)
+    // Small delay for visual feedback
+    await new Promise(r => setTimeout(r, 300))
     try {
       const response = await fetch('/api/users/avatar', {
         method: 'PATCH',
@@ -159,21 +161,22 @@ export default function SettingsPage() {
       if (response.ok) {
         showToast('Avatar saved successfully', 'success')
         // Reload page to update avatar in header
-        window.location.reload()
+        setTimeout(() => window.location.reload(), 500)
       } else {
         const data = await response.json()
         showToast(data.error || 'Failed to save avatar', 'error')
+        setSavingAvatar(false)
       }
     } catch (error) {
       console.error('Error saving avatar:', error)
       showToast('Failed to save avatar', 'error')
-    } finally {
       setSavingAvatar(false)
     }
   }
   
   const handleSaveUsername = async () => {
     setSavingUsername(true)
+    await new Promise(r => setTimeout(r, 300))
     try {
       const response = await fetch('/api/users/testament-username', {
         method: 'PATCH',
@@ -183,7 +186,6 @@ export default function SettingsPage() {
       
       if (response.ok) {
         showToast('Username saved successfully', 'success')
-        // Reload to update URL display
         loadData()
       } else {
         const data = await response.json()
@@ -204,6 +206,7 @@ export default function SettingsPage() {
     }
     
     setSaving(true)
+    await new Promise(r => setTimeout(r, 300))
     try {
       const response = await fetch('/api/users/birth-date', {
         method: 'PATCH',
@@ -248,17 +251,15 @@ export default function SettingsPage() {
         </div>
         
         <div className="bg-white border border-gray-200 rounded-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Profile Settings</h2>
-          <p className="text-sm text-gray-600 mb-6">
-            Customize your profile avatar. Generate a random avatar or enter a custom URL.
-          </p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Profile</h2>
           
           <div className="space-y-4 mb-8">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Avatar Preview
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Avatar
               </label>
-              <div className="flex items-center gap-4">
+              <div className="flex items-start gap-4">
+                {/* Avatar Preview */}
                 <div className="flex-shrink-0">
                   {avatarUrl ? (
                     <img 
@@ -273,69 +274,104 @@ export default function SettingsPage() {
                     />
                   ) : (
                     <img 
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(session?.user?.email || session?.user?.name || 'user')}`}
+                      src={session?.user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(session?.user?.email || session?.user?.name || 'user')}`}
                       alt="Default Avatar" 
                       className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
                     />
                   )}
                 </div>
+                
+                {/* Avatar Options */}
                 <div className="flex-1 space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
+                  {/* Icon buttons row */}
+                  <div className="flex items-center gap-2">
+                    {/* Google Avatar (if available) */}
+                    {session?.user?.image && (
+                      <button
+                        onClick={() => setAvatarUrl(session.user.image)}
+                        className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all hover:scale-110 ${avatarUrl === session.user.image ? 'border-black ring-2 ring-black ring-offset-2' : 'border-gray-300 hover:border-gray-400'}`}
+                        title="Use Google avatar"
+                      >
+                        <img src={session.user.image} alt="Google" className="w-full h-full object-cover" />
+                      </button>
+                    )}
+                    
+                    {/* Random Avatar */}
                     <button
                       onClick={() => {
-                        // Generate random seed
-                        const randomSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-                        const generatedUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${randomSeed}`
-                        setAvatarUrl(generatedUrl)
+                        const randomSeed = Math.random().toString(36).substring(2, 15)
+                        setAvatarUrl(`https://api.dicebear.com/7.x/avataaars/svg?seed=${randomSeed}`)
                       }}
-                      className="px-3 py-2 md:px-4 bg-gray-900 text-white rounded-md hover:bg-gray-800 text-xs md:text-sm font-medium transition-colors whitespace-nowrap"
+                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-all"
+                      title="Generate random avatar"
                     >
-                      Generate Random Avatar
+                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
                     </button>
+                    
+                    {/* Email-based Avatar */}
                     <button
                       onClick={() => {
-                        // Use email-based avatar
                         const emailSeed = session?.user?.email || session?.user?.name || 'user'
-                        const generatedUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(emailSeed)}`
-                        setAvatarUrl(generatedUrl)
+                        setAvatarUrl(`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(emailSeed)}`)
                       }}
-                      className="px-3 py-2 md:px-4 bg-gray-200 text-gray-900 rounded-md hover:bg-gray-300 text-xs md:text-sm font-medium transition-colors whitespace-nowrap"
+                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-all"
+                      title="Use email-based avatar"
                     >
-                      Use Email Avatar
+                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                      </svg>
                     </button>
+                    
+                    {/* Clear */}
                     <button
-                      onClick={() => {
-                        setAvatarUrl('')
-                      }}
-                      className="px-3 py-2 md:px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs md:text-sm font-medium transition-colors whitespace-nowrap"
+                      onClick={() => setAvatarUrl('')}
+                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-red-400 flex items-center justify-center bg-gray-50 hover:bg-red-50 transition-all"
+                      title="Reset to default"
                     >
-                      Clear
+                      <svg className="w-5 h-5 text-gray-600 hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                    
+                    {/* Separator */}
+                    <div className="w-px h-8 bg-gray-200 mx-1" />
+                    
+                    {/* Save button */}
+                    <button
+                      onClick={handleSaveAvatar}
+                      disabled={savingAvatar}
+                      className="w-10 h-10 rounded-full border-2 border-black bg-black hover:bg-gray-800 flex items-center justify-center transition-all disabled:opacity-50"
+                      title="Save avatar"
+                    >
+                      {savingAvatar ? (
+                        <svg className="w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
                     </button>
                   </div>
+                  
+                  {/* Custom URL input */}
                   <div>
-                    <label htmlFor="avatar-url" className="block text-xs font-medium text-gray-700 mb-1">
-                      Or enter custom URL
-                    </label>
                     <input
                       type="url"
                       id="avatar-url"
                       value={avatarUrl}
                       onChange={(e) => setAvatarUrl(e.target.value)}
-                      placeholder="https://example.com/avatar.jpg"
+                      placeholder="Or paste custom avatar URL..."
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-sm"
                     />
                   </div>
                 </div>
               </div>
             </div>
-            
-            <button
-              onClick={handleSaveAvatar}
-              disabled={savingAvatar}
-              className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-            >
-              {savingAvatar ? 'Saving...' : 'Save Avatar'}
-            </button>
           </div>
         </div>
         
@@ -351,14 +387,33 @@ export default function SettingsPage() {
               <label htmlFor="birth-date" className="block text-sm font-medium text-gray-700 mb-2">
                 Date of Birth
               </label>
-              <input
-                type="date"
-                id="birth-date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                max={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
-              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  id="birth-date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-sm"
+                />
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !birthDate}
+                  className="w-10 h-10 rounded-full border-2 border-black bg-black hover:bg-gray-800 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  title="Save birth date"
+                >
+                  {saving ? (
+                    <svg className="w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
             
             {birthDate && (
@@ -381,14 +436,6 @@ export default function SettingsPage() {
                 </p>
               </div>
             )}
-            
-            <button
-              onClick={handleSave}
-              disabled={saving || !birthDate}
-              className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-            >
-              {saving ? 'Saving...' : 'Save Birth Date'}
-            </button>
           </div>
         </div>
         
@@ -403,30 +450,44 @@ export default function SettingsPage() {
               <label htmlFor="testament-username" className="block text-sm font-medium text-gray-700 mb-2">
                 Testament Username
               </label>
-              <div className="flex items-center gap-2">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">textpad/public/testament/</span>
-                    <input
-                      type="text"
-                      id="testament-username"
-                      value={testamentUsername}
-                      onChange={(e) => setTestamentUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                      placeholder="your-username"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-sm"
-                    />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <div className="flex items-center">
+                      <span className="hidden sm:inline-flex items-center px-3 py-2 text-sm text-gray-500 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md whitespace-nowrap">
+                        /public/testament/
+                      </span>
+                      <input
+                        type="text"
+                        id="testament-username"
+                        value={testamentUsername}
+                        onChange={(e) => setTestamentUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                        placeholder="your-username"
+                        className="flex-1 px-3 py-2 border border-gray-300 sm:rounded-l-none rounded-md sm:rounded-r-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-sm"
+                      />
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Only lowercase letters, numbers, hyphens, and underscores. 3-30 characters.
-                  </p>
+                  <button
+                    onClick={handleSaveUsername}
+                    disabled={savingUsername}
+                    className="w-10 h-10 rounded-full border-2 border-black bg-black hover:bg-gray-800 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                    title="Save username"
+                  >
+                    {savingUsername ? (
+                      <svg className="w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
                 </div>
-                <button
-                  onClick={handleSaveUsername}
-                  disabled={savingUsername}
-                  className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-                >
-                  {savingUsername ? 'Saving...' : 'Save'}
-                </button>
+                <p className="text-xs text-gray-500">
+                  Only lowercase letters, numbers, hyphens, and underscores.
+                </p>
               </div>
             </div>
           </div>
@@ -435,16 +496,24 @@ export default function SettingsPage() {
         </div>
         
         <div className="bg-white border border-gray-200 rounded-md p-6 mt-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Testament Preview</h2>
-          <p className="text-sm text-gray-600 mb-4">
-            Preview how your testament will appear to the public when documents become available.
-          </p>
-          <Link
-            href="/testament/preview"
-            className="inline-block px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium"
-          >
-            View Testament Preview
-          </Link>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Testament Preview</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Preview how your testament will appear to the public.
+              </p>
+            </div>
+            <Link
+              href="/testament/preview"
+              className="w-10 h-10 rounded-full border-2 border-black bg-black hover:bg-gray-800 flex items-center justify-center transition-all flex-shrink-0"
+              title="View testament preview"
+            >
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
