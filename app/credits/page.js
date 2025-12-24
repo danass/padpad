@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export default function CreditsPage() {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-8">
+    <div className="flex-1 bg-white flex items-center justify-center p-8">
       <div className="max-w-md text-center">
         <h1 className="text-2xl font-light text-gray-900 mb-6">
           textpad
