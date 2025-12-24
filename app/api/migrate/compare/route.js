@@ -140,7 +140,7 @@ export async function GET() {
     
     // Check required columns
     const requiredColumns = {
-      documents: ['id', 'title', 'folder_id', 'created_at', 'updated_at', 'current_snapshot_id', 'content_text', 'user_id', 'auto_public_date'],
+      documents: ['id', 'title', 'folder_id', 'created_at', 'updated_at', 'current_snapshot_id', 'content_text', 'user_id', 'auto_public_date', 'is_public', 'is_full_width'],
       folders: ['id', 'name', 'parent_id', 'created_at', 'updated_at', 'user_id'],
       document_snapshots: ['id', 'document_id', 'content_json', 'content_text', 'created_at'],
       document_events: ['id', 'document_id', 'type', 'payload', 'version', 'created_at'],
@@ -194,4 +194,5 @@ export async function GET() {
     })
   }
 }
+
 
