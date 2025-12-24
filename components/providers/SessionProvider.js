@@ -1,9 +1,22 @@
 'use client'
 
 import { SessionProvider as NextAuthSessionProvider } from 'next-auth/react'
+import { useState, useEffect, createContext, useContext } from 'react'
 
-// Simple subdomain check that runs during render
-function checkIsSubdomain() {
+// Mock session context that mimics NextAuth's useSession return value
+const MockSessionContext = createContext({
+  data: null,
+  status: 'unauthenticated',
+  update: async () => null,
+})
+
+// Hook to check if we should use mock session (for subdomains)
+export function useMockSession() {
+  return useContext(MockSessionContext)
+}
+
+// Check subdomain synchronously (for initial render decision)
+function getIsSubdomain() {
   if (typeof window === 'undefined') return false
   const hostname = window.location.hostname
   const match = hostname.match(/^([a-z0-9_-]+)\.textpad\.cloud$/i)
@@ -11,16 +24,38 @@ function checkIsSubdomain() {
 }
 
 export default function SessionProvider({ children }) {
-  // Always use NextAuth provider but configure differently for subdomains
-  // On subdomains: set baseUrl to current domain to avoid cross-origin calls
-  // The calls will fail silently with 404 which is fine
+  // Check subdomain on client only
+  const [isSubdomain, setIsSubdomain] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
 
+  useEffect(() => {
+    setIsSubdomain(getIsSubdomain())
+    setHydrated(true)
+  }, [])
+
+  // During SSR, render with NextAuth (won't make calls server-side)
+  // After hydration on subdomain, switch to mock provider
+  if (!hydrated) {
+    // SSR: use NextAuth but it won't make client calls yet
+    return (
+      <NextAuthSessionProvider basePath="/api/auth" refetchInterval={0} refetchOnWindowFocus={false}>
+        {children}
+      </NextAuthSessionProvider>
+    )
+  }
+
+  // On subdomains after hydration: use mock context, NO NextAuth at all
+  if (isSubdomain) {
+    return (
+      <MockSessionContext.Provider value={{ data: null, status: 'unauthenticated', update: async () => null }}>
+        {children}
+      </MockSessionContext.Provider>
+    )
+  }
+
+  // On main domain: use real NextAuth
   return (
-    <NextAuthSessionProvider
-      basePath="/api/auth"
-      refetchInterval={checkIsSubdomain() ? 0 : 5 * 60} // No refetch on subdomain
-      refetchOnWindowFocus={false}
-    >
+    <NextAuthSessionProvider basePath="/api/auth" refetchInterval={5 * 60} refetchOnWindowFocus={false}>
       {children}
     </NextAuthSessionProvider>
   )
