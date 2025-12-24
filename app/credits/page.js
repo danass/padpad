@@ -13,7 +13,7 @@ export default function CreditsPage() {
         <p className="text-gray-600 mb-4">
           Made with care by{' '}
           <a 
-            href="https://danielassayag.com" 
+            href="https://danpm.com" 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-gray-900 hover:underline"
@@ -25,12 +25,12 @@ export default function CreditsPage() {
         <p className="text-sm text-gray-400 mb-8">
           Brother app of{' '}
           <a 
-            href="https://instapan.pix" 
+            href="https://instapan.pics" 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-gray-500 hover:underline"
           >
-            instapan.pix
+            instapan.pics
           </a>
         </p>
         
