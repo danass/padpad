@@ -11,6 +11,7 @@ export async function generateMetadata() {
             url: `${baseUrl}/features`,
             title: 'Features – What Textpad Can Do | Textpad',
             description: 'Private writing with public options. Version history, tabs, drawings, digital testament, and more.',
+            images: [{ url: `${baseUrl}/padpad.png`, width: 512, height: 512, alt: 'Textpad' }],
         },
         alternates: {
             canonical: `${baseUrl}/features`,
@@ -20,34 +21,40 @@ export async function generateMetadata() {
 
 const features = [
     {
-        title: 'Digital Testament',
-        description: 'Write now, publish after you\'re gone. Your words live on.',
+        title: 'Digital Legacy',
+        description: 'Write now, publish on your 99th birthday. Your words live on.',
         href: '/features/digital-testament',
+        icon: '📖',
     },
     {
         title: 'Public Blog & Archive',
-        description: 'Share selected documents publicly. Build your personal archive.',
+        description: 'Get your own subdomain. Share your writing publicly.',
         href: '/features/public-blog',
+        icon: '🌐',
     },
     {
         title: 'Shareable Links',
         description: 'Share any document with a simple link.',
         href: '/features/shareable-links',
+        icon: '🔗',
     },
     {
         title: 'Tabs & Drive',
-        description: 'Work on multiple documents. Organize in folders.',
+        description: 'Organize documents in folders. Work on multiple files.',
         href: '/features/tabs-and-drive',
+        icon: '📁',
     },
     {
         title: 'Version History',
-        description: 'Every change is saved. Restore any previous version.',
+        description: 'Every save is preserved. Restore any version.',
         href: '/features/version-history',
+        icon: '⏱️',
     },
     {
         title: 'Images & Drawings',
-        description: 'Add images, draw diagrams, use brush mode.',
+        description: 'Add images, resize them, draw directly in your docs.',
         href: '/features/images-and-drawings',
+        icon: '🎨',
     },
 ]
 
@@ -55,32 +62,46 @@ export default function FeaturesPage() {
     return (
         <div className="min-h-screen bg-white">
             <div className="max-w-3xl mx-auto px-4 py-12 md:py-20">
-                <h1 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4">
-                    Features
-                </h1>
+                {/* Logo + Title */}
+                <div className="flex items-center gap-4 mb-6">
+                    <img
+                        src="/padpad.svg"
+                        alt="Textpad"
+                        className="w-16 h-16"
+                    />
+                    <div>
+                        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                            Features
+                        </h1>
+                        <p className="text-gray-500">What Textpad can do</p>
+                    </div>
+                </div>
 
                 <p className="text-lg text-gray-700 mb-10">
-                    Textpad is your private notebook with public options.
+                    Your private notebook with public options.
                     Write for yourself. Share when you're ready.
                 </p>
 
-                <div className="space-y-6">
+                <div className="grid gap-4">
                     {features.map((feature) => (
                         <Link
                             key={feature.href}
                             href={feature.href}
-                            className="block p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                            className="flex items-start gap-4 p-5 border border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors"
                         >
-                            <h2 className="text-lg font-medium text-gray-900 mb-1">{feature.title}</h2>
-                            <p className="text-gray-600">{feature.description}</p>
+                            <span className="text-2xl">{feature.icon}</span>
+                            <div>
+                                <h2 className="text-lg font-medium text-gray-900 mb-1">{feature.title}</h2>
+                                <p className="text-gray-600">{feature.description}</p>
+                            </div>
                         </Link>
                     ))}
                 </div>
 
-                <div className="pt-10 mt-10 border-t border-gray-200">
+                <div className="pt-10 mt-10 border-t border-gray-200 text-center">
                     <Link
                         href="/"
-                        className="inline-block bg-gray-900 text-white px-6 py-3 rounded text-center font-medium hover:bg-gray-800 transition-colors"
+                        className="inline-block bg-gray-900 text-white px-8 py-3 rounded-lg text-center font-medium hover:bg-gray-800 transition-colors"
                     >
                         Start Writing
                     </Link>

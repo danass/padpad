@@ -15,6 +15,7 @@ export const metadata = {
     type: 'website',
     url: 'https://textpad.cloud',
     siteName: 'Textpad',
+    images: [{ url: 'https://textpad.cloud/padpad.png', width: 512, height: 512, alt: 'Textpad Logo' }],
   },
   twitter: {
     card: 'summary_large_image',
