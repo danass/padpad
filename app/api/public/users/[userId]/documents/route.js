@@ -1,24 +1,36 @@
 import { sql } from '@vercel/postgres'
+import { NextResponse } from 'next/server'
+
+// CORS headers for subdomain access
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders })
+}
 
 export async function GET(request, { params }) {
   try {
     const { userId } = await params
-    
+
     if (!userId) {
-      return Response.json({ error: 'User ID required' }, { status: 400 })
+      return NextResponse.json({ error: 'User ID required' }, { status: 400, headers: corsHeaders })
     }
-    
+
     // The userId param can be:
     // 1. A testament_username (alphanumeric with hyphens/underscores)
     // 2. A short hash (first 8 chars of UUID)
     // 3. A full UUID
-    
+
     let actualUserId = null
     let username = null
-    
+
     // Check if it's a UUID format (full or short)
     const isUUIDish = /^[0-9a-f-]+$/i.test(userId)
-    
+
     if (!isUUIDish) {
       // It's likely a testament_username, look it up
       const userResult = await sql.query(
@@ -30,7 +42,7 @@ export async function GET(request, { params }) {
         username = userResult.rows[0].testament_username
       }
     }
-    
+
     // If not found by username, try by user_id prefix or full id
     if (!actualUserId) {
       // Try to find user by ID prefix (short hash) or full ID
@@ -53,11 +65,11 @@ export async function GET(request, { params }) {
         }
       }
     }
-    
+
     if (!actualUserId) {
-      return Response.json({ error: 'User not found' }, { status: 404 })
+      return NextResponse.json({ error: 'User not found' }, { status: 404, headers: corsHeaders })
     }
-    
+
     // Get all public documents for this user
     const result = await sql.query(
       `SELECT 
@@ -71,17 +83,16 @@ export async function GET(request, { params }) {
        ORDER BY d.updated_at DESC`,
       [actualUserId]
     )
-    
-    return Response.json({ 
+
+    return NextResponse.json({
       documents: result.rows.map(doc => ({
         ...doc,
         title: (doc.title === 'Untitled' || !doc.title) ? '' : doc.title
       })),
       username
-    })
+    }, { headers: corsHeaders })
   } catch (error) {
     console.error('Error fetching public documents:', error)
-    return Response.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders })
   }
 }
-

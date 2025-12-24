@@ -6,30 +6,40 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
+// Use absolute URL to avoid CORS issues with subdomains
+const API_BASE = typeof window !== 'undefined'
+  ? `${window.location.protocol}//www.textpad.cloud`
+  : 'https://www.textpad.cloud'
+
 export default function PublicArchivePage() {
   const params = useParams()
   const userId = params.userId
-  
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [documents, setDocuments] = useState([])
   const [username, setUsername] = useState(null)
-  
+
   useEffect(() => {
     async function loadDocuments() {
       if (!userId) return
-      
+
       setLoading(true)
       setError(null)
-      
+
       try {
-        const response = await fetch(`/api/public/users/${userId}/documents`)
+        // Use absolute URL to main domain
+        const response = await fetch(`${API_BASE}/api/public/users/${userId}/documents`)
         if (!response.ok) {
-          setError('Failed to load documents')
+          if (response.status === 404) {
+            setError('User not found')
+          } else {
+            setError('Failed to load documents')
+          }
           setLoading(false)
           return
         }
-        
+
         const data = await response.json()
         setDocuments(data.documents || [])
         setUsername(data.username)
@@ -40,10 +50,10 @@ export default function PublicArchivePage() {
         setLoading(false)
       }
     }
-    
+
     loadDocuments()
   }, [userId])
-  
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -51,18 +61,21 @@ export default function PublicArchivePage() {
       </div>
     )
   }
-  
+
   if (error) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-xl font-semibold text-gray-900 mb-2">Error</h1>
           <p className="text-gray-600">{error}</p>
+          <a href="https://www.textpad.cloud" className="text-blue-600 hover:underline mt-4 inline-block">
+            Go to Textpad
+          </a>
         </div>
       </div>
     )
   }
-  
+
   if (documents.length === 0) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -73,7 +86,7 @@ export default function PublicArchivePage() {
       </div>
     )
   }
-  
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-2xl mx-auto px-6 py-12">
@@ -86,13 +99,13 @@ export default function PublicArchivePage() {
             {documents.length} document{documents.length > 1 ? 's' : ''} public{documents.length > 1 ? 's' : ''}
           </p>
         </div>
-        
+
         {/* Document list */}
         <div className="space-y-1">
           {documents.map((doc, index) => (
-            <Link 
+            <a
               key={doc.id}
-              href={`/public/doc/${doc.id}`}
+              href={`https://www.textpad.cloud/public/doc/${doc.id}`}
               className="block group"
             >
               <div className="flex items-baseline justify-between py-3 px-4 -mx-4 rounded-lg hover:bg-gray-50 transition-colors">
@@ -108,12 +121,17 @@ export default function PublicArchivePage() {
                   {format(new Date(doc.updated_at), 'd MMM yyyy', { locale: fr })}
                 </span>
               </div>
-            </Link>
+            </a>
           ))}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-12 pt-8 border-t border-gray-100 text-center">
+          <a href="https://www.textpad.cloud" className="text-xs text-gray-400 hover:text-gray-600">
+            textpad.cloud
+          </a>
         </div>
       </div>
     </div>
   )
 }
-
-
