@@ -1,6 +1,6 @@
 import { sql } from '@vercel/postgres'
 
-export async function POST() {
+async function runMigrations() {
   try {
     const results = []
     
@@ -126,7 +126,13 @@ export async function POST() {
       // Create indexes for testament feature
       `CREATE INDEX IF NOT EXISTS idx_documents_auto_public_date ON documents(auto_public_date) WHERE auto_public_date IS NOT NULL`,
       `CREATE INDEX IF NOT EXISTS idx_users_birth_date ON users(birth_date) WHERE birth_date IS NOT NULL`,
-      `CREATE INDEX IF NOT EXISTS idx_users_testament_slug ON users(testament_slug) WHERE testament_slug IS NOT NULL`
+      `CREATE INDEX IF NOT EXISTS idx_users_testament_slug ON users(testament_slug) WHERE testament_slug IS NOT NULL`,
+      
+      // Add is_public column to documents
+      `ALTER TABLE documents ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT false`,
+      
+      // Add is_full_width column to documents
+      `ALTER TABLE documents ADD COLUMN IF NOT EXISTS is_full_width BOOLEAN DEFAULT false`
     ]
     
     for (const migration of migrations) {
@@ -149,5 +155,13 @@ export async function POST() {
   } catch (error) {
     return Response.json({ success: false, error: error.message }, { status: 500 })
   }
+}
+
+export async function POST() {
+  return runMigrations()
+}
+
+export async function GET() {
+  return runMigrations()
 }
 
