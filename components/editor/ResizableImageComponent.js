@@ -198,7 +198,6 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
             <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-blue-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-br-lg" />
           </>
         )}
-        </div>
         
         {/* Resize handle - only show if editor is editable */}
         {editor.isEditable && (
@@ -218,6 +217,7 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
           </div>
         </div>
         )}
+        </div>
 
         {/* Context menu - only show if editor is editable */}
         {editor.isEditable && showMenu && (

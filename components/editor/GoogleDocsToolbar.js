@@ -67,6 +67,7 @@ const HIGHLIGHT_COLORS = [
 export default function GoogleDocsToolbar({ editor }) {
   const [showFontFamily, setShowFontFamily] = useState(false)
   const [showFontSize, setShowFontSize] = useState(false)
+  const [showLineHeight, setShowLineHeight] = useState(false)
   const [showTextColor, setShowTextColor] = useState(false)
   const [showHighlightColor, setShowHighlightColor] = useState(false)
   const [showAlign, setShowAlign] = useState(false)
@@ -74,8 +75,10 @@ export default function GoogleDocsToolbar({ editor }) {
   const [textColorPosition, setTextColorPosition] = useState({ top: 0, left: 0 })
   const [highlightColorPosition, setHighlightColorPosition] = useState({ top: 0, left: 0 })
   const [alignPosition, setAlignPosition] = useState({ top: 0, left: 0 })
+  const [lineHeightPosition, setLineHeightPosition] = useState({ top: 0, left: 0 })
   const fontFamilyRef = useRef(null)
   const fontSizeRef = useRef(null)
+  const lineHeightRef = useRef(null)
   const textColorRef = useRef(null)
   const highlightColorRef = useRef(null)
   const alignRef = useRef(null)
@@ -93,6 +96,15 @@ export default function GoogleDocsToolbar({ editor }) {
   const currentTextColor = editor.getAttributes('textStyle')?.color || '#000000'
   const currentHighlightColor = editor.getAttributes('highlight')?.color || null
   const currentAlign = editor.getAttributes('textAlign')?.textAlign || 'left'
+  
+  // Get current line height from the selected node
+  const getCurrentLineHeight = () => {
+    const { selection } = editor.state
+    const { $from } = selection
+    const node = $from.parent
+    return node.attrs.lineHeight || null
+  }
+  const [currentLineHeight, setCurrentLineHeight] = useState(getCurrentLineHeight())
 
   // Update fontSize state when editor selection changes
   useEffect(() => {
@@ -113,11 +125,23 @@ export default function GoogleDocsToolbar({ editor }) {
       }
     }
     
+    const updateLineHeight = () => {
+      const lineHeight = getCurrentLineHeight()
+      setCurrentLineHeight(lineHeight)
+    }
+    
     // Initial update
     updateFontSize()
+    updateLineHeight()
     
-    editor.on('selectionUpdate', updateFontSize)
-    editor.on('transaction', updateFontSize)
+    editor.on('selectionUpdate', () => {
+      updateFontSize()
+      updateLineHeight()
+    })
+    editor.on('transaction', () => {
+      updateFontSize()
+      updateLineHeight()
+    })
     return () => {
       editor.off('selectionUpdate', updateFontSize)
       editor.off('transaction', updateFontSize)
@@ -132,6 +156,9 @@ export default function GoogleDocsToolbar({ editor }) {
       }
       if (fontSizeRef.current && !fontSizeRef.current.contains(event.target)) {
         setShowFontSize(false)
+      }
+      if (lineHeightRef.current && !lineHeightRef.current.contains(event.target)) {
+        setShowLineHeight(false)
       }
       if (textColorRef.current && !textColorRef.current.contains(event.target)) {
         setShowTextColor(false)
@@ -197,6 +224,24 @@ export default function GoogleDocsToolbar({ editor }) {
     editor.chain().focus().setTextAlign(align).run()
     setShowAlign(false)
   }
+
+  const handleLineHeightChange = (lineHeight) => {
+    if (lineHeight === null) {
+      editor.chain().focus().unsetLineHeight().run()
+    } else {
+      editor.chain().focus().setLineHeight(lineHeight).run()
+    }
+    setShowLineHeight(false)
+  }
+
+  const LINE_HEIGHT_OPTIONS = [
+    { value: null, label: 'Default' },
+    { value: '1.0', label: '1.0' },
+    { value: '1.15', label: '1.15' },
+    { value: '1.5', label: '1.5' },
+    { value: '2.0', label: '2.0' },
+    { value: '2.5', label: '2.5' },
+  ]
 
   return (
     <div className="flex items-center gap-0.5 p-1 border-b border-gray-200 bg-white overflow-x-auto flex-wrap" style={{ position: 'relative', zIndex: 1 }}>
@@ -311,6 +356,58 @@ export default function GoogleDocsToolbar({ editor }) {
         >
           <Plus className="w-4 h-4" />
         </button>
+      </div>
+
+      {/* Line Height */}
+      <div className="relative" ref={lineHeightRef} style={{ zIndex: 1000 }}>
+        <button
+          onClick={() => {
+            if (lineHeightRef.current) {
+              const rect = lineHeightRef.current.getBoundingClientRect()
+              setLineHeightPosition({ top: rect.bottom + 4, left: rect.left })
+            }
+            setShowLineHeight(!showLineHeight)
+          }}
+          className="px-2 py-1.5 min-w-[60px] text-left text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
+          title="Line Height"
+        >
+          <span className="truncate">{currentLineHeight || 'Default'}</span>
+          <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />
+        </button>
+        {showLineHeight && (
+          <>
+            <div 
+              className="fixed inset-0" 
+              onClick={() => setShowLineHeight(false)}
+              style={{ zIndex: 999 }}
+            />
+            <div 
+              className="fixed bg-white border border-gray-300 rounded shadow-lg w-32" 
+              style={{ 
+                zIndex: 10000,
+                top: lineHeightPosition.top,
+                left: lineHeightPosition.left
+              }}
+            >
+              {LINE_HEIGHT_OPTIONS.map((option) => (
+                <button
+                  key={option.value || 'default'}
+                  onClick={() => handleLineHeightChange(option.value)}
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between ${
+                    currentLineHeight === option.value ? 'bg-blue-50 text-blue-600' : ''
+                  }`}
+                >
+                  <span>{option.label}</span>
+                  {currentLineHeight === option.value && (
+                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       <div className="w-px h-6 bg-gray-300 mx-0.5" />

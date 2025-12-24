@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
@@ -55,7 +56,13 @@ export default function Header() {
           {/* Left side - Logo and project name */}
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded"></div>
+              <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+                <img 
+                  src="/padpad.png" 
+                  alt="textpad logo" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <span className="text-sm font-medium text-gray-900">textpad</span>
             </Link>
             {session && isDrive && (
@@ -80,6 +87,14 @@ export default function Header() {
                 }`}
               >
                 Admin
+              </Link>
+            )}
+            {!session && (
+              <Link
+                href="/auth/signin"
+                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm font-medium transition-colors"
+              >
+                Sign in
               </Link>
             )}
             {session && (

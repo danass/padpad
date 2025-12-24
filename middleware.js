@@ -5,6 +5,12 @@ export async function middleware(request) {
   const session = await auth()
   const { pathname } = request.nextUrl
 
+  // Allow access to static files (images, fonts, etc.)
+  const staticFileExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.ico', '.css', '.js', '.woff', '.woff2', '.ttf', '.eot']
+  if (staticFileExtensions.some(ext => pathname.toLowerCase().endsWith(ext))) {
+    return NextResponse.next()
+  }
+
   // Allow access to auth pages, API auth routes, migration routes, public routes, and root page
   if (pathname === '/' ||
       pathname.startsWith('/auth') || 

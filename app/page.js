@@ -23,6 +23,8 @@ import { ResizableImage } from '@/lib/editor/resizable-image-extension'
 import { Youtube } from '@/lib/editor/youtube-extension'
 import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
+import { FontSize } from '@/lib/editor/font-size-extension'
+import { LineHeight } from '@/lib/editor/line-height-extension'
 import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 
 const STORAGE_KEY = 'textpad_cloud_unsaved_pad'
@@ -34,6 +36,8 @@ export default function Home() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [saving, setSaving] = useState(false)
+  const [showWatermark, setShowWatermark] = useState(true)
+  const [hasEverHadContent, setHasEverHadContent] = useState(false)
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -72,6 +76,8 @@ export default function Home() {
       }),
       Typography,
       FontFamily,
+      FontSize,
+      LineHeight,
       Emoji.configure({
         enableEmoticons: true,
       }),
@@ -100,6 +106,43 @@ export default function Home() {
       }
     },
   })
+
+  // Check if editor is empty to show/hide watermark (only for non-logged users on home page)
+  useEffect(() => {
+    if (!editor || session) return // Only show watermark when not logged in
+    
+    const checkContent = () => {
+      const hasContent = editor.getText().trim().length > 0 || (editor.getJSON()?.content && Array.isArray(editor.getJSON().content) && editor.getJSON().content.length > 0)
+      if (hasContent) {
+        setHasEverHadContent(true)
+      }
+      // Show watermark only if no content AND never had content
+      setShowWatermark(!hasContent && !hasEverHadContent)
+    }
+    
+    const handleFocus = () => {
+      setShowWatermark(false)
+    }
+    
+    const handleBlur = () => {
+      // Only show watermark again if no content and never had content
+      const hasContent = editor.getText().trim().length > 0 || (editor.getJSON()?.content && Array.isArray(editor.getJSON().content) && editor.getJSON().content.length > 0)
+      if (!hasContent && !hasEverHadContent) {
+        setShowWatermark(true)
+      }
+    }
+    
+    checkContent()
+    editor.on('update', checkContent)
+    editor.on('focus', handleFocus)
+    editor.on('blur', handleBlur)
+    
+    return () => {
+      editor.off('update', checkContent)
+      editor.off('focus', handleFocus)
+      editor.off('blur', handleBlur)
+    }
+  }, [editor, session, hasEverHadContent])
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -289,15 +332,15 @@ export default function Home() {
             )}
             <button
               onClick={handleSave}
-              disabled={saving || !editor || !editor.getText().trim()}
+              disabled={saving || !editor || (() => {
+                const json = editor.getJSON()
+                const hasText = editor.getText().trim().length > 0
+                const hasContent = json?.content && Array.isArray(json.content) && json.content.length > 0
+                return !hasText && !hasContent
+              })()}
               className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors fixed bottom-4 right-4 z-50 shadow-lg md:static md:shadow-none"
             >
-              {saving ? 'Saving...' : session ? 'Save Document' : (
-                <>
-                  <span className="md:hidden">Save</span>
-                  <span className="hidden md:inline">Save or Share</span>
-                </>
-              )}
+              {saving ? 'Saving...' : session ? 'Save Document' : 'Save'}
             </button>
           </div>
         </div>
@@ -307,13 +350,26 @@ export default function Home() {
             <div className="mb-4 border-b border-gray-200">
               <GoogleDocsToolbar editor={editor} />
             </div>
-            <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8">
+            <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8 relative">
+              {/* Watermark logo - only for non-logged users */}
+              {!session && (
+                <div 
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500"
+                  style={{ opacity: showWatermark ? 0.7 : 0 }}
+                >
+                  <img 
+                    src="/padpad.png" 
+                    alt="textpad watermark" 
+                    className="w-64 h-64 md:w-96 md:h-96 object-contain"
+                  />
+                </div>
+              )}
               <EditorContent editor={editor} />
             </div>
             <p className="mt-4 text-xs text-gray-500 text-center">
               {session 
                 ? 'Your document is saved locally. Click "Save Document" to save it permanently.'
-                : 'Click "Save or Share" to sign in and save your document permanently. Your work is saved locally for 48 hours.'}
+                : 'Click "Save" to sign in and save your document permanently. Your work is saved locally for 48 hours.'}
             </p>
           </>
         )}

@@ -45,6 +45,7 @@ import {
 } from '@/lib/editor/draggable-nodes'
 import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
 import { FontSize } from '@/lib/editor/font-size-extension'
+import { LineHeight } from '@/lib/editor/line-height-extension'
 import EditorToolbar from '@/components/editor/EditorToolbar'
 import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 import HistoryPanel from '@/components/editor/HistoryPanel'
@@ -375,6 +376,7 @@ export default function DocumentPage() {
       }),
       FontFamily,
       FontSize,
+      LineHeight,
       // InvisibleCharacters, // Disabled - user doesn't want invisible characters
       ListKeymap,
       UniqueID.configure({
