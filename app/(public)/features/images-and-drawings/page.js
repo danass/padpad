@@ -83,6 +83,28 @@ export default function ImagesAndDrawingsPage() {
                     </div>
                 </section>
 
+                {/* Feature: Font Swap Video */}
+                <section className="mb-16">
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center">
+                        Change Fonts on the Fly
+                    </h2>
+                    <p className="text-gray-600 text-center mb-6 max-w-xl mx-auto">
+                        Switch between fonts instantly. See your text transform as you pick different styles.
+                    </p>
+                    <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200 max-w-2xl mx-auto">
+                        <video
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full"
+                        >
+                            <source src="/features/screens/pad_font_swap.mp4" type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </section>
+
                 {/* Feature: Resize Images */}
                 <section className="mb-16">
                     <div className="grid md:grid-cols-2 gap-8 items-center">
