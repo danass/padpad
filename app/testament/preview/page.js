@@ -136,10 +136,18 @@ export default function TestamentPreviewPage() {
                       // Fallback for older browsers
                       const textArea = document.createElement('textarea')
                       textArea.value = url
-                      document.body.appendChild(textArea)
-                      textArea.select()
-                      document.execCommand('copy')
-                      document.body.removeChild(textArea)
+                      textArea.style.position = 'fixed'
+                      textArea.style.opacity = '0'
+                      if (document.body) {
+                        document.body.appendChild(textArea)
+                        textArea.select()
+                        document.execCommand('copy')
+                        setTimeout(() => {
+                          if (textArea.parentNode) {
+                            document.body.removeChild(textArea)
+                          }
+                        }, 100)
+                      }
                       alert('URL copied to clipboard!')
                     }
                   }}

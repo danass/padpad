@@ -14,15 +14,12 @@ import TextStyle from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import Highlight from '@tiptap/extension-highlight'
 import TextAlign from '@tiptap/extension-text-align'
-import DragHandle from '@tiptap/extension-drag-handle'
-import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
 import CharacterCount from '@tiptap/extension-character-count'
 import Dropcursor from '@tiptap/extension-dropcursor'
 import Focus from '@tiptap/extension-focus'
 import Gapcursor from '@tiptap/extension-gapcursor'
 import Typography from '@tiptap/extension-typography'
 import FileHandler from '@tiptap/extension-file-handler'
-import FloatingMenuExtension from '@tiptap/extension-floating-menu'
 import FontFamily from '@tiptap/extension-font-family'
 import InvisibleCharacters from '@tiptap/extension-invisible-characters'
 import ListKeymap from '@tiptap/extension-list-keymap'
@@ -35,6 +32,7 @@ import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 // import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
 // import * as Y from 'yjs'
 import { ResizableImage } from '@/lib/editor/resizable-image-extension'
+import { Drawing } from '@/lib/editor/drawing-extension'
 import {
   DraggableParagraph,
   DraggableHeading,
@@ -46,13 +44,9 @@ import {
 import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
 import { FontSize } from '@/lib/editor/font-size-extension'
 import { LineHeight } from '@/lib/editor/line-height-extension'
-import EditorToolbar from '@/components/editor/EditorToolbar'
 import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 import HistoryPanel from '@/components/editor/HistoryPanel'
-import SlashMenu from '@/components/editor/SlashMenu'
-import BubbleMenu from '@/components/editor/BubbleMenu'
-import FloatingMenu from '@/components/editor/FloatingMenu'
-import InsertBlockMenu from '@/components/editor/InsertBlockMenu'
+import LinkEditor from '@/components/editor/LinkEditor'
 import { useEditorStore } from '@/store/editorStore'
 import { useToast } from '@/components/ui/toast'
 import { replayHistory } from '@/lib/editor/history-replay'
@@ -72,8 +66,7 @@ export default function DocumentPage() {
   const [autoPublicDate, setAutoPublicDate] = useState(null)
   const [birthDate, setBirthDate] = useState(null)
   const [showAutoPublicModal, setShowAutoPublicModal] = useState(false)
-  const [slashMenuState, setSlashMenuState] = useState(null)
-  const [insertBlockMenu, setInsertBlockMenu] = useState(null)
+  const [linkEditorPosition, setLinkEditorPosition] = useState(null)
   const autosaveTimeoutRef = useRef(null)
   const snapshotIntervalRef = useRef(null)
   const lastSnapshotContentRef = useRef(null)
@@ -265,50 +258,6 @@ export default function DocumentPage() {
           class: 'max-w-full h-auto rounded',
         },
       }),
-      DragHandle.configure({
-        render: () => {
-          const element = document.createElement('div')
-          element.classList.add('custom-drag-handle')
-          // Create 6 dots in 2 columns like Notion
-          const dotsContainer = document.createElement('div')
-          dotsContainer.style.cssText = 'display: flex; flex-direction: column; gap: 3px; align-items: center; justify-content: center;'
-          for (let i = 0; i < 3; i++) {
-            const row = document.createElement('div')
-            row.style.cssText = 'display: flex; gap: 3px;'
-            for (let j = 0; j < 2; j++) {
-              const dot = document.createElement('span')
-              dot.textContent = '•'
-              dot.style.cssText = 'font-size: 14px; color: #9ca3af; line-height: 1; transition: color 0.2s; display: block;'
-              row.appendChild(dot)
-            }
-            dotsContainer.appendChild(row)
-          }
-          element.appendChild(dotsContainer)
-          // Add hover effect
-          element.addEventListener('mouseenter', () => {
-            dotsContainer.querySelectorAll('span').forEach(dot => {
-              dot.style.color = '#4b5563'
-            })
-          })
-          element.addEventListener('mouseleave', () => {
-            dotsContainer.querySelectorAll('span').forEach(dot => {
-              dot.style.color = '#9ca3af'
-            })
-          })
-          // Add active/dragging effect
-          element.addEventListener('mousedown', () => {
-            dotsContainer.querySelectorAll('span').forEach(dot => {
-              dot.style.color = '#3b82f6'
-            })
-          })
-          return element
-        },
-        computePositionConfig: {
-          placement: 'left',
-          strategy: 'absolute',
-        },
-      }),
-      BubbleMenuExtension,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
@@ -371,9 +320,6 @@ export default function DocumentPage() {
           })
         },
       }),
-      FloatingMenuExtension.configure({
-        element: null, // Will be handled by React component
-      }),
       FontFamily,
       FontSize,
       LineHeight,
@@ -403,100 +349,66 @@ export default function DocumentPage() {
       }),
       TaskList,
       TaskItem,
+      Drawing,
     ],
     content: null,
     editable: true,
+    editorProps: {
+      handleClick: (view, pos, event) => {
+        const { state } = view
+        const { selection } = state
+        const { $from } = selection
+        
+        // Check if clicking on a link
+        const linkMark = state.schema.marks.link
+        if (linkMark) {
+          const linkAttrs = linkMark.isInSet($from.marks())
+          if (linkAttrs) {
+            event.preventDefault()
+            const linkElement = event.target.closest('a')
+            if (linkElement) {
+              const rect = linkElement.getBoundingClientRect()
+              const editorContainer = editor.view.dom.closest('.prose') || editor.view.dom.parentElement
+              const containerRect = editorContainer?.getBoundingClientRect()
+              if (containerRect) {
+                setLinkEditorPosition({
+                  top: rect.bottom - containerRect.top + 8,
+                  left: rect.left - containerRect.left,
+                })
+              } else {
+                setLinkEditorPosition({
+                  top: rect.bottom + 8,
+                  left: rect.left,
+                })
+              }
+            }
+            return true
+          }
+        }
+        return false
+      },
+    },
     onUpdate: ({ editor }) => {
       const content = editor.getJSON()
       setCurrentContent(content)
       handleAutosave(content)
     },
   })
+
+  // Listen for showLinkEditor event from toolbar
+  useEffect(() => {
+    const handleShowLinkEditor = (e) => {
+      setLinkEditorPosition(e.detail.position)
+    }
+
+    window.addEventListener('showLinkEditor', handleShowLinkEditor)
+    return () => {
+      window.removeEventListener('showLinkEditor', handleShowLinkEditor)
+    }
+  }, [])
   
   // Detect slash commands - improved detection
-  useEffect(() => {
-    if (!editor) return
-    
-    const checkForSlash = () => {
-      try {
-        const { $from } = editor.state.selection
-        const textBefore = editor.state.doc.textBetween(
-          Math.max(0, $from.pos - 200),
-          $from.pos,
-          '\n'
-        )
-        
-        // Match "/" at start of line (after newline or at document start)
-        const lines = textBefore.split('\n')
-        const currentLine = lines[lines.length - 1] || ''
-        const match = currentLine.match(/^\s*\/(\w*)$/)
-        
-        if (match) {
-          const coords = editor.view.coordsAtPos($from.pos)
-          setSlashMenuState({
-            active: true,
-            query: match[1] || '',
-            position: {
-              top: coords.top + window.scrollY,
-              left: coords.left + window.scrollX,
-            },
-            range: {
-              from: $from.pos - match[0].length,
-              to: $from.pos
-            }
-          })
-        } else {
-          setSlashMenuState(null)
-        }
-      } catch (error) {
-        // Ignore errors
-        setSlashMenuState(null)
-      }
-    }
-    
-    editor.on('update', checkForSlash)
-    editor.on('selectionUpdate', checkForSlash)
-    
-    return () => {
-      editor.off('update', checkForSlash)
-      editor.off('selectionUpdate', checkForSlash)
-    }
-  }, [editor])
 
-  // Detect hover on drag handle to show insert block menu
-  useEffect(() => {
-    if (!editor) return
-
-    let timeoutId = null
-
-    const handleMouseMove = (e) => {
-      const dragHandle = e.target.closest('.custom-drag-handle')
-      if (dragHandle) {
-        clearTimeout(timeoutId)
-        const rect = dragHandle.getBoundingClientRect()
-        setInsertBlockMenu({
-          position: {
-            top: rect.top + window.scrollY,
-            left: rect.right + window.scrollX + 8,
-          }
-        })
-      } else {
-        // Delay hiding to allow moving to menu
-        clearTimeout(timeoutId)
-        timeoutId = setTimeout(() => {
-          setInsertBlockMenu(null)
-        }, 200)
-      }
-    }
-
-    const editorElement = editor.view.dom
-    editorElement.addEventListener('mousemove', handleMouseMove)
-
-    return () => {
-      clearTimeout(timeoutId)
-      editorElement.removeEventListener('mousemove', handleMouseMove)
-    }
-  }, [editor])
   
   // Keyboard shortcuts
   useEffect(() => {
@@ -516,10 +428,10 @@ export default function DocumentPage() {
         handleExport('md')
       }
       
-      // Cmd/Ctrl + H to toggle history
+      // Cmd/Ctrl + H to open history
       if ((e.metaKey || e.ctrlKey) && e.key === 'h') {
         e.preventDefault()
-        setShowHistory(!showHistory)
+        setShowHistory(true)
       }
     }
     
@@ -1122,7 +1034,8 @@ export default function DocumentPage() {
         }
         
         editor.commands.setContent(parsedContent)
-        setShowHistory(false)
+        // Don't close the history panel after restore - let user close it manually
+        // setShowHistory(false)
         showToast('Document restored', 'success')
       } catch (error) {
         console.error('Error restoring content:', error)
@@ -1160,18 +1073,20 @@ export default function DocumentPage() {
   
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+      <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 sm:py-8">
         {/* Header */}
-        <div className="mb-4">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={handleTitleSave}
-            className="text-2xl sm:text-4xl font-bold bg-transparent border-none outline-none w-full focus:ring-0 px-0 py-2 text-gray-900 placeholder-gray-400"
-            placeholder="Untitled"
-          />
-          <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+        <div className="mb-4 relative z-40">
+          <div className="bg-white px-2 py-1 rounded w-fit">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={handleTitleSave}
+              className="text-2xl sm:text-4xl font-bold bg-transparent border-none outline-none focus:ring-0 px-0 py-2 text-gray-900 placeholder-gray-400"
+              style={{ width: 'fit-content', minWidth: '200px' }}
+              placeholder="Untitled"
+            />
+            <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 w-fit">
             {saving && <span className="text-gray-600">Saving...</span>}
             {!saving && useEditorStore.getState().hasUnsavedChanges && (
               <span className="text-amber-600">Unsaved changes</span>
@@ -1185,6 +1100,7 @@ export default function DocumentPage() {
                 {editor.storage.characterCount.words() > 0 && ` • ${editor.storage.characterCount.words()} words`}
               </span>
             )}
+            </div>
           </div>
         </div>
         
@@ -1199,7 +1115,7 @@ export default function DocumentPage() {
               {saving ? 'Saving...' : 'Save'}
             </button>
             <button
-              onClick={() => setShowHistory(!showHistory)}
+              onClick={() => setShowHistory(true)}
               className="px-2 py-1.5 border border-gray-200 rounded-md hover:bg-gray-50 text-xs font-medium text-gray-700 transition-colors flex items-center gap-1"
               title="History"
             >
@@ -1219,10 +1135,18 @@ export default function DocumentPage() {
                       // Fallback for older browsers
                       const textArea = document.createElement('textarea')
                       textArea.value = publicUrl
-                      document.body.appendChild(textArea)
-                      textArea.select()
-                      document.execCommand('copy')
-                      document.body.removeChild(textArea)
+                      textArea.style.position = 'fixed'
+                      textArea.style.opacity = '0'
+                      if (document.body) {
+                        document.body.appendChild(textArea)
+                        textArea.select()
+                        document.execCommand('copy')
+                        setTimeout(() => {
+                          if (textArea.parentNode) {
+                            document.body.removeChild(textArea)
+                          }
+                        }, 100)
+                      }
                       showToast('Public URL copied to clipboard', 'success')
                     }
                   }}
@@ -1281,10 +1205,18 @@ export default function DocumentPage() {
                         // Fallback for older browsers
                         const textArea = document.createElement('textarea')
                         textArea.value = publicUrl
-                        document.body.appendChild(textArea)
-                        textArea.select()
-                        document.execCommand('copy')
-                        document.body.removeChild(textArea)
+                        textArea.style.position = 'fixed'
+                        textArea.style.opacity = '0'
+                        if (document.body) {
+                          document.body.appendChild(textArea)
+                          textArea.select()
+                          document.execCommand('copy')
+                          setTimeout(() => {
+                            if (textArea.parentNode) {
+                              document.body.removeChild(textArea)
+                            }
+                          }, 100)
+                        }
                       }
                     } else {
                       showToast('Failed to make document public', 'error')
@@ -1386,30 +1318,23 @@ export default function DocumentPage() {
         </div>
         
         {/* Editor */}
-        <div className="bg-white rounded-md border border-gray-200" style={{ position: 'relative', zIndex: 0 }}>
-          {editor && <GoogleDocsToolbar editor={editor} />}
-          {editor && (
-            <div className="border-t border-gray-200 min-h-[500px] relative">
+        {editor && (
+          <>
+            <div className="mb-4">
+              <GoogleDocsToolbar editor={editor} />
+            </div>
+            <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8 relative">
               <EditorContent editor={editor} />
-              {editor && <BubbleMenu editor={editor} />}
-              {editor && <FloatingMenu editor={editor} />}
-              {slashMenuState && slashMenuState.active && (
-                <SlashMenu
+              {linkEditorPosition && (
+                <LinkEditor
                   editor={editor}
-                  menuState={slashMenuState}
-                  onClose={() => setSlashMenuState(null)}
-                />
-              )}
-              {insertBlockMenu && (
-                <InsertBlockMenu
-                  editor={editor}
-                  position={insertBlockMenu.position}
-                  onClose={() => setInsertBlockMenu(null)}
+                  position={linkEditorPosition}
+                  onClose={() => setLinkEditorPosition(null)}
                 />
               )}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
       
       {showHistory && (

@@ -1,0 +1,159 @@
+'use client'
+
+import { useState, useRef, useEffect, useCallback } from 'react'
+
+export default function Tooltip({ children, label, shortcut, position = 'bottom' }) {
+  const [isVisible, setIsVisible] = useState(false)
+  const [isPositioned, setIsPositioned] = useState(false)
+  const [coords, setCoords] = useState({ top: 0, left: 0 })
+  const triggerRef = useRef(null)
+  const tooltipRef = useRef(null)
+  const timeoutRef = useRef(null)
+
+  const calculatePosition = useCallback(() => {
+    if (!triggerRef.current) return null
+    
+    const triggerRect = triggerRef.current.getBoundingClientRect()
+    
+    // Estimate tooltip size (will be refined after render)
+    const estimatedWidth = 150
+    const estimatedHeight = 32
+    
+    let top, left
+
+    switch (position) {
+      case 'top':
+        top = triggerRect.top - estimatedHeight - 8
+        left = triggerRect.left + (triggerRect.width / 2) - (estimatedWidth / 2)
+        break
+      case 'bottom':
+      default:
+        top = triggerRect.bottom + 8
+        left = triggerRect.left + (triggerRect.width / 2) - (estimatedWidth / 2)
+        break
+      case 'left':
+        top = triggerRect.top + (triggerRect.height / 2) - (estimatedHeight / 2)
+        left = triggerRect.left - estimatedWidth - 8
+        break
+      case 'right':
+        top = triggerRect.top + (triggerRect.height / 2) - (estimatedHeight / 2)
+        left = triggerRect.right + 8
+        break
+    }
+
+    return { top, left }
+  }, [position])
+
+  const showTooltip = () => {
+    // Calculate position before showing
+    const initialPos = calculatePosition()
+    if (initialPos) {
+      setCoords(initialPos)
+    }
+    
+    timeoutRef.current = setTimeout(() => {
+      setIsVisible(true)
+    }, 200) // Reduced delay
+  }
+
+  const hideTooltip = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+    setIsVisible(false)
+    setIsPositioned(false)
+  }
+
+  // Refine position after tooltip is rendered
+  useEffect(() => {
+    if (isVisible && triggerRef.current && tooltipRef.current) {
+      const triggerRect = triggerRef.current.getBoundingClientRect()
+      const tooltipRect = tooltipRef.current.getBoundingClientRect()
+      
+      let top, left
+
+      switch (position) {
+        case 'top':
+          top = triggerRect.top - tooltipRect.height - 8
+          left = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2)
+          break
+        case 'bottom':
+        default:
+          top = triggerRect.bottom + 8
+          left = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2)
+          break
+        case 'left':
+          top = triggerRect.top + (triggerRect.height / 2) - (tooltipRect.height / 2)
+          left = triggerRect.left - tooltipRect.width - 8
+          break
+        case 'right':
+          top = triggerRect.top + (triggerRect.height / 2) - (tooltipRect.height / 2)
+          left = triggerRect.right + 8
+          break
+      }
+
+      // Keep tooltip within viewport
+      if (left < 8) left = 8
+      if (left + tooltipRect.width > window.innerWidth - 8) {
+        left = window.innerWidth - tooltipRect.width - 8
+      }
+      if (top < 8) top = triggerRect.bottom + 8
+      
+      setCoords({ top, left })
+      setIsPositioned(true)
+    }
+  }, [isVisible, position])
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
+
+  return (
+    <div 
+      ref={triggerRef}
+      onMouseEnter={showTooltip}
+      onMouseLeave={hideTooltip}
+      onFocus={showTooltip}
+      onBlur={hideTooltip}
+      className="inline-flex"
+    >
+      {children}
+      {isVisible && (
+        <div
+          ref={tooltipRef}
+          className="fixed z-[200] px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-lg text-sm text-gray-700 whitespace-nowrap pointer-events-none"
+          style={{
+            top: coords.top,
+            left: coords.left,
+            opacity: isPositioned ? 1 : 0,
+            transition: 'opacity 100ms ease-out',
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <span>{label}</span>
+            {shortcut && (
+              <>
+                <span className="text-gray-300">·</span>
+                <span className="flex items-center gap-0.5 text-gray-400">
+                  {shortcut.map((key, i) => (
+                    <kbd 
+                      key={i} 
+                      className="inline-flex items-center justify-center min-w-[20px] h-5 px-1 bg-gray-100 border border-gray-200 rounded text-xs font-medium"
+                    >
+                      {key}
+                    </kbd>
+                  ))}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+

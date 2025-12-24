@@ -69,7 +69,7 @@ export default function Header() {
   }, [showUserMenu])
   
   return (
-    <header className="border-b border-gray-200 bg-white">
+    <header className="border-b border-gray-200 bg-white relative z-[100]">
       <div className="max-w-full mx-auto">
         <div className="flex items-center justify-between px-6 h-16">
           {/* Left side - Logo and project name */}
@@ -138,10 +138,10 @@ export default function Header() {
                 {showUserMenu && (
                   <>
                     <div 
-                      className="fixed inset-0 z-40" 
+                      className="fixed inset-0 z-10" 
                       onClick={() => setShowUserMenu(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-48 md:w-56 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                    <div className="absolute right-0 mt-2 w-48 md:w-56 bg-white border border-gray-200 rounded-md shadow-lg z-20">
                       <div className="py-1">
                         {!isDrive && (
                           <Link

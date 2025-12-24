@@ -67,10 +67,18 @@ function TestamentUrlDisplay() {
               // Fallback for older browsers
               const textArea = document.createElement('textarea')
               textArea.value = publicUrl
-              document.body.appendChild(textArea)
-              textArea.select()
-              document.execCommand('copy')
-              document.body.removeChild(textArea)
+              textArea.style.position = 'fixed'
+              textArea.style.opacity = '0'
+              if (document.body) {
+                document.body.appendChild(textArea)
+                textArea.select()
+                document.execCommand('copy')
+                setTimeout(() => {
+                  if (textArea.parentNode) {
+                    document.body.removeChild(textArea)
+                  }
+                }, 100)
+              }
               alert('URL copied to clipboard!')
             }
           }}
@@ -272,7 +280,7 @@ export default function SettingsPage() {
                   )}
                 </div>
                 <div className="flex-1 space-y-3">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={() => {
                         // Generate random seed
@@ -280,7 +288,7 @@ export default function SettingsPage() {
                         const generatedUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${randomSeed}`
                         setAvatarUrl(generatedUrl)
                       }}
-                      className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 text-sm font-medium transition-colors"
+                      className="px-3 py-2 md:px-4 bg-gray-900 text-white rounded-md hover:bg-gray-800 text-xs md:text-sm font-medium transition-colors whitespace-nowrap"
                     >
                       Generate Random Avatar
                     </button>
@@ -291,7 +299,7 @@ export default function SettingsPage() {
                         const generatedUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(emailSeed)}`
                         setAvatarUrl(generatedUrl)
                       }}
-                      className="px-4 py-2 bg-gray-200 text-gray-900 rounded-md hover:bg-gray-300 text-sm font-medium transition-colors"
+                      className="px-3 py-2 md:px-4 bg-gray-200 text-gray-900 rounded-md hover:bg-gray-300 text-xs md:text-sm font-medium transition-colors whitespace-nowrap"
                     >
                       Use Email Avatar
                     </button>
@@ -299,7 +307,7 @@ export default function SettingsPage() {
                       onClick={() => {
                         setAvatarUrl('')
                       }}
-                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm font-medium transition-colors"
+                      className="px-3 py-2 md:px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs md:text-sm font-medium transition-colors whitespace-nowrap"
                     >
                       Clear
                     </button>

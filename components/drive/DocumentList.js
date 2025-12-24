@@ -17,6 +17,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
   const [viewMode, setViewMode] = useState('list-no-icons') // 'compact', 'list-no-icons'
   const [sortBy, setSortBy] = useState('date') // 'date', 'name', 'type'
   const [sortDirection, setSortDirection] = useState('desc') // 'asc', 'desc'
+  const [selectedItems, setSelectedItems] = useState(new Set()) // Multiple select
   
   // Build folder map for quick lookup
   const folderMap = useMemo(() => {
@@ -61,6 +62,39 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
       // Set new column and default to desc
       setSortBy(column)
       setSortDirection('desc')
+    }
+  }
+  
+  // Toggle selection
+  const toggleSelection = (itemId) => {
+    setSelectedItems(prev => {
+      const next = new Set(prev)
+      if (next.has(itemId)) {
+        next.delete(itemId)
+      } else {
+        next.add(itemId)
+      }
+      return next
+    })
+  }
+
+  // Select all / Deselect all
+  const toggleSelectAll = () => {
+    if (selectedItems.size === sortedDocuments.length) {
+      setSelectedItems(new Set())
+    } else {
+      setSelectedItems(new Set(sortedDocuments.map(d => d.id)))
+    }
+  }
+
+  // Delete selected items
+  const handleDeleteSelected = () => {
+    if (selectedItems.size === 0) return
+    if (confirm(`Are you sure you want to delete ${selectedItems.size} item(s)?`)) {
+      selectedItems.forEach(id => {
+        onDelete(id)
+      })
+      setSelectedItems(new Set())
     }
   }
   
@@ -141,6 +175,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
   const renderListNoIconsItem = (item, level = 0) => {
     const isDragging = draggedItem?.id === item.id
     const isDragOver = dragOverFolder === item.id && item.type === 'folder'
+    const isSelected = selectedItems.has(item.id)
     
     return (
       <div key={item.id}>
@@ -192,11 +227,21 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
             setDragOverFolder(null)
           }}
           onContextMenu={(e) => handleContextMenu(e, item)}
-          className={`grid grid-cols-12 gap-2 md:gap-4 items-center px-2 md:px-4 py-2.5 md:py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 group transition-colors cursor-pointer ${
+          className={`grid grid-cols-12 gap-1 md:gap-4 items-center px-2 md:px-4 py-2.5 md:py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 group transition-colors cursor-pointer ${
             isDragging ? 'opacity-50' : ''
-          } ${isDragOver ? 'bg-blue-50 border-blue-200' : ''}`}
+          } ${isDragOver ? 'bg-blue-50 border-blue-200' : ''} ${isSelected ? 'bg-blue-50' : ''}`}
         >
-          <div className="col-span-1">
+          <div className="col-span-1 flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={(e) => {
+                e.stopPropagation()
+                toggleSelection(item.id)
+              }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+            />
             {item.type === 'folder' ? (
               <svg className="w-4 h-4 md:w-5 md:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -208,19 +253,20 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
             )}
           </div>
           {item.type === 'folder' ? (
-            <Link href={`/drive/folder/${item.id}`} className="col-span-5">
-              <h3 className="font-medium text-sm md:text-base">{item.name}</h3>
+            <Link href={`/drive/folder/${item.id}`} className="col-span-4 md:col-span-5">
+              <h3 className="font-medium text-sm md:text-base truncate">{item.name}</h3>
             </Link>
           ) : (
-            <Link href={`/doc/${item.id}`} className="col-span-5">
-              <h3 className="font-medium text-sm md:text-base">{item.title || 'Untitled'}</h3>
+            <Link href={`/doc/${item.id}`} className="col-span-4 md:col-span-5">
+              <h3 className="font-medium text-sm md:text-base truncate">{item.title || 'Untitled'}</h3>
             </Link>
           )}
-          <div className="col-span-2 text-xs md:text-sm text-gray-600">
+          <div className="col-span-2 text-xs md:text-sm text-gray-600 whitespace-nowrap">
             {item.type === 'folder' ? 'Folder' : 'Document'}
           </div>
-          <div className="col-span-3 text-xs md:text-sm text-gray-500">
-            {format(new Date(item.updated_at || item.created_at), 'MMM d, yyyy')}
+          <div className="col-span-3 text-xs md:text-sm text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
+            <span className="hidden md:inline">{format(new Date(item.updated_at || item.created_at), 'MMM d, yyyy')}</span>
+            <span className="md:hidden">{format(new Date(item.updated_at || item.created_at), 'MMM d')}</span>
           </div>
           <div className="col-span-1 flex justify-end">
             <button
@@ -281,6 +327,14 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
       {/* View and Sort Controls */}
       <div className="flex items-center justify-between mb-3 md:mb-4 pb-3 md:pb-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
+          {selectedItems.size > 0 && (
+            <button
+              onClick={handleDeleteSelected}
+              className="px-3 py-1.5 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+            >
+              Delete {selectedItems.size} item(s)
+            </button>
+          )}
           <span className="text-xs md:text-sm text-gray-600">View:</span>
           <button
             onClick={() => setViewMode('compact')}
@@ -328,39 +382,46 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
           <div className="border border-gray-200 rounded-md overflow-hidden">
             {/* Table header with sortable columns */}
             <div className="bg-gray-50 border-b border-gray-200">
-              <div className="grid grid-cols-12 gap-2 md:gap-4 px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium text-gray-700">
-                <div className="col-span-1"></div>
+              <div className="grid grid-cols-12 gap-1 md:gap-4 px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium text-gray-700">
+                <div className="col-span-1 flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.size === sortedDocuments.length && sortedDocuments.length > 0}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  />
+                </div>
                 <button
                   onClick={() => handleSort('name')}
-                  className="col-span-5 flex items-center gap-2 text-left hover:text-gray-900 transition-colors"
+                  className="col-span-4 md:col-span-5 flex items-center gap-1 md:gap-2 text-left hover:text-gray-900 transition-colors"
                 >
-                  <span>Name</span>
+                  <span className="truncate">Name</span>
                   {sortBy === 'name' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 md:w-4 md:h-4" /> : <ArrowDown className="w-3 h-3 md:w-4 md:h-4" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" /> : <ArrowDown className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
                   ) : (
-                    <ArrowUpDown className="w-3 h-3 md:w-4 md:h-4 opacity-30" />
+                    <ArrowUpDown className="w-3 h-3 md:w-4 md:h-4 opacity-30 flex-shrink-0" />
                   )}
                 </button>
                 <button
                   onClick={() => handleSort('type')}
-                  className="col-span-2 flex items-center gap-2 text-left hover:text-gray-900 transition-colors"
+                  className="col-span-2 flex items-center gap-1 md:gap-2 text-left hover:text-gray-900 transition-colors"
                 >
-                  <span>Type</span>
+                  <span className="truncate">Type</span>
                   {sortBy === 'type' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" /> : <ArrowDown className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
                   ) : (
-                    <ArrowUpDown className="w-4 h-4 opacity-30" />
+                    <ArrowUpDown className="w-3 h-3 md:w-4 md:h-4 opacity-30 flex-shrink-0" />
                   )}
                 </button>
                 <button
                   onClick={() => handleSort('date')}
-                  className="col-span-3 flex items-center gap-2 text-left hover:text-gray-900 transition-colors"
+                  className="col-span-3 flex items-center gap-1 md:gap-2 text-left hover:text-gray-900 transition-colors"
                 >
-                  <span>Date</span>
+                  <span className="truncate">Date</span>
                   {sortBy === 'date' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" /> : <ArrowDown className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
                   ) : (
-                    <ArrowUpDown className="w-4 h-4 opacity-30" />
+                    <ArrowUpDown className="w-3 h-3 md:w-4 md:h-4 opacity-30 flex-shrink-0" />
                   )}
                 </button>
                 <div className="col-span-1"></div>

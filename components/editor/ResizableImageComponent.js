@@ -2,34 +2,27 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { NodeViewWrapper } from '@tiptap/react'
-import { GripVertical, AlignLeft, AlignCenter, AlignRight, Trash2, Copy } from 'lucide-react'
+import { AlignLeft, AlignCenter, AlignRight, Trash2 } from 'lucide-react'
 
 export default function ResizableImageComponent({ node, updateAttributes, deleteNode, editor, getPos }) {
   const [isResizing, setIsResizing] = useState(false)
+  const [resizeCorner, setResizeCorner] = useState(null) // 'tl', 'tr', 'bl', 'br'
   const [showMenu, setShowMenu] = useState(false)
-  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
   const [startX, setStartX] = useState(0)
+  const [startY, setStartY] = useState(0)
   const [startWidth, setStartWidth] = useState(0)
+  const [startHeight, setStartHeight] = useState(0)
   const imageRef = useRef(null)
-  const resizeHandleRef = useRef(null)
   const menuRef = useRef(null)
+  const resizeHandleRefs = {
+    tl: useRef(null),
+    tr: useRef(null),
+    bl: useRef(null),
+    br: useRef(null),
+  }
 
   const { src, alt, width, height, align } = node.attrs
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target) &&
-          imageRef.current && !imageRef.current.contains(event.target) &&
-          resizeHandleRef.current && !resizeHandleRef.current.contains(event.target)) {
-        setShowMenu(false)
-      }
-    }
-
-    if (showMenu) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [showMenu])
 
   // Set default size to 1/3 of container width on load if not set
   useEffect(() => {
@@ -45,60 +38,105 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
     }
   }, [src, width, height, updateAttributes])
 
-  const handleMouseDown = useCallback((e) => {
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showMenu && menuRef.current && !menuRef.current.contains(e.target) && 
+          imageRef.current && !imageRef.current.contains(e.target)) {
+        setShowMenu(false)
+      }
+    }
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showMenu])
+
+  const handleResizeStart = useCallback((e, corner) => {
     // Don't allow resizing if editor is not editable (public view)
     if (!editor.isEditable) return
     e.preventDefault()
     e.stopPropagation()
     setIsResizing(true)
+    setResizeCorner(corner)
     const currentWidth = width || imageRef.current?.offsetWidth || 300
-    setStartX(e.clientX)
+    const currentHeight = height || imageRef.current?.offsetHeight || 200
+    setStartX(e.touches ? e.touches[0].clientX : e.clientX)
+    setStartY(e.touches ? e.touches[0].clientY : e.clientY)
     setStartWidth(currentWidth)
-  }, [width, editor])
+    setStartHeight(currentHeight)
+  }, [width, height, editor])
 
   useEffect(() => {
-    if (!isResizing) return
+    if (!isResizing || !resizeCorner) return
 
-    const handleMouseMove = (e) => {
-      const diff = e.clientX - startX
-      const newWidth = Math.max(100, Math.min(1200, startWidth + diff))
-      const aspectRatio = height && width ? height / width : (imageRef.current?.naturalHeight || 1) / (imageRef.current?.naturalWidth || 1)
-      const newHeight = newWidth * aspectRatio
+    const handleMove = (e) => {
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY
+      
+      const diffX = clientX - startX
+      const diffY = clientY - startY
+      
+      // Calculate aspect ratio
+      const aspectRatio = startHeight / startWidth
+      
+      let newWidth = startWidth
+      let newHeight = startHeight
+      
+      // Calculate new dimensions based on corner
+      if (resizeCorner === 'tr') {
+        // Top-right: resize from top-right corner
+        newWidth = Math.max(100, Math.min(1200, startWidth + diffX))
+        newHeight = newWidth * aspectRatio
+      } else if (resizeCorner === 'br') {
+        // Bottom-right: resize from bottom-right corner
+        newWidth = Math.max(100, Math.min(1200, startWidth + diffX))
+        newHeight = newWidth * aspectRatio
+      } else if (resizeCorner === 'tl') {
+        // Top-left: resize from top-left corner
+        newWidth = Math.max(100, Math.min(1200, startWidth - diffX))
+        newHeight = newWidth * aspectRatio
+      } else if (resizeCorner === 'bl') {
+        // Bottom-left: resize from bottom-left corner
+        newWidth = Math.max(100, Math.min(1200, startWidth - diffX))
+        newHeight = newWidth * aspectRatio
+      }
+      
       // Use requestAnimationFrame to batch updates during resize
       requestAnimationFrame(() => {
         updateAttributes({ width: newWidth, height: newHeight })
       })
     }
 
-    const handleMouseUp = () => {
+    const handleEnd = () => {
       setIsResizing(false)
+      setResizeCorner(null)
     }
 
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
+    document.addEventListener('mousemove', handleMove)
+    document.addEventListener('mouseup', handleEnd)
+    document.addEventListener('touchmove', handleMove, { passive: false })
+    document.addEventListener('touchend', handleEnd)
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('mousemove', handleMove)
+      document.removeEventListener('mouseup', handleEnd)
+      document.removeEventListener('touchmove', handleMove)
+      document.removeEventListener('touchend', handleEnd)
     }
-  }, [isResizing, startX, startWidth, height, width, updateAttributes])
+  }, [isResizing, resizeCorner, startX, startY, startWidth, startHeight, updateAttributes])
 
   const handleImageClick = (e) => {
-    e.stopPropagation()
-    // Don't show menu if editor is not editable (public view)
     if (!editor.isEditable) return
-    // Get click position relative to viewport
-    const clickX = e.clientX
-    const clickY = e.clientY
-    // Ensure menu stays within viewport bounds
-    const menuWidth = 200 // min-w-[200px]
-    const menuHeight = 200 // approximate height
-    const viewportWidth = window.innerWidth
-    const viewportHeight = window.innerHeight
-    const adjustedX = Math.min(Math.max(menuWidth / 2, clickX), viewportWidth - menuWidth / 2)
-    const adjustedY = Math.min(Math.max(menuHeight / 2, clickY), viewportHeight - menuHeight / 2)
-    setMenuPosition({ x: adjustedX, y: adjustedY })
-    setShowMenu(!showMenu)
+    e.stopPropagation()
+    const rect = imageRef.current?.getBoundingClientRect()
+    if (rect) {
+      setMenuPosition({
+        top: e.clientY,
+        left: e.clientX
+      })
+      setShowMenu(true)
+    }
   }
 
   const handleAlign = (alignment) => {
@@ -107,19 +145,8 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
   }
 
   const handleDelete = () => {
-    deleteNode()
-  }
-
-  const handleDuplicate = () => {
-    const pos = getPos()
-    if (typeof pos === 'number') {
-      editor.chain()
-        .focus()
-        .insertContentAt(pos + node.nodeSize, {
-          type: 'image',
-          attrs: { src, alt, width, height, align },
-        })
-        .run()
+    if (confirm('Supprimer cette image ?')) {
+      deleteNode()
     }
     setShowMenu(false)
   }
@@ -167,11 +194,16 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
             alt={alt || ''}
             style={{
               ...imageStyle,
-              cursor: editor.isEditable ? 'pointer' : 'default'
+              cursor: editor.isEditable ? 'pointer' : 'default',
+              touchAction: 'none'
             }}
             onClick={handleImageClick}
             className="rounded-lg transition-all group-hover:ring-2 group-hover:ring-blue-400"
             draggable={false}
+            onTouchStart={(e) => {
+              // Prevent scroll when touching image on mobile
+              e.stopPropagation()
+            }}
           onLoad={(e) => {
             // Set initial dimensions if not set, preserving aspect ratio
             if (!width && !height && e.target.naturalWidth && e.target.naturalWidth > 0) {
@@ -199,100 +231,132 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
           </>
         )}
         
-        {/* Resize handle - only show if editor is editable */}
-        {editor.isEditable && (
-          <div
-            ref={resizeHandleRef}
-            onMouseDown={handleMouseDown}
-            className={`absolute top-0 right-0 w-4 h-4 bg-blue-500 rounded-bl-lg cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity ${
-              isResizing ? 'opacity-100' : ''
-            }`}
-          style={{
-            transform: 'translate(50%, -50%)',
-            zIndex: 10,
-          }}
-        >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-2 h-2 border-2 border-white rounded-sm"></div>
-          </div>
-        </div>
-        )}
-        </div>
-
-        {/* Context menu - only show if editor is editable */}
-        {editor.isEditable && showMenu && (
+        {/* Context menu */}
+        {showMenu && editor.isEditable && (
           <div
             ref={menuRef}
-            className="fixed z-50 bg-white border border-gray-200 rounded-md shadow-lg p-2 min-w-[200px]"
+            className="fixed z-[10005] bg-white border border-gray-200 rounded-md shadow-lg p-2 min-w-[150px]"
             style={{
-              top: `${menuPosition.y}px`,
-              left: `${menuPosition.x}px`,
-              transform: 'translate(-50%, -50%)',
+              top: `${menuPosition.top}px`,
+              left: `${menuPosition.left}px`,
+              transform: 'translate(-50%, 10px)',
             }}
           >
-            <div className="mb-2">
-              <div className="text-xs font-semibold text-gray-500 mb-1 px-2">Align</div>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => handleAlign('left')}
-                  className={`p-2 rounded transition-colors ${
-                    align === 'left'
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'hover:bg-gray-100 text-gray-700'
-                  }`}
-                  title="Align Left"
-                >
-                  <AlignLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleAlign('center')}
-                  className={`p-2 rounded transition-colors ${
-                    align === 'center'
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'hover:bg-gray-100 text-gray-700'
-                  }`}
-                  title="Align Center"
-                >
-                  <AlignCenter className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleAlign('right')}
-                  className={`p-2 rounded transition-colors ${
-                    align === 'right'
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'hover:bg-gray-100 text-gray-700'
-                  }`}
-                  title="Align Right"
-                >
-                  <AlignRight className="w-4 h-4" />
-                </button>
-              </div>
+            <div className="text-xs font-semibold text-gray-500 mb-2 px-2">Alignement</div>
+            <div className="flex gap-1 mb-2">
+              <button
+                onClick={() => handleAlign('left')}
+                className={`p-2 rounded hover:bg-gray-100 ${align === 'left' ? 'bg-gray-200' : ''}`}
+                title="Align Left"
+              >
+                <AlignLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleAlign('center')}
+                className={`p-2 rounded hover:bg-gray-100 ${align === 'center' || !align ? 'bg-gray-200' : ''}`}
+                title="Align Center"
+              >
+                <AlignCenter className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleAlign('right')}
+                className={`p-2 rounded hover:bg-gray-100 ${align === 'right' ? 'bg-gray-200' : ''}`}
+                title="Align Right"
+              >
+                <AlignRight className="w-4 h-4" />
+              </button>
             </div>
-
             <div className="border-t border-gray-200 my-2"></div>
-
-            <button
-              onClick={handleDuplicate}
-              className="w-full text-left px-3 py-2 text-sm rounded transition-colors hover:bg-gray-100 text-gray-700 flex items-center gap-2"
-            >
-              <Copy className="w-4 h-4" />
-              <span>Duplicate</span>
-            </button>
             <button
               onClick={handleDelete}
-              className="w-full text-left px-3 py-2 text-sm rounded transition-colors hover:bg-gray-100 text-red-600 flex items-center gap-2"
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
             >
               <Trash2 className="w-4 h-4" />
-              <span>Delete</span>
+              Supprimer
             </button>
           </div>
         )}
+        
+        {/* Resize handles on all 4 corners - only show if editor is editable */}
+        {editor.isEditable && (
+          <>
+            {/* Top-left */}
+            <div
+              ref={resizeHandleRefs.tl}
+              onMouseDown={(e) => handleResizeStart(e, 'tl')}
+              onTouchStart={(e) => handleResizeStart(e, 'tl')}
+              className={`absolute top-0 left-0 w-8 h-8 md:w-4 md:h-4 bg-blue-500 rounded-br-lg cursor-nwse-resize md:opacity-0 md:group-hover:opacity-100 transition-opacity ${
+                isResizing && resizeCorner === 'tl' ? 'opacity-100' : 'opacity-100 md:opacity-0'
+              }`}
+              style={{
+                transform: 'translate(-50%, -50%)',
+                zIndex: 10,
+                touchAction: 'none',
+              }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-3 h-3 md:w-1.5 md:h-1.5 border-2 border-white rounded-sm"></div>
+              </div>
+            </div>
+            {/* Top-right */}
+            <div
+              ref={resizeHandleRefs.tr}
+              onMouseDown={(e) => handleResizeStart(e, 'tr')}
+              onTouchStart={(e) => handleResizeStart(e, 'tr')}
+              className={`absolute top-0 right-0 w-8 h-8 md:w-4 md:h-4 bg-blue-500 rounded-bl-lg cursor-nesw-resize md:opacity-0 md:group-hover:opacity-100 transition-opacity ${
+                isResizing && resizeCorner === 'tr' ? 'opacity-100' : 'opacity-100 md:opacity-0'
+              }`}
+              style={{
+                transform: 'translate(50%, -50%)',
+                zIndex: 10,
+                touchAction: 'none',
+              }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-3 h-3 md:w-1.5 md:h-1.5 border-2 border-white rounded-sm"></div>
+              </div>
+            </div>
+            {/* Bottom-left */}
+            <div
+              ref={resizeHandleRefs.bl}
+              onMouseDown={(e) => handleResizeStart(e, 'bl')}
+              onTouchStart={(e) => handleResizeStart(e, 'bl')}
+              className={`absolute bottom-0 left-0 w-8 h-8 md:w-4 md:h-4 bg-blue-500 rounded-tr-lg cursor-nesw-resize md:opacity-0 md:group-hover:opacity-100 transition-opacity ${
+                isResizing && resizeCorner === 'bl' ? 'opacity-100' : 'opacity-100 md:opacity-0'
+              }`}
+              style={{
+                transform: 'translate(-50%, 50%)',
+                zIndex: 10,
+                touchAction: 'none',
+              }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-3 h-3 md:w-1.5 md:h-1.5 border-2 border-white rounded-sm"></div>
+              </div>
+            </div>
+            {/* Bottom-right */}
+            <div
+              ref={resizeHandleRefs.br}
+              onMouseDown={(e) => handleResizeStart(e, 'br')}
+              onTouchStart={(e) => handleResizeStart(e, 'br')}
+              className={`absolute bottom-0 right-0 w-8 h-8 md:w-4 md:h-4 bg-blue-500 rounded-tl-lg cursor-nwse-resize md:opacity-0 md:group-hover:opacity-100 transition-opacity ${
+                isResizing && resizeCorner === 'br' ? 'opacity-100' : 'opacity-100 md:opacity-0'
+              }`}
+              style={{
+                transform: 'translate(50%, 50%)',
+                zIndex: 10,
+                touchAction: 'none',
+              }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-3 h-3 md:w-1.5 md:h-1.5 border-2 border-white rounded-sm"></div>
+              </div>
+            </div>
+          </>
+        )}
+        </div>
+
       </div>
     </NodeViewWrapper>
   )
 }
-
-
-
-
-

@@ -25,6 +25,18 @@ body {
   position: relative;
 }
 
+/* Preserve inline styles - ensure they take precedence */
+.ProseMirror span[style],
+.ProseMirror p[style],
+.ProseMirror h1[style],
+.ProseMirror h2[style],
+.ProseMirror h3[style],
+.ProseMirror h4[style],
+.ProseMirror h5[style],
+.ProseMirror h6[style] {
+  /* Inline styles will automatically take precedence, but ensure no CSS overrides */
+}
+
 @media (min-width: 768px) {
   .ProseMirror {
     min-height: 500px;
@@ -608,6 +620,20 @@ input[type="search"] {
     -webkit-tap-highlight-color: transparent;
   }
 }
+
+/* Drawing styles */
+.drawing-wrapper {
+  margin: 1.5rem 0;
+  display: block;
+}
+
+.drawing-wrapper canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Inline styles should naturally take precedence - no CSS override needed */
 
 /* Remove dark mode styles - using light theme only */
 

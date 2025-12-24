@@ -20,8 +20,10 @@ import {
   Minus,
   Plus,
   Eraser,
-  Paintbrush
+  Paintbrush,
+  PenTool,
 } from 'lucide-react'
+import Tooltip from '@/components/ui/Tooltip'
 
 const FONT_FAMILIES = [
   'Arial',
@@ -48,16 +50,18 @@ const FONT_FAMILIES = [
 
 const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 30, 36, 48, 60, 72, 96]
 
-const TEXT_COLORS = [
-  '#000000', '#434343', '#666666', '#999999', '#B7B7B7', '#CCCCCC', '#D9D9D9', '#EFEFEF', '#F3F3F3', '#FFFFFF',
+const PRESET_COLORS = [
+  '#000000', '#434343', '#666666', '#999999', '#B7B7B7', '#CCCCCC', '#D9D9D9', '#EFEFEF', '#F2F2F2', '#FFFFFF',
   '#980000', '#FF0000', '#FF9900', '#FFFF00', '#00FF00', '#00FFFF', '#4A86E8', '#0000FF', '#9900FF', '#FF00FF',
   '#E6B8AF', '#F4CCCC', '#FCE5CD', '#FFF2CC', '#D9EAD3', '#D0E0E3', '#C9DAF8', '#CFE2F3', '#D9D2E9', '#EAD1DC',
   '#DD7E6B', '#EA9999', '#F9CB9C', '#FFE599', '#B6D7A8', '#A2C4C9', '#A4C2F4', '#9FC5E8', '#B4A7D6', '#D5A6BD',
   '#CC4125', '#E06666', '#F6B26B', '#FFD966', '#93C47D', '#76A5AF', '#6D9EEB', '#6FA8DC', '#8E7CC3', '#C27BA0',
   '#A61C00', '#CC0000', '#E69138', '#F1C232', '#6AA84F', '#45818E', '#3C78D8', '#3D85C6', '#674EA7', '#A64D79',
   '#85200C', '#990000', '#B45F06', '#BF9000', '#38761D', '#134F5C', '#1155CC', '#0B5394', '#351C75', '#741B47',
-  '#5B0F00', '#660000', '#783F04', '#7F6000', '#274E13', '#0C343D', '#1C4587', '#073763', '#20124D', '#4C1130'
+  '#5B0F00', '#660000', '#783F04', '#7F6000', '#274E13', '#0C343D', '#1C4587', '#073763', '#20124D', '#4C1130',
 ]
+
+const TEXT_COLORS = PRESET_COLORS
 
 const HIGHLIGHT_COLORS = [
   '#FFFF00', '#FF9900', '#00FF00', '#00FFFF', '#FF00FF', '#FF0000', '#0000FF', '#000000', '#FFFFFF',
@@ -144,9 +148,34 @@ export default function GoogleDocsToolbar({ editor }) {
   const currentFontSizeNum = currentFontSizeAttr ? parseInt(currentFontSizeAttr.replace('px', '')) : null
   const [fontSize, setFontSize] = useState(currentFontSizeNum || 16)
   const [fontSizeDisplay, setFontSizeDisplay] = useState(currentFontSizeNum ? currentFontSizeNum.toString() : 'inherited')
-  const currentTextColor = editor.getAttributes('textStyle')?.color || '#000000'
-  const currentHighlightColor = editor.getAttributes('highlight')?.color || null
-  const currentAlign = editor.getAttributes('textAlign')?.textAlign || 'left'
+  
+  // Get current colors - prefer activeStyle (which includes user selections) over editor attributes
+  // This ensures the preview updates when color is selected even if not yet applied to text
+  const currentTextColor = activeStyle.color || editor.getAttributes('textStyle')?.color || '#000000'
+  const currentHighlightColor = activeStyle.highlightColor || editor.getAttributes('highlight')?.color || null
+  
+  // Get current align - check for image first, then text
+  const getCurrentAlign = () => {
+    const { selection } = editor.state
+    const { $from } = selection
+    let imageNode = null
+    
+    // Check if selection is on an image
+    editor.state.doc.nodesBetween($from.start(), $from.end(), (node) => {
+      if (node.type && node.type.name === 'image') {
+        imageNode = node
+        return false
+      }
+    })
+    
+    if (imageNode) {
+      return imageNode.attrs.align || 'center'
+    }
+    
+    return editor.getAttributes('textAlign')?.textAlign || 'left'
+  }
+  
+  const currentAlign = getCurrentAlign()
   
   // Get current line height from the selected node
   const getCurrentLineHeight = () => {
@@ -156,6 +185,8 @@ export default function GoogleDocsToolbar({ editor }) {
     return node.attrs.lineHeight || null
   }
   const [currentLineHeight, setCurrentLineHeight] = useState(getCurrentLineHeight())
+  const [selectedFontIndex, setSelectedFontIndex] = useState(-1)
+  const [selectedLineHeightIndex, setSelectedLineHeightIndex] = useState(-1)
 
   // Update fontSize state when editor selection changes
   useEffect(() => {
@@ -202,36 +233,149 @@ export default function GoogleDocsToolbar({ editor }) {
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (fontFamilyRef.current && !fontFamilyRef.current.contains(event.target)) {
+      // Check if click is outside and dropdowns are open
+      if (fontFamilyRef.current && showFontFamily && !fontFamilyRef.current.contains(event.target)) {
         setShowFontFamily(false)
       }
-      if (fontSizeRef.current && !fontSizeRef.current.contains(event.target)) {
+      if (fontSizeRef.current && showFontSize && !fontSizeRef.current.contains(event.target)) {
         setShowFontSize(false)
       }
-      if (lineHeightRef.current && !lineHeightRef.current.contains(event.target)) {
+      if (lineHeightRef.current && showLineHeight && !lineHeightRef.current.contains(event.target)) {
         setShowLineHeight(false)
       }
-      if (textColorRef.current && !textColorRef.current.contains(event.target)) {
-        setShowTextColor(false)
+      // For color pickers, check if click is outside both button and picker
+      if (textColorRef.current && showTextColor) {
+        const isClickOnButton = textColorRef.current.contains(event.target)
+        // Check if click is on the color picker div (has fixed bg-white class)
+        const isClickOnPicker = event.target.closest('.fixed.bg-white.border.border-gray-300.rounded-md.shadow-lg')
+        if (!isClickOnButton && !isClickOnPicker) {
+          setShowTextColor(false)
+        }
       }
-      if (highlightColorRef.current && !highlightColorRef.current.contains(event.target)) {
-        setShowHighlightColor(false)
+      if (highlightColorRef.current && showHighlightColor) {
+        const isClickOnButton = highlightColorRef.current.contains(event.target)
+        // Check if click is on the color picker div (has fixed bg-white class)
+        const isClickOnPicker = event.target.closest('.fixed.bg-white.border.border-gray-300.rounded-md.shadow-lg')
+        if (!isClickOnButton && !isClickOnPicker) {
+          setShowHighlightColor(false)
+        }
       }
-      if (alignRef.current && !alignRef.current.contains(event.target)) {
+      if (alignRef.current && showAlign && !alignRef.current.contains(event.target)) {
         setShowAlign(false)
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
+    // Only add listener if at least one dropdown is open
+    const hasOpenDropdown = showFontFamily || showFontSize || showLineHeight || showTextColor || showHighlightColor || showAlign
+    
+    if (hasOpenDropdown) {
+      // Use setTimeout to avoid immediate execution during render
+      const timeoutId = setTimeout(() => {
+        if (typeof document !== 'undefined') {
+          document.addEventListener('mousedown', handleClickOutside)
+        }
+      }, 0)
+      
+      return () => {
+        clearTimeout(timeoutId)
+        if (typeof document !== 'undefined') {
+          document.removeEventListener('mousedown', handleClickOutside)
+        }
+      }
+    }
+  }, [showFontFamily, showFontSize, showLineHeight, showTextColor, showHighlightColor, showAlign])
+  
   const handleFontFamilyChange = (font) => {
+    if (!editor) return
     editor.chain().focus().setFontFamily(font).run()
     setActiveStyle(prev => ({ ...prev, fontFamily: font }))
     shouldApplyActiveStyleRef.current = true
     setShowFontFamily(false)
   }
+  
+  // Keyboard shortcuts for font family
+  useEffect(() => {
+    if (!editor) return
+    
+    const handleKeyDown = (e) => {
+      // Command+Shift+[ to go to previous font
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === '[') {
+        e.preventDefault()
+        const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
+        const prevIndex = currentIndex <= 0 ? FONT_FAMILIES.length - 1 : currentIndex - 1
+        const prevFont = FONT_FAMILIES[prevIndex]
+        handleFontFamilyChange(prevFont)
+      }
+      // Command+Shift+] to go to next font
+      else if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === ']') {
+        e.preventDefault()
+        const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
+        const nextIndex = (currentIndex + 1) % FONT_FAMILIES.length
+        const nextFont = FONT_FAMILIES[nextIndex]
+        handleFontFamilyChange(nextFont)
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [editor, currentFontFamily, handleFontFamilyChange])
+  
+  // Keyboard shortcuts for font size (Command+Shift+> to increase, Command+Shift+< to decrease)
+  useEffect(() => {
+    if (!editor) return
+    
+    const handleKeyDown = (e) => {
+      // Command+Shift+> or Command+Shift+. to increase font size
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === '>' || e.key === '.')) {
+        e.preventDefault()
+        const currentValue = fontSizeDisplay === 'inherited' ? fontSize : parseInt(fontSizeDisplay) || fontSize
+        const currentIndex = FONT_SIZES.indexOf(currentValue)
+        if (currentIndex >= 0 && currentIndex < FONT_SIZES.length - 1) {
+          const newSize = FONT_SIZES[currentIndex + 1]
+          setFontSize(newSize)
+          setFontSizeDisplay(newSize.toString())
+          editor.chain().focus().setFontSize(`${newSize}px`).run()
+          setActiveStyle(prev => ({ ...prev, fontSize: newSize }))
+          shouldApplyActiveStyleRef.current = true
+        } else if (currentIndex === -1 && currentValue < FONT_SIZES[FONT_SIZES.length - 1]) {
+          const largerSize = FONT_SIZES.find(s => s > currentValue)
+          if (largerSize) {
+            setFontSize(largerSize)
+            setFontSizeDisplay(largerSize.toString())
+            editor.chain().focus().setFontSize(`${largerSize}px`).run()
+            setActiveStyle(prev => ({ ...prev, fontSize: largerSize }))
+            shouldApplyActiveStyleRef.current = true
+          }
+        }
+      }
+      // Command+Shift+< or Command+Shift+, to decrease font size
+      else if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === '<' || e.key === ',')) {
+        e.preventDefault()
+        const currentValue = fontSizeDisplay === 'inherited' ? fontSize : parseInt(fontSizeDisplay) || fontSize
+        const currentIndex = FONT_SIZES.indexOf(currentValue)
+        if (currentIndex > 0) {
+          const newSize = FONT_SIZES[currentIndex - 1]
+          setFontSize(newSize)
+          setFontSizeDisplay(newSize.toString())
+          editor.chain().focus().setFontSize(`${newSize}px`).run()
+          setActiveStyle(prev => ({ ...prev, fontSize: newSize }))
+          shouldApplyActiveStyleRef.current = true
+        } else if (currentIndex === -1 && currentValue > FONT_SIZES[0]) {
+          const smallerSize = FONT_SIZES.filter(s => s < currentValue).pop()
+          if (smallerSize) {
+            setFontSize(smallerSize)
+            setFontSizeDisplay(smallerSize.toString())
+            editor.chain().focus().setFontSize(`${smallerSize}px`).run()
+            setActiveStyle(prev => ({ ...prev, fontSize: smallerSize }))
+            shouldApplyActiveStyleRef.current = true
+          }
+        }
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [editor, fontSize, fontSizeDisplay])
 
   const handleFontSizeChange = (size) => {
     editor.chain().focus().setFontSize(`${size}px`).run()
@@ -270,21 +414,69 @@ export default function GoogleDocsToolbar({ editor }) {
   }
 
   const handleTextColorChange = (color) => {
+    // Always apply color to editor (even if selection is empty, for future text)
+    // This ensures color is applied when typing on a new line
     editor.chain().focus().setColor(color).run()
+    
+    // Always update active style and dispatch event (for future text and drawing)
     setActiveStyle(prev => ({ ...prev, color }))
     shouldApplyActiveStyleRef.current = true
-    setShowTextColor(false)
+    
+    // Store color globally for drawing component to read
+    window.__drawingPenColor = color
+    
+    // Dispatch custom event for drawing component to update color
+    window.dispatchEvent(new CustomEvent('textColorChanged', { detail: { color } }))
+    
+    // Don't close the color picker automatically - let user close it manually or by clicking outside
+    // setShowTextColor(false)
   }
 
   const handleHighlightColorChange = (color) => {
-    editor.chain().focus().toggleHighlight({ color }).run()
+    // Always apply highlight color (even if selection is empty, for future text)
+    // This ensures highlight is applied when typing on a new line
+    // Similar to text color - always apply to editor
+    if (!editor.state.selection.empty) {
+      // Text is selected - apply highlight directly
+      editor.chain().focus().toggleHighlight({ color }).run()
+    } else {
+      // No selection - set highlight for future text
+      // Use setMark to prepare the highlight for the next typed text
+      editor.chain().focus().setHighlight({ color }).run()
+    }
+    
+    // Always update active style
     setActiveStyle(prev => ({ ...prev, highlightColor: color }))
     shouldApplyActiveStyleRef.current = true
-    setShowHighlightColor(false)
+    
+    // Don't close the color picker automatically - let user close it manually or by clicking outside
+    // setShowHighlightColor(false)
   }
 
   const handleAlignChange = (align) => {
-    editor.chain().focus().setTextAlign(align).run()
+    // Check if an image is selected
+    const { selection } = editor.state
+    const { $from } = selection
+    let imageNode = null
+    let imagePos = null
+    
+    // Check if selection is on an image
+    editor.state.doc.nodesBetween($from.start(), $from.end(), (node, pos) => {
+      if (node.type && node.type.name === 'image') {
+        imageNode = node
+        imagePos = pos
+        return false
+      }
+    })
+    
+    if (imageNode && editor.can().setImageAlign) {
+      // Use image align command
+      editor.chain().focus().setImageAlign(align).run()
+    } else {
+      // Use text align command
+      editor.chain().focus().setTextAlign(align).run()
+    }
+    
     setActiveStyle(prev => ({ ...prev, align }))
     shouldApplyActiveStyleRef.current = true
     setShowAlign(false)
@@ -347,7 +539,7 @@ export default function GoogleDocsToolbar({ editor }) {
     
     // Apply highlight
     if (activeStyle.highlightColor) {
-      chain.toggleHighlight({ color: activeStyle.highlightColor })
+      chain.setHighlight({ color: activeStyle.highlightColor })
     } else {
       chain.unsetHighlight()
     }
@@ -359,7 +551,7 @@ export default function GoogleDocsToolbar({ editor }) {
   const shouldApplyActiveStyleRef = useRef(false)
   
   // Listen for selection changes and apply active style
-  // In paint mode, always apply active style to selections
+  // In paint mode, always apply active style to selections and when typing
   useEffect(() => {
     if (!editor) return
     
@@ -403,10 +595,26 @@ export default function GoogleDocsToolbar({ editor }) {
       }
     }
     
+    // In paint mode, also apply style when typing (on transaction)
+    const handleTransaction = () => {
+      if (paintMode && editor.state.selection.empty) {
+        // Apply active style to the current cursor position when typing
+        setTimeout(() => {
+          applyActiveStyle()
+        }, 10)
+      }
+    }
+    
     editor.on('selectionUpdate', handleSelectionUpdate)
+    if (paintMode) {
+      editor.on('transaction', handleTransaction)
+    }
     
     return () => {
       editor.off('selectionUpdate', handleSelectionUpdate)
+      if (paintMode) {
+        editor.off('transaction', handleTransaction)
+      }
     }
   }, [editor, activeStyle, paintMode])
   
@@ -422,12 +630,30 @@ export default function GoogleDocsToolbar({ editor }) {
       // Only update if we're not in the middle of applying active style
       if (shouldApplyActiveStyleRef.current) return
       
+      // Check if an image is selected
+      const { selection } = editor.state
+      const { $from } = selection
+      let imageNode = null
+      
+      editor.state.doc.nodesBetween($from.start(), $from.end(), (node) => {
+        if (node.type && node.type.name === 'image') {
+          imageNode = node
+          return false
+        }
+      })
+      
+      let align = 'left'
+      if (imageNode) {
+        align = imageNode.attrs.align || 'center'
+      } else {
+        align = editor.getAttributes('textAlign')?.textAlign || 'left'
+      }
+      
       const attrs = editor.getAttributes('textStyle')
       const isBold = editor.isActive('bold')
       const isItalic = editor.isActive('italic')
       const isUnderline = editor.isActive('underline')
       const highlight = editor.getAttributes('highlight')
-      const align = editor.getAttributes('textAlign')?.textAlign || 'left'
       
       setActiveStyle(prev => ({
         ...prev,
@@ -459,7 +685,7 @@ export default function GoogleDocsToolbar({ editor }) {
   ]
 
   return (
-    <div className="flex items-center gap-1 md:gap-0.5 p-2 md:p-1 border-b border-gray-200 bg-white overflow-x-auto flex-wrap sticky top-0 z-50" style={{ position: 'sticky', top: 0, zIndex: 50 }}>
+    <div className="flex items-center gap-1 md:gap-0.5 p-2 md:p-1 bg-white overflow-x-auto flex-wrap sticky top-0 z-50" style={{ position: 'sticky', top: 0, zIndex: 50 }}>
       {/* Font Family */}
       <div className="relative" ref={fontFamilyRef}>
         <button
@@ -468,7 +694,51 @@ export default function GoogleDocsToolbar({ editor }) {
               const rect = fontFamilyRef.current.getBoundingClientRect()
               setFontFamilyPosition({ top: rect.bottom + 4, left: rect.left })
             }
+            const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
+            setSelectedFontIndex(currentIndex >= 0 ? currentIndex : 0)
             setShowFontFamily(!showFontFamily)
+          }}
+          onFocus={() => {
+            // Keep dropdown active when focused
+            if (!showFontFamily && fontFamilyRef.current) {
+              const rect = fontFamilyRef.current.getBoundingClientRect()
+              setFontFamilyPosition({ top: rect.bottom + 4, left: rect.left })
+              const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
+              setSelectedFontIndex(currentIndex >= 0 ? currentIndex : 0)
+              setShowFontFamily(true)
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowDown') {
+              e.preventDefault()
+              e.stopPropagation()
+              if (!showFontFamily) {
+                setShowFontFamily(true)
+                const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
+                setSelectedFontIndex(currentIndex >= 0 ? currentIndex : 0)
+              } else {
+                setSelectedFontIndex(prev => Math.min(prev + 1, FONT_FAMILIES.length - 1))
+              }
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault()
+              e.stopPropagation()
+              if (!showFontFamily) {
+                setShowFontFamily(true)
+                const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
+                setSelectedFontIndex(currentIndex >= 0 ? currentIndex : 0)
+              } else {
+                setSelectedFontIndex(prev => Math.max(prev - 1, 0))
+              }
+            } else if (e.key === 'Enter') {
+              e.preventDefault()
+              if (showFontFamily && selectedFontIndex >= 0 && selectedFontIndex < FONT_FAMILIES.length) {
+                handleFontFamilyChange(FONT_FAMILIES[selectedFontIndex])
+                setShowFontFamily(false)
+              }
+            } else if (e.key === 'Escape') {
+              e.preventDefault()
+              setShowFontFamily(false)
+            }
           }}
           className="px-2 md:px-2 py-2 md:py-1.5 h-10 md:h-8 min-w-[100px] md:min-w-[90px] text-left text-sm md:text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
           title={currentFontFamily}
@@ -480,23 +750,53 @@ export default function GoogleDocsToolbar({ editor }) {
           <>
             <div 
               className="fixed inset-0" 
-              onClick={() => setShowFontFamily(false)}
-              style={{ zIndex: 999 }}
+              onClick={() => {
+                setShowFontFamily(false)
+                setSelectedFontIndex(-1)
+              }}
+              style={{ zIndex: 60 }}
             />
             <div 
               className="fixed bg-white border border-gray-300 rounded shadow-lg max-h-64 overflow-y-auto w-48" 
               style={{ 
-                zIndex: 10001,
+                zIndex: 70,
                 position: 'fixed',
                 top: `${fontFamilyPosition.top}px`,
                 left: `${fontFamilyPosition.left}px`
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault()
+                  setSelectedFontIndex(prev => Math.min(prev + 1, FONT_FAMILIES.length - 1))
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault()
+                  setSelectedFontIndex(prev => Math.max(prev - 1, 0))
+                } else if (e.key === 'Enter') {
+                  e.preventDefault()
+                  if (selectedFontIndex >= 0 && selectedFontIndex < FONT_FAMILIES.length) {
+                    handleFontFamilyChange(FONT_FAMILIES[selectedFontIndex])
+                    setShowFontFamily(false)
+                    setSelectedFontIndex(-1)
+                  }
+                } else if (e.key === 'Escape') {
+                  e.preventDefault()
+                  setShowFontFamily(false)
+                  setSelectedFontIndex(-1)
+                }
+              }}
+              tabIndex={0}
             >
-            {FONT_FAMILIES.map((font) => (
+            {FONT_FAMILIES.map((font, index) => (
               <button
                 key={font}
-                onClick={() => handleFontFamilyChange(font)}
-                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between"
+                onClick={() => {
+                  handleFontFamilyChange(font)
+                  setShowFontFamily(false)
+                  setSelectedFontIndex(-1)
+                }}
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between ${
+                  index === selectedFontIndex ? 'bg-blue-50' : ''
+                } ${currentFontFamily === font ? 'font-semibold' : ''}`}
                 style={{ fontFamily: font }}
               >
                 <span>{font}</span>
@@ -517,7 +817,6 @@ export default function GoogleDocsToolbar({ editor }) {
         <button
           onClick={handleFontSizeDecrease}
           className="px-2 h-full hover:bg-gray-100 text-gray-700 flex items-center"
-          title="Decrease font size"
         >
           <Minus className="w-5 h-5 md:w-4 md:h-4" />
         </button>
@@ -551,6 +850,51 @@ export default function GoogleDocsToolbar({ editor }) {
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.target.blur()
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault()
+                const currentValue = fontSizeDisplay === 'inherited' ? fontSize : parseInt(fontSizeDisplay) || fontSize
+                const currentIndex = FONT_SIZES.indexOf(currentValue)
+                if (currentIndex > 0) {
+                  const newSize = FONT_SIZES[currentIndex - 1]
+                  setFontSize(newSize)
+                  setFontSizeDisplay(newSize.toString())
+                  editor.chain().focus().setFontSize(`${newSize}px`).run()
+                  setActiveStyle(prev => ({ ...prev, fontSize: newSize }))
+                  shouldApplyActiveStyleRef.current = true
+                } else if (currentIndex === -1 && currentValue > FONT_SIZES[0]) {
+                  // Find closest smaller size
+                  const smallerSize = FONT_SIZES.filter(s => s < currentValue).pop()
+                  if (smallerSize) {
+                    setFontSize(smallerSize)
+                    setFontSizeDisplay(smallerSize.toString())
+                    editor.chain().focus().setFontSize(`${smallerSize}px`).run()
+                    setActiveStyle(prev => ({ ...prev, fontSize: smallerSize }))
+                    shouldApplyActiveStyleRef.current = true
+                  }
+                }
+              } else if (e.key === 'ArrowDown') {
+                e.preventDefault()
+                e.stopPropagation() // Prevent cursor movement in editor
+                const currentValue = fontSizeDisplay === 'inherited' ? fontSize : parseInt(fontSizeDisplay) || fontSize
+                const currentIndex = FONT_SIZES.indexOf(currentValue)
+                if (currentIndex >= 0 && currentIndex < FONT_SIZES.length - 1) {
+                  const newSize = FONT_SIZES[currentIndex + 1]
+                  setFontSize(newSize)
+                  setFontSizeDisplay(newSize.toString())
+                  editor.chain().focus().setFontSize(`${newSize}px`).run()
+                  setActiveStyle(prev => ({ ...prev, fontSize: newSize }))
+                  shouldApplyActiveStyleRef.current = true
+                } else if (currentIndex === -1 && currentValue < FONT_SIZES[FONT_SIZES.length - 1]) {
+                  // Find closest larger size
+                  const largerSize = FONT_SIZES.find(s => s > currentValue)
+                  if (largerSize) {
+                    setFontSize(largerSize)
+                    setFontSizeDisplay(largerSize.toString())
+                    editor.chain().focus().setFontSize(`${largerSize}px`).run()
+                    setActiveStyle(prev => ({ ...prev, fontSize: largerSize }))
+                    shouldApplyActiveStyleRef.current = true
+                  }
+                }
               }
             }}
             min="8"
@@ -570,7 +914,6 @@ export default function GoogleDocsToolbar({ editor }) {
         <button
           onClick={handleFontSizeIncrease}
           className="px-2 h-full hover:bg-gray-100 text-gray-700 flex items-center"
-          title="Increase font size"
         >
           <Plus className="w-5 h-5 md:w-4 md:h-4" />
         </button>
@@ -584,7 +927,49 @@ export default function GoogleDocsToolbar({ editor }) {
               const rect = lineHeightRef.current.getBoundingClientRect()
               setLineHeightPosition({ top: rect.bottom + 4, left: rect.left })
             }
+            const currentIndex = LINE_HEIGHT_OPTIONS.findIndex(opt => opt.value === currentLineHeight)
+            setSelectedLineHeightIndex(currentIndex >= 0 ? currentIndex : 0)
             setShowLineHeight(!showLineHeight)
+          }}
+          onFocus={() => {
+            // Keep dropdown active when focused
+            if (!showLineHeight && lineHeightRef.current) {
+              const rect = lineHeightRef.current.getBoundingClientRect()
+              setLineHeightPosition({ top: rect.bottom + 4, left: rect.left })
+              const currentIndex = LINE_HEIGHT_OPTIONS.findIndex(opt => opt.value === currentLineHeight)
+              setSelectedLineHeightIndex(currentIndex >= 0 ? currentIndex : 0)
+              setShowLineHeight(true)
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowDown') {
+              e.preventDefault()
+              if (!showLineHeight) {
+                setShowLineHeight(true)
+                const currentIndex = LINE_HEIGHT_OPTIONS.findIndex(opt => opt.value === currentLineHeight)
+                setSelectedLineHeightIndex(currentIndex >= 0 ? currentIndex : 0)
+              } else {
+                setSelectedLineHeightIndex(prev => Math.min(prev + 1, LINE_HEIGHT_OPTIONS.length - 1))
+              }
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault()
+              if (!showLineHeight) {
+                setShowLineHeight(true)
+                const currentIndex = LINE_HEIGHT_OPTIONS.findIndex(opt => opt.value === currentLineHeight)
+                setSelectedLineHeightIndex(currentIndex >= 0 ? currentIndex : 0)
+              } else {
+                setSelectedLineHeightIndex(prev => Math.max(prev - 1, 0))
+              }
+            } else if (e.key === 'Enter') {
+              e.preventDefault()
+              if (showLineHeight && selectedLineHeightIndex >= 0 && selectedLineHeightIndex < LINE_HEIGHT_OPTIONS.length) {
+                handleLineHeightChange(LINE_HEIGHT_OPTIONS[selectedLineHeightIndex].value)
+                setShowLineHeight(false)
+              }
+            } else if (e.key === 'Escape') {
+              e.preventDefault()
+              setShowLineHeight(false)
+            }
           }}
           className="px-2 md:px-2 py-2 md:py-1.5 h-10 md:h-8 min-w-[100px] md:min-w-[90px] text-left text-sm md:text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
           title="Line Height"
@@ -597,24 +982,51 @@ export default function GoogleDocsToolbar({ editor }) {
             <div 
               className="fixed inset-0" 
               onClick={() => setShowLineHeight(false)}
-              style={{ zIndex: 999 }}
+              style={{ zIndex: 60 }}
             />
             <div 
               className="fixed bg-white border border-gray-300 rounded shadow-lg w-32" 
               style={{ 
-                zIndex: 10001,
+                zIndex: 70,
                 position: 'fixed',
                 top: `${lineHeightPosition.top}px`,
                 left: `${lineHeightPosition.left}px`
               }}
+              onKeyDown={(e) => {
+            if (e.key === 'ArrowDown') {
+              e.preventDefault()
+              e.stopPropagation() // Prevent cursor movement in editor
+              setSelectedLineHeightIndex(prev => Math.min(prev + 1, LINE_HEIGHT_OPTIONS.length - 1))
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault()
+              e.stopPropagation() // Prevent cursor movement in editor
+              setSelectedLineHeightIndex(prev => Math.max(prev - 1, 0))
+                } else if (e.key === 'Enter') {
+                  e.preventDefault()
+                  if (selectedLineHeightIndex >= 0 && selectedLineHeightIndex < LINE_HEIGHT_OPTIONS.length) {
+                    handleLineHeightChange(LINE_HEIGHT_OPTIONS[selectedLineHeightIndex].value)
+                    setShowLineHeight(false)
+                    setSelectedLineHeightIndex(-1)
+                  }
+                } else if (e.key === 'Escape') {
+                  e.preventDefault()
+                  setShowLineHeight(false)
+                  setSelectedLineHeightIndex(-1)
+                }
+              }}
+              tabIndex={0}
             >
-              {LINE_HEIGHT_OPTIONS.map((option) => (
+              {LINE_HEIGHT_OPTIONS.map((option, index) => (
                 <button
                   key={option.value || 'default'}
-                  onClick={() => handleLineHeightChange(option.value)}
+                  onClick={() => {
+                    handleLineHeightChange(option.value)
+                    setShowLineHeight(false)
+                    setSelectedLineHeightIndex(-1)
+                  }}
                   className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between ${
-                    currentLineHeight === option.value ? 'bg-blue-50 text-blue-600' : ''
-                  }`}
+                    index === selectedLineHeightIndex ? 'bg-blue-50' : ''
+                  } ${currentLineHeight === option.value ? 'bg-blue-50 text-blue-600' : ''}`}
                 >
                   <span>{option.label}</span>
                   {currentLineHeight === option.value && (
@@ -633,34 +1045,34 @@ export default function GoogleDocsToolbar({ editor }) {
 
       {/* Paint Mode Toggle */}
       <div className="relative">
-        <button
-          onClick={togglePaintMode}
-          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-            paintMode ? 'bg-blue-100 text-blue-600' : ''
-          }`}
-          title="Paint Mode - Apply active style to all selections"
-        >
-          <Paintbrush className="w-5 h-5 md:w-4 md:h-4" />
-        </button>
+        <Tooltip label="Mode pinceau">
+          <button
+            onClick={togglePaintMode}
+            className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+              paintMode ? 'bg-blue-100 text-blue-600' : ''
+            }`}
+          >
+            <Paintbrush className="w-5 h-5 md:w-4 md:h-4" />
+          </button>
+        </Tooltip>
         
         {/* Tooltip on first activation */}
         {showPaintTooltip && paintMode && (
           <>
             <div 
-              className="fixed inset-0 z-[10002]" 
+              className="fixed inset-0 z-[10002] bg-black bg-opacity-50" 
               onClick={dismissPaintTooltip}
             />
             <div 
-              className="absolute top-full left-0 mt-2 w-64 bg-gray-900 text-white text-sm rounded-lg p-3 shadow-xl z-[10003]"
-              style={{ position: 'fixed' }}
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 bg-gray-900 text-white text-sm rounded-lg p-4 shadow-xl z-[10003]"
             >
-              <div className="font-semibold mb-1">Paint Mode</div>
-              <div className="text-gray-300 text-xs">
+              <div className="font-semibold mb-2 text-lg">Paint Mode</div>
+              <div className="text-gray-300 text-sm mb-4">
                 When Paint Mode is active, your current style settings (font, size, color, etc.) will be automatically applied to any text you select or click on. The style won't change when you click on different text - it stays fixed to your preset.
               </div>
               <button
                 onClick={dismissPaintTooltip}
-                className="mt-2 text-xs text-blue-300 hover:text-blue-200 underline"
+                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium"
               >
                 Got it
               </button>
@@ -672,202 +1084,306 @@ export default function GoogleDocsToolbar({ editor }) {
       <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Formatting Buttons */}
-      <button
-        onClick={() => {
-          const newBold = !editor.isActive('bold')
-          editor.chain().focus().toggleBold().run()
-          setActiveStyle(prev => ({ ...prev, bold: newBold }))
-          shouldApplyActiveStyleRef.current = true
-        }}
-        className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-          editor.isActive('bold') ? 'bg-gray-200' : ''
-        }`}
-        title="Bold (Ctrl+B)"
-      >
-        <Bold className="w-5 h-5 md:w-4 md:h-4" />
-      </button>
+      <Tooltip label="Gras" shortcut={['⌘', 'B']}>
+        <button
+          onClick={() => {
+            const newBold = !editor.isActive('bold')
+            editor.chain().focus().toggleBold().run()
+            setActiveStyle(prev => ({ ...prev, bold: newBold }))
+            shouldApplyActiveStyleRef.current = true
+          }}
+          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+            editor.isActive('bold') ? 'bg-gray-200' : ''
+          }`}
+        >
+          <Bold className="w-5 h-5 md:w-4 md:h-4" />
+        </button>
+      </Tooltip>
       
-      <button
-        onClick={() => {
-          const newItalic = !editor.isActive('italic')
-          editor.chain().focus().toggleItalic().run()
-          setActiveStyle(prev => ({ ...prev, italic: newItalic }))
-          shouldApplyActiveStyleRef.current = true
-        }}
-        className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-          editor.isActive('italic') ? 'bg-gray-200' : ''
-        }`}
-        title="Italic (Ctrl+I)"
-      >
-        <Italic className="w-5 h-5 md:w-4 md:h-4" />
-      </button>
+      <Tooltip label="Italique" shortcut={['⌘', 'I']}>
+        <button
+          onClick={() => {
+            const newItalic = !editor.isActive('italic')
+            editor.chain().focus().toggleItalic().run()
+            setActiveStyle(prev => ({ ...prev, italic: newItalic }))
+            shouldApplyActiveStyleRef.current = true
+          }}
+          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+            editor.isActive('italic') ? 'bg-gray-200' : ''
+          }`}
+        >
+          <Italic className="w-5 h-5 md:w-4 md:h-4" />
+        </button>
+      </Tooltip>
       
-      <button
-        onClick={() => {
-          const newUnderline = !editor.isActive('underline')
-          editor.chain().focus().toggleUnderline().run()
-          setActiveStyle(prev => ({ ...prev, underline: newUnderline }))
-          shouldApplyActiveStyleRef.current = true
-        }}
-        className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-          editor.isActive('underline') ? 'bg-gray-200' : ''
-        }`}
-        title="Underline (Ctrl+U)"
-      >
-        <Underline className="w-5 h-5 md:w-4 md:h-4" />
-      </button>
+      <Tooltip label="Souligné" shortcut={['⌘', 'U']}>
+        <button
+          onClick={() => {
+            const newUnderline = !editor.isActive('underline')
+            editor.chain().focus().toggleUnderline().run()
+            setActiveStyle(prev => ({ ...prev, underline: newUnderline }))
+            shouldApplyActiveStyleRef.current = true
+          }}
+          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+            editor.isActive('underline') ? 'bg-gray-200' : ''
+          }`}
+        >
+          <Underline className="w-5 h-5 md:w-4 md:h-4" />
+        </button>
+      </Tooltip>
 
-      <button
-        onClick={() => {
-          editor.chain().focus()
-            .unsetBold()
-            .unsetItalic()
-            .unsetUnderline()
-            .unsetStrike()
-            .unsetColor()
-            .unsetHighlight()
-            .unsetLink()
-            .unsetFontFamily()
-            .unsetFontSize()
-            .setTextAlign('left')
-            .run()
-        }}
-        className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
-        title="Clear Formatting"
-      >
-        <Eraser className="w-5 h-5 md:w-4 md:h-4" />
-      </button>
+      <Tooltip label="Effacer le formatage">
+        <button
+          onClick={() => {
+            editor.chain().focus()
+              .unsetBold()
+              .unsetItalic()
+              .unsetUnderline()
+              .unsetStrike()
+              .unsetColor()
+              .unsetHighlight()
+              .unsetLink()
+              .unsetFontFamily()
+              .unsetFontSize()
+              .setTextAlign('left')
+              .run()
+          }}
+          className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
+        >
+          <Eraser className="w-5 h-5 md:w-4 md:h-4" />
+        </button>
+      </Tooltip>
 
       <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Text Color */}
       <div className="relative" ref={textColorRef}>
-        <button
-          onClick={() => {
-            if (textColorRef.current) {
-              const rect = textColorRef.current.getBoundingClientRect()
-              setTextColorPosition({ top: rect.bottom + 4, left: rect.left })
-            }
-            setShowTextColor(!showTextColor)
-          }}
-          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-            showTextColor ? 'bg-gray-200' : ''
-          }`}
-          title="Text Color"
-        >
-          <div className="relative">
-            <svg className="w-6 h-6 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-            <div 
-              className="absolute bottom-0 left-0 right-0 h-1.5 rounded-b"
-              style={{ backgroundColor: currentTextColor }}
-            />
-          </div>
-        </button>
+        <Tooltip label="Couleur du texte">
+          <button
+            onClick={() => {
+              if (textColorRef.current) {
+                const rect = textColorRef.current.getBoundingClientRect()
+                setTextColorPosition({ top: rect.bottom + 4, left: rect.left })
+              }
+              setShowTextColor(!showTextColor)
+            }}
+            className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+              showTextColor ? 'bg-gray-200' : ''
+            }`}
+          >
+            <div className="relative">
+              <svg className="w-6 h-6 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              <div 
+                className="absolute bottom-0 left-0 right-0 h-1.5 rounded-b"
+                style={{ backgroundColor: currentTextColor }}
+              />
+            </div>
+          </button>
+        </Tooltip>
         {showTextColor && (
           <>
             <div 
               className="fixed inset-0" 
-              onClick={() => setShowTextColor(false)}
-              style={{ zIndex: 999 }}
+              onClick={(e) => {
+                // Only close if clicking on the overlay, not on the color picker itself
+                if (e.target === e.currentTarget) {
+                  setShowTextColor(false)
+                }
+              }}
+              style={{ zIndex: 60 }}
             />
             <div 
-              className="fixed bg-white border border-gray-300 rounded shadow-lg p-3 w-64" 
+              className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]" 
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
               style={{ 
-                zIndex: 10001,
+                zIndex: 70,
                 position: 'fixed',
                 top: `${textColorPosition.top}px`,
                 left: `${textColorPosition.left}px`
               }}
             >
-            <div className="grid grid-cols-10 gap-1 mb-3">
-              {TEXT_COLORS.map((color) => (
-                <button
-                  key={color}
-                  onClick={() => handleTextColorChange(color)}
-                  className={`w-6 h-6 rounded border ${
-                    currentTextColor === color ? 'border-blue-600 ring-2 ring-blue-300' : 'border-gray-300'
-                  }`}
-                  style={{ backgroundColor: color }}
-                  title={color}
-                />
-              ))}
+              {/* Preset Colors Grid */}
+              <div className="mb-3">
+                <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
+                  Preset Colors
+                </div>
+                <div className="grid grid-cols-10 gap-1">
+                  {PRESET_COLORS.map((color) => (
+                    <button
+                      key={color}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleTextColorChange(color)
+                      }}
+                      className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${
+                        currentTextColor === color 
+                          ? 'border-blue-500 ring-2 ring-blue-300' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Color */}
+              <div className="border-t border-gray-200 pt-3">
+                <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
+                  Custom Color
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={currentTextColor}
+                    onChange={(e) => handleTextColorChange(e.target.value)}
+                    className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={currentTextColor}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      if (/^#[0-9A-Fa-f]{0,6}$/.test(value) || value === '') {
+                        if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+                          handleTextColorChange(value)
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const value = e.target.value
+                      if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+                        handleTextColorChange(value)
+                      } else {
+                        e.target.value = currentTextColor
+                      }
+                    }}
+                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="#000000"
+                    maxLength={7}
+                  />
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => {
-                const color = window.prompt('Enter hex color:', currentTextColor)
-                if (color) handleTextColorChange(color)
-              }}
-              className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center justify-center"
-              title="Custom Color"
-            >
-              <Plus className="w-5 h-5 md:w-4 md:h-4" />
-            </button>
-          </div>
           </>
         )}
       </div>
 
       {/* Highlight Color */}
       <div className="relative" ref={highlightColorRef}>
-        <button
-          onClick={() => {
-            if (highlightColorRef.current) {
-              const rect = highlightColorRef.current.getBoundingClientRect()
-              setHighlightColorPosition({ top: rect.bottom + 4, left: rect.left })
-            }
-            setShowHighlightColor(!showHighlightColor)
-          }}
-          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-            showHighlightColor ? 'bg-gray-200' : ''
-          }`}
-          title="Highlight Color"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-          </svg>
-        </button>
+        <Tooltip label="Surligneur">
+          <button
+            onClick={() => {
+              if (highlightColorRef.current) {
+                const rect = highlightColorRef.current.getBoundingClientRect()
+                setHighlightColorPosition({ top: rect.bottom + 4, left: rect.left })
+              }
+              setShowHighlightColor(!showHighlightColor)
+            }}
+            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+              showHighlightColor ? 'bg-gray-200' : ''
+            }`}
+          >
+            <div className="relative">
+              <Paintbrush className="w-5 h-5 md:w-4 md:h-4" />
+              {currentHighlightColor && (
+                <div 
+                  className="absolute bottom-0 left-0 right-0 h-1.5 rounded-b"
+                  style={{ backgroundColor: currentHighlightColor }}
+                />
+              )}
+            </div>
+          </button>
+        </Tooltip>
         {showHighlightColor && (
           <>
             <div 
               className="fixed inset-0" 
-              onClick={() => setShowHighlightColor(false)}
-              style={{ zIndex: 999 }}
+              onClick={(e) => {
+                // Only close if clicking on the overlay, not on the color picker itself
+                if (e.target === e.currentTarget) {
+                  setShowHighlightColor(false)
+                }
+              }}
+              style={{ zIndex: 60 }}
             />
             <div 
-              className="fixed bg-white border border-gray-300 rounded shadow-lg p-3 w-64" 
+              className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]" 
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
               style={{ 
-                zIndex: 10001,
+                zIndex: 70,
                 position: 'fixed',
                 top: `${highlightColorPosition.top}px`,
                 left: `${highlightColorPosition.left}px`
               }}
             >
-            <div className="grid grid-cols-9 gap-1 mb-3">
-              {HIGHLIGHT_COLORS.map((color) => (
-                <button
-                  key={color}
-                  onClick={() => handleHighlightColorChange(color)}
-                  className={`w-6 h-6 rounded border ${
-                    currentHighlightColor === color ? 'border-blue-600 ring-2 ring-blue-300' : 'border-gray-300'
-                  }`}
-                  style={{ backgroundColor: color }}
-                  title={color}
-                />
-              ))}
+              {/* Preset Colors Grid */}
+              <div className="mb-3">
+                <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
+                  Preset Colors
+                </div>
+                <div className="grid grid-cols-10 gap-1">
+                  {PRESET_COLORS.map((color) => (
+                    <button
+                      key={color}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleHighlightColorChange(color)
+                      }}
+                      className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${
+                        currentHighlightColor === color 
+                          ? 'border-blue-500 ring-2 ring-blue-300' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Color */}
+              <div className="border-t border-gray-200 pt-3">
+                <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
+                  Custom Color
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={currentHighlightColor || '#fef08a'}
+                    onChange={(e) => handleHighlightColorChange(e.target.value)}
+                    className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={currentHighlightColor || ''}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      if (/^#[0-9A-Fa-f]{0,6}$/.test(value) || value === '') {
+                        if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+                          handleHighlightColorChange(value)
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const value = e.target.value
+                      if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+                        handleHighlightColorChange(value)
+                      } else {
+                        e.target.value = currentHighlightColor || ''
+                      }
+                    }}
+                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="#fef08a"
+                    maxLength={7}
+                  />
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => {
-                const color = window.prompt('Enter hex color:', currentHighlightColor || '#FFFF00')
-                if (color) handleHighlightColorChange(color)
-              }}
-              className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center justify-center"
-              title="Custom Color"
-            >
-              <Plus className="w-5 h-5 md:w-4 md:h-4" />
-            </button>
-          </div>
           </>
         )}
       </div>
@@ -876,36 +1392,37 @@ export default function GoogleDocsToolbar({ editor }) {
 
       {/* Alignment */}
       <div className="relative" ref={alignRef}>
-        <button
-          onClick={() => {
-            if (alignRef.current) {
-              const rect = alignRef.current.getBoundingClientRect()
-              setAlignPosition({ top: rect.bottom + 4, left: rect.left })
-            }
-            setShowAlign(!showAlign)
-          }}
-          className={`p-2 md:p-1.5 h-10 md:h-8 rounded hover:bg-gray-100 flex items-center justify-center gap-1 ${
-            showAlign ? 'bg-gray-200' : ''
-          }`}
-          title="Text Alignment"
-        >
-          {currentAlign === 'left' && <AlignLeft className="w-5 h-5 md:w-4 md:h-4" />}
-          {currentAlign === 'center' && <AlignCenter className="w-5 h-5 md:w-4 md:h-4" />}
-          {currentAlign === 'right' && <AlignRight className="w-5 h-5 md:w-4 md:h-4" />}
-          {currentAlign === 'justify' && <AlignJustify className="w-5 h-5 md:w-4 md:h-4" />}
-          <ChevronDown className="w-4 h-4 md:w-3 md:h-3 text-gray-500" />
-        </button>
+        <Tooltip label="Alignement">
+          <button
+            onClick={() => {
+              if (alignRef.current) {
+                const rect = alignRef.current.getBoundingClientRect()
+                setAlignPosition({ top: rect.bottom + 4, left: rect.left })
+              }
+              setShowAlign(!showAlign)
+            }}
+            className={`p-2 md:p-1.5 h-10 md:h-8 rounded hover:bg-gray-100 flex items-center justify-center gap-1 ${
+              showAlign ? 'bg-gray-200' : ''
+            }`}
+          >
+            {currentAlign === 'left' && <AlignLeft className="w-5 h-5 md:w-4 md:h-4" />}
+            {currentAlign === 'center' && <AlignCenter className="w-5 h-5 md:w-4 md:h-4" />}
+            {currentAlign === 'right' && <AlignRight className="w-5 h-5 md:w-4 md:h-4" />}
+            {currentAlign === 'justify' && <AlignJustify className="w-5 h-5 md:w-4 md:h-4" />}
+            <ChevronDown className="w-4 h-4 md:w-3 md:h-3 text-gray-500" />
+          </button>
+        </Tooltip>
         {showAlign && (
           <>
             <div 
               className="fixed inset-0" 
               onClick={() => setShowAlign(false)}
-              style={{ zIndex: 999 }}
+              style={{ zIndex: 60 }}
             />
             <div 
               className="fixed bg-white border border-gray-300 rounded shadow-lg" 
               style={{ 
-                zIndex: 10001,
+                zIndex: 70,
                 position: 'fixed',
                 top: `${alignPosition.top}px`,
                 left: `${alignPosition.left}px`
@@ -913,39 +1430,39 @@ export default function GoogleDocsToolbar({ editor }) {
             >
             <button
               onClick={() => handleAlignChange('left')}
-              className={`w-full px-3 py-2 hover:bg-gray-100 flex items-center justify-center ${
+              className={`w-full px-4 py-3 md:px-3 md:py-2 hover:bg-gray-100 flex items-center justify-center ${
                 currentAlign === 'left' ? 'bg-blue-50 text-blue-600' : ''
               }`}
               title="Left"
             >
-              <AlignLeft className="w-4 h-4" />
+              <AlignLeft className="w-6 h-6 md:w-4 md:h-4" />
             </button>
             <button
               onClick={() => handleAlignChange('center')}
-              className={`w-full px-3 py-2 hover:bg-gray-100 flex items-center justify-center ${
+              className={`w-full px-4 py-3 md:px-3 md:py-2 hover:bg-gray-100 flex items-center justify-center ${
                 currentAlign === 'center' ? 'bg-blue-50 text-blue-600' : ''
               }`}
               title="Center"
             >
-              <AlignCenter className="w-4 h-4" />
+              <AlignCenter className="w-6 h-6 md:w-4 md:h-4" />
             </button>
             <button
               onClick={() => handleAlignChange('right')}
-              className={`w-full px-3 py-2 hover:bg-gray-100 flex items-center justify-center ${
+              className={`w-full px-4 py-3 md:px-3 md:py-2 hover:bg-gray-100 flex items-center justify-center ${
                 currentAlign === 'right' ? 'bg-blue-50 text-blue-600' : ''
               }`}
               title="Right"
             >
-              <AlignRight className="w-4 h-4" />
+              <AlignRight className="w-6 h-6 md:w-4 md:h-4" />
             </button>
             <button
               onClick={() => handleAlignChange('justify')}
-              className={`w-full px-3 py-2 hover:bg-gray-100 flex items-center justify-center ${
+              className={`w-full px-4 py-3 md:px-3 md:py-2 hover:bg-gray-100 flex items-center justify-center ${
                 currentAlign === 'justify' ? 'bg-blue-50 text-blue-600' : ''
               }`}
               title="Justify"
             >
-              <AlignJustify className="w-4 h-4" />
+              <AlignJustify className="w-6 h-6 md:w-4 md:h-4" />
             </button>
           </div>
           </>
@@ -955,88 +1472,149 @@ export default function GoogleDocsToolbar({ editor }) {
       <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Lists */}
-      <button
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-          editor.isActive('bulletList') ? 'bg-gray-200' : ''
-        }`}
-        title="Bullet List"
-      >
-        <List className="w-5 h-5 md:w-4 md:h-4" />
-      </button>
+      <Tooltip label="Liste à puces" shortcut={['⌘', '⇧', '8']}>
+        <button
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+            editor.isActive('bulletList') ? 'bg-gray-200' : ''
+          }`}
+        >
+          <List className="w-5 h-5 md:w-4 md:h-4" />
+        </button>
+      </Tooltip>
       
-      <button
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-          editor.isActive('orderedList') ? 'bg-gray-200' : ''
-        }`}
-        title="Numbered List"
-      >
-        <ListOrdered className="w-5 h-5 md:w-4 md:h-4" />
-      </button>
+      <Tooltip label="Liste numérotée" shortcut={['⌘', '⇧', '7']}>
+        <button
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+            editor.isActive('orderedList') ? 'bg-gray-200' : ''
+          }`}
+        >
+          <ListOrdered className="w-5 h-5 md:w-4 md:h-4" />
+        </button>
+      </Tooltip>
 
       <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Image */}
-      <button
-        onClick={() => {
-          const input = document.createElement('input')
-          input.type = 'file'
-          input.accept = 'image/*'
-          input.onchange = (e) => {
-            const file = e.target.files[0]
-            if (file) {
-              const reader = new FileReader()
-              reader.onload = () => {
-                editor.chain().focus().setImage({ src: reader.result, alt: file.name }).run()
+      <Tooltip label="Insérer une image">
+        <button
+          onClick={() => {
+            const input = document.createElement('input')
+            input.type = 'file'
+            input.accept = 'image/*'
+            input.capture = 'environment' // Allow camera on mobile
+            input.onchange = (e) => {
+              const file = e.target.files[0]
+              if (file) {
+                const reader = new FileReader()
+                reader.onload = () => {
+                  // Use insertContent instead of setImage to ensure it's inserted
+                  editor.chain().focus().insertContent({
+                    type: 'image',
+                    attrs: { src: reader.result, alt: file.name },
+                  }).run()
+                }
+                reader.onerror = () => {
+                  console.error('Error reading file')
+                  alert('Failed to load image')
+                }
+                reader.readAsDataURL(file)
               }
-              reader.readAsDataURL(file)
             }
-          }
-          input.click()
-        }}
-        className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
-        title="Insert Image"
-      >
-        <Image className="w-5 h-5 md:w-4 md:h-4" />
-      </button>
+            input.click()
+          }}
+          className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
+        >
+          <Image className="w-5 h-5 md:w-4 md:h-4" />
+        </button>
+      </Tooltip>
+
+      {/* Drawing */}
+      <Tooltip label="Zone de dessin">
+        <button
+          onClick={() => {
+            if (editor && editor.can().setDrawing) {
+              editor.chain().focus().setDrawing({ paths: [], width: 400, height: 300 }).run()
+            } else {
+              console.warn('Drawing extension not available')
+            }
+          }}
+          className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
+        >
+          <PenTool className="w-5 h-5 md:w-4 md:h-4" />
+        </button>
+      </Tooltip>
 
       {/* Link */}
-      <button
-        onClick={() => {
-          const url = window.prompt('Enter URL:', editor.getAttributes('link')?.href || '')
-          if (url) {
-            editor.chain().focus().setLink({ href: url }).run()
-          }
-        }}
-        className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-          editor.isActive('link') ? 'bg-gray-200' : ''
-        }`}
-        title="Insert Link"
-      >
-        <Link className="w-5 h-5 md:w-4 md:h-4" />
-      </button>
+      <Tooltip label="Insérer un lien" shortcut={['⌘', 'K']}>
+        <button
+          onClick={() => {
+            // Get selection position to show LinkEditor
+            const { selection } = editor.state
+            const { $from, $to } = selection
+            
+            // If no text is selected, insert a link at cursor position
+            if ($from.pos === $to.pos) {
+              // No selection - create empty link
+              editor.chain().focus().setLink({ href: '' }).run()
+            }
+            
+            const coords = editor.view.coordsAtPos($from.pos)
+            const editorContainer = editor.view.dom.closest('.prose') || editor.view.dom.parentElement
+            const containerRect = editorContainer?.getBoundingClientRect()
+            
+            let position
+            if (containerRect) {
+              position = {
+                top: coords.bottom - containerRect.top + 8,
+                left: coords.left - containerRect.left,
+              }
+            } else {
+              position = {
+                top: coords.bottom + 8,
+                left: coords.left,
+              }
+            }
+            
+            // Dispatch custom event to show LinkEditor
+            window.dispatchEvent(new CustomEvent('showLinkEditor', {
+              detail: { position }
+            }))
+          }}
+          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+            editor.isActive('link') ? 'bg-gray-200' : ''
+          }`}
+        >
+          <Link className="w-5 h-5 md:w-4 md:h-4" />
+        </button>
+      </Tooltip>
+
 
       <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
-      {/* Undo/Redo */}
-      <button
-        onClick={() => editor.chain().focus().undo().run()}
-        disabled={!editor.can().chain().focus().undo().run()}
-        className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center"
-        title="Undo (Ctrl+Z)"
-      >
-        <Undo className="w-5 h-5 md:w-4 md:h-4" />
-      </button>
-      
-      <button
-        onClick={() => editor.chain().focus().redo().run()}
-        disabled={!editor.can().chain().focus().redo().run()}
-        className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center"
-        title="Redo (Ctrl+Y)"
-      >
-        <Redo className="w-5 h-5 md:w-4 md:h-4" />
-      </button>
+      {/* Undo/Redo - Wrapped together */}
+      <div className="flex items-center flex-nowrap">
+        <Tooltip label="Annuler" shortcut={['⌘', 'Z']}>
+          <button
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().chain().focus().undo().run()}
+            className="p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center"
+          >
+            <Undo className="w-5 h-5 md:w-4 md:h-4" />
+          </button>
+        </Tooltip>
+        
+        <Tooltip label="Rétablir" shortcut={['⌘', '⇧', 'Z']}>
+          <button
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().chain().focus().redo().run()}
+            className="p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center"
+          >
+            <Redo className="w-5 h-5 md:w-4 md:h-4" />
+          </button>
+        </Tooltip>
+      </div>
     </div>
   )
 }

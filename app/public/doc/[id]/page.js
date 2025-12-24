@@ -16,7 +16,10 @@ import Highlight from '@tiptap/extension-highlight'
 import TextAlign from '@tiptap/extension-text-align'
 import Typography from '@tiptap/extension-typography'
 import FontFamily from '@tiptap/extension-font-family'
+import { FontSize } from '@/lib/editor/font-size-extension'
+import { LineHeight } from '@/lib/editor/line-height-extension'
 import { ResizableImage } from '@/lib/editor/resizable-image-extension'
+import { Drawing } from '@/lib/editor/drawing-extension'
 import { Youtube } from '@/lib/editor/youtube-extension'
 import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
@@ -75,6 +78,9 @@ export default function PublicDocumentPage() {
       }),
       Typography,
       FontFamily,
+      FontSize,
+      LineHeight,
+      Drawing,
       Emoji.configure({
         enableEmoticons: true,
       }),
@@ -179,7 +185,7 @@ export default function PublicDocumentPage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-6 py-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-8">{title || 'Untitled'}</h1>
-        <div className="prose prose-lg max-w-none">
+        <div className="max-w-none">
           <EditorContent editor={editor} />
         </div>
       </div>

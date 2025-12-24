@@ -4,6 +4,8 @@ import { useEffect, useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import NextLink from 'next/link'
+import SEOKeywords from '@/components/SEOKeywords'
+import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -20,12 +22,12 @@ import Typography from '@tiptap/extension-typography'
 import FontFamily from '@tiptap/extension-font-family'
 import Emoji from '@tiptap/extension-emoji'
 import { ResizableImage } from '@/lib/editor/resizable-image-extension'
+import { Drawing } from '@/lib/editor/drawing-extension'
 import { Youtube } from '@/lib/editor/youtube-extension'
 import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
 import { FontSize } from '@/lib/editor/font-size-extension'
 import { LineHeight } from '@/lib/editor/line-height-extension'
-import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 
 const STORAGE_KEY = 'textpad_cloud_unsaved_pad'
 const STORAGE_TIMESTAMP_KEY = 'textpad_cloud_unsaved_pad_timestamp'
@@ -89,6 +91,7 @@ export default function Home() {
       }),
       TaskList,
       TaskItem,
+      Drawing,
       Details,
       DetailsSummary,
       DetailsContent,
@@ -195,48 +198,63 @@ export default function Home() {
       return
     }
 
-    try {
-      const timestamp = localStorage.getItem(STORAGE_TIMESTAMP_KEY)
-      if (timestamp) {
-        const age = (Date.now() - parseInt(timestamp, 10)) / (1000 * 60 * 60) // hours
-        if (age > EXPIRY_HOURS) {
-          // Expired - clear it
-          localStorage.removeItem(STORAGE_KEY)
-          localStorage.removeItem(STORAGE_TIMESTAMP_KEY)
-          return
-        }
-      }
-
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        const content = JSON.parse(saved)
-        // Check if content is actually empty (just empty paragraphs)
-        const hasRealContent = content?.content && Array.isArray(content.content) && content.content.some(node => {
-          if (node.type === 'image') return true
-          if (node.type !== 'paragraph') return true
-          if (node.content && Array.isArray(node.content)) {
-            return node.content.some(n => n.type === 'image' || (n.text && n.text.trim().length > 0))
+    // Wait for editor to be fully ready before loading content
+    const loadContent = () => {
+      try {
+        const timestamp = localStorage.getItem(STORAGE_TIMESTAMP_KEY)
+        if (timestamp) {
+          const age = (Date.now() - parseInt(timestamp, 10)) / (1000 * 60 * 60) // hours
+          if (age > EXPIRY_HOURS) {
+            // Expired - clear it
+            localStorage.removeItem(STORAGE_KEY)
+            localStorage.removeItem(STORAGE_TIMESTAMP_KEY)
+            return
           }
-          return false
-        })
-        
-        // Only load if there's real content
-        if (hasRealContent) {
-          // Use queueMicrotask to avoid flushSync error
-          queueMicrotask(() => {
-            requestAnimationFrame(() => {
-              editor.commands.setContent(content)
-            })
-          })
-        } else {
-          // Clear empty content from localStorage
-          localStorage.removeItem(STORAGE_KEY)
-          localStorage.removeItem(STORAGE_TIMESTAMP_KEY)
         }
+
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (saved) {
+          const content = JSON.parse(saved)
+          // Check if content is actually empty (just empty paragraphs)
+          const hasRealContent = content?.content && Array.isArray(content.content) && content.content.some(node => {
+            if (node.type === 'image') return true
+            if (node.type !== 'paragraph') return true
+            if (node.content && Array.isArray(node.content)) {
+              return node.content.some(n => n.type === 'image' || (n.text && n.text.trim().length > 0))
+            }
+            return false
+          })
+          
+          // Only load if there's real content
+          if (hasRealContent) {
+            // Use multiple layers of async to avoid flushSync error
+            setTimeout(() => {
+              requestAnimationFrame(() => {
+                queueMicrotask(() => {
+                  if (editor && !editor.isDestroyed) {
+                    try {
+                      editor.commands.setContent(content)
+                    } catch (err) {
+                      console.error('Error setting content:', err)
+                    }
+                  }
+                })
+              })
+            }, 100)
+          } else {
+            // Clear empty content from localStorage
+            localStorage.removeItem(STORAGE_KEY)
+            localStorage.removeItem(STORAGE_TIMESTAMP_KEY)
+          }
+        }
+      } catch (err) {
+        console.error('Error loading from localStorage:', err)
       }
-    } catch (err) {
-      console.error('Error loading from localStorage:', err)
     }
+
+    // Wait a bit for editor to be ready
+    const timer = setTimeout(loadContent, 200)
+    return () => clearTimeout(timer)
   }, [editor])
 
   // Clear localStorage when browser is closed (using beforeunload)
@@ -371,9 +389,15 @@ export default function Home() {
     )
   }
 
+  const keywords = 'textpad online, online text editor, free online notepad, plain text editor, browser text editor, simple text editor online, write text online, edit text online, no signup text editor, quick text editor online'
+
   return (
-    <main className="min-h-screen bg-white">
-      <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-8">
+    <>
+      <SEOKeywords keywords={keywords} />
+      <main className="min-h-screen bg-white">
+        {/* SEO: Hidden H1 for search engines */}
+        <h1 className="sr-only">TextPad Online - Free Online Text Editor | Simple Text Editor Online</h1>
+        <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-8">
         <div className="mb-4 md:mb-6 flex items-center justify-end">
           <button
             onClick={handleSave}
@@ -391,7 +415,7 @@ export default function Home() {
 
         {editor && (
           <>
-            <div className="mb-4 border-b border-gray-200">
+            <div className="mb-4">
               <GoogleDocsToolbar editor={editor} />
             </div>
             <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8 relative">
@@ -419,5 +443,6 @@ export default function Home() {
         )}
       </div>
     </main>
+    </>
   )
 }

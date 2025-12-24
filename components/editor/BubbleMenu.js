@@ -17,7 +17,6 @@ import {
   Subscript,
   Superscript
 } from 'lucide-react'
-import TextStyleMenu from './TextStyleMenu'
 import ColorPicker from './ColorPicker'
 
 export default function BubbleMenu({ editor }) {
@@ -57,6 +56,24 @@ export default function BubbleMenu({ editor }) {
   return (
     <TiptapBubbleMenu
       editor={editor}
+      shouldShow={({ editor, view, state, oldState, from, to }) => {
+        // Don't show bubble menu for images
+        const { selection } = state
+        const { $from } = selection
+        const node = $from.node()
+        if (node && node.type && node.type.name === 'image') {
+          return false
+        }
+        // Check if selection is inside an image node
+        let isInImage = false
+        state.doc.nodesBetween(from, to, (node) => {
+          if (node.type && node.type.name === 'image') {
+            isInImage = true
+            return false
+          }
+        })
+        return !isInImage && from !== to
+      }}
       tippyOptions={{ 
         duration: 100,
         maxWidth: 'none',
@@ -101,10 +118,6 @@ export default function BubbleMenu({ editor }) {
       className="bubble-menu"
     >
       <div className="flex items-center gap-0.5 bg-white border border-gray-200 rounded-md shadow-lg px-1.5 py-1.5">
-        {/* Text style dropdown */}
-        <TextStyleMenu editor={editor} />
-
-        <div className="w-px h-6 bg-gray-200 mx-0.5"></div>
 
         {/* Formatting buttons */}
         <div className="flex items-center gap-0.5">
