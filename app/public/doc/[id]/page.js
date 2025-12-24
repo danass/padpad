@@ -118,7 +118,7 @@ export default function PublicDocumentPage() {
         const data = await response.json()
         const { document, content, navigation: nav } = data
         
-        setTitle(document.title || 'Untitled')
+        setTitle(document.title || '')
         setIsFullWidth(document.is_full_width || false)
         setNavigation(nav || { prev: null, next: null })
         
@@ -189,7 +189,9 @@ export default function PublicDocumentPage() {
   return (
     <div className="min-h-screen bg-white">
       <div className={isFullWidth ? 'px-4 sm:px-6 py-12' : 'max-w-4xl mx-auto px-6 py-12'}>
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">{title}</h1>
+        {title && title !== 'Untitled' && (
+          <h1 className="text-4xl font-bold text-gray-900 mb-8">{title}</h1>
+        )}
         <div className="max-w-none">
           <EditorContent editor={editor} />
         </div>

@@ -100,15 +100,15 @@ export async function GET(request, { params }) {
     return Response.json({
       document: {
         id: document.id,
-        title: document.title || 'Untitled',
+        title: document.title || '',
         is_full_width: document.is_full_width || false,
         created_at: document.created_at,
         updated_at: document.updated_at,
       },
       content,
       navigation: {
-        prev: prevDoc ? { ...prevDoc, title: prevDoc.title || 'Untitled' } : null,
-        next: nextDoc ? { ...nextDoc, title: nextDoc.title || 'Untitled' } : null
+        prev: prevDoc ? { ...prevDoc, title: prevDoc.title || '' } : null,
+        next: nextDoc ? { ...nextDoc, title: nextDoc.title || '' } : null
       }
     })
   } catch (error) {
