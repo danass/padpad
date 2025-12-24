@@ -157,15 +157,6 @@ export default function Header() {
                     />
                     <div className="absolute right-0 mt-2 w-48 md:w-56 bg-white border border-gray-200 rounded-md shadow-lg z-20">
                       <div className="py-1">
-                        {!isDrive && (
-                          <Link
-                            href="/drive"
-                            onClick={() => setShowUserMenu(false)}
-                            className="block px-4 py-2.5 md:py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                          >
-                            Go to Drive
-                          </Link>
-                        )}
                         <Link
                           href="/settings"
                           onClick={() => setShowUserMenu(false)}

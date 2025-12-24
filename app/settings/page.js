@@ -6,54 +6,24 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useToast } from '@/components/ui/toast'
 
-function TestamentUrlDisplay() {
-  const [testamentSlug, setTestamentSlug] = useState(null)
-  const [testamentUsername, setTestamentUsername] = useState(null)
-  const [loading, setLoading] = useState(true)
-  
-  useEffect(() => {
-    loadData()
-  }, [])
-  
-  const loadData = async () => {
-    try {
-      const [slugResponse, usernameResponse] = await Promise.all([
-        fetch('/api/users/testament-slug'),
-        fetch('/api/users/testament-username')
-      ])
-      
-      if (slugResponse.ok) {
-        const slugData = await slugResponse.json()
-        setTestamentSlug(slugData.testament_slug)
-      }
-      
-      if (usernameResponse.ok) {
-        const usernameData = await usernameResponse.json()
-        setTestamentUsername(usernameData.testament_username)
-      }
-    } catch (error) {
-      console.error('Error loading testament data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-  
-  if (loading) {
-    return <div className="text-sm text-gray-500">Loading...</div>
-  }
-  
-  const identifier = testamentUsername || testamentSlug
-  if (!identifier) {
-    return null
-  }
+function LegacyUrlDisplay({ username, slug, birthDate }) {
+  const identifier = username || slug
+  if (!identifier) return null
   
   const publicUrl = typeof window !== 'undefined' 
     ? `${window.location.origin}/public/testament/${identifier}`
     : `/public/testament/${identifier}`
   
+  const age99Date = birthDate ? (() => {
+    const birth = new Date(birthDate)
+    const age99 = new Date(birth)
+    age99.setFullYear(birth.getFullYear() + 99)
+    return age99.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
+  })() : null
+  
   return (
     <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-      <p className="text-xs text-gray-600 mb-2">Public Testament URL:</p>
+      <p className="text-xs font-medium text-gray-700 mb-2">Your Legacy URL:</p>
       <div className="flex items-center gap-2">
         <code className="flex-1 text-xs sm:text-sm font-mono bg-white px-3 py-2 rounded border border-gray-300 text-gray-900 break-all">
           {publicUrl}
@@ -67,16 +37,10 @@ function TestamentUrlDisplay() {
               textArea.value = publicUrl
               textArea.style.position = 'fixed'
               textArea.style.opacity = '0'
-              if (document.body) {
-                document.body.appendChild(textArea)
-                textArea.select()
-                document.execCommand('copy')
-                setTimeout(() => {
-                  if (textArea.parentNode) {
-                    document.body.removeChild(textArea)
-                  }
-                }, 100)
-              }
+              document.body?.appendChild(textArea)
+              textArea.select()
+              document.execCommand('copy')
+              textArea.remove()
             }
           }}
           className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 flex items-center justify-center transition-all flex-shrink-0"
@@ -87,9 +51,11 @@ function TestamentUrlDisplay() {
           </svg>
         </button>
       </div>
-      <p className="text-xs text-gray-500 mt-2">
-        This URL will be accessible once your documents become public on your 99th birthday.
-      </p>
+      {age99Date && (
+        <p className="text-xs text-gray-500 mt-2">
+          This page will become accessible on {age99Date}.
+        </p>
+      )}
     </div>
   )
 }
@@ -375,14 +341,30 @@ export default function SettingsPage() {
           </div>
         </div>
         
+        {/* Digital Legacy Section */}
         <div className="bg-white border border-gray-200 rounded-md p-6 mt-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Testament Settings</h2>
-          <p className="text-sm text-gray-600 mb-6">
-            Set your birth date to enable automatic publication of all your documents when you turn 99 years old.
-            All your documents will automatically become public on your 99th birthday, creating your digital testament.
-          </p>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Digital Legacy</h2>
+              <p className="text-sm text-gray-500">Preserve your writings for future generations</p>
+            </div>
+          </div>
           
-          <div className="space-y-4">
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6">
+            <p className="text-sm text-amber-900">
+              Your digital legacy is a collection of all your documents that will automatically become 
+              accessible to the public on your <strong>99th birthday</strong>. This ensures your writings, 
+              thoughts, and memories are preserved for future generations.
+            </p>
+          </div>
+          
+          <div className="space-y-6">
+            {/* Birth Date */}
             <div>
               <label htmlFor="birth-date" className="block text-sm font-medium text-gray-700 mb-2">
                 Date of Birth
@@ -400,7 +382,7 @@ export default function SettingsPage() {
                   onClick={handleSave}
                   disabled={saving || !birthDate}
                   className="w-10 h-10 rounded-full border-2 border-black bg-black hover:bg-gray-800 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                  title="Save birth date"
+                  title="Save"
                 >
                   {saving ? (
                     <svg className="w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
@@ -414,105 +396,79 @@ export default function SettingsPage() {
                   )}
                 </button>
               </div>
-            </div>
-            
-            {birthDate && (
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                <p className="text-sm text-blue-900">
-                  <strong>Your 99th birthday:</strong>{' '}
-                  {(() => {
+              {birthDate && (
+                <p className="text-xs text-gray-500 mt-2">
+                  Publication date: {(() => {
                     const birth = new Date(birthDate)
                     const age99 = new Date(birth)
                     age99.setFullYear(birth.getFullYear() + 99)
-                    return age99.toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })
+                    return age99.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
                   })()}
                 </p>
-                <p className="text-xs text-blue-700 mt-2">
-                  Documents with auto-publication enabled will become public on this date.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        <div className="bg-white border border-gray-200 rounded-md p-6 mt-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Testament URL</h2>
-          <p className="text-sm text-gray-600 mb-6">
-            Choose a custom username for your testament URL. Leave empty to use the default generated URL.
-          </p>
-          
-          <div className="space-y-4 mb-6">
-            <div>
-              <label htmlFor="testament-username" className="block text-sm font-medium text-gray-700 mb-2">
-                Testament Username
-              </label>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <div className="flex items-center">
-                      <span className="hidden sm:inline-flex items-center px-3 py-2 text-sm text-gray-500 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md whitespace-nowrap">
-                        /public/testament/
-                      </span>
-                      <input
-                        type="text"
-                        id="testament-username"
-                        value={testamentUsername}
-                        onChange={(e) => setTestamentUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                        placeholder="your-username"
-                        className="flex-1 px-3 py-2 border border-gray-300 sm:rounded-l-none rounded-md sm:rounded-r-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-sm"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleSaveUsername}
-                    disabled={savingUsername}
-                    className="w-10 h-10 rounded-full border-2 border-black bg-black hover:bg-gray-800 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                    title="Save username"
-                  >
-                    {savingUsername ? (
-                      <svg className="w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500">
-                  Only lowercase letters, numbers, hyphens, and underscores.
-                </p>
-              </div>
+              )}
             </div>
-          </div>
-          
-          <TestamentUrlDisplay />
-        </div>
-        
-        <div className="bg-white border border-gray-200 rounded-md p-6 mt-6">
-          <div className="flex items-center justify-between">
+            
+            {/* Custom URL */}
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Testament Preview</h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Preview how your testament will appear to the public.
+              <label htmlFor="legacy-username" className="block text-sm font-medium text-gray-700 mb-2">
+                Custom URL (optional)
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <div className="flex items-center">
+                    <span className="hidden sm:inline-flex items-center px-3 py-2 text-sm text-gray-500 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md whitespace-nowrap">
+                      /public/testament/
+                    </span>
+                    <input
+                      type="text"
+                      id="legacy-username"
+                      value={testamentUsername}
+                      onChange={(e) => setTestamentUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                      placeholder="your-name"
+                      className="flex-1 px-3 py-2 border border-gray-300 sm:rounded-l-none rounded-md sm:rounded-r-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-sm"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={handleSaveUsername}
+                  disabled={savingUsername}
+                  className="w-10 h-10 rounded-full border-2 border-black bg-black hover:bg-gray-800 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  title="Save"
+                >
+                  {savingUsername ? (
+                    <svg className="w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Lowercase letters, numbers, hyphens, and underscores only.
               </p>
             </div>
-            <Link
-              href="/testament/preview"
-              className="w-10 h-10 rounded-full border-2 border-black bg-black hover:bg-gray-800 flex items-center justify-center transition-all flex-shrink-0"
-              title="View testament preview"
-            >
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-            </Link>
+            
+            {/* Preview and URL Display */}
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Preview your legacy page</p>
+                <p className="text-xs text-gray-500">See how it will appear to visitors</p>
+              </div>
+              <Link
+                href="/testament/preview"
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Preview
+              </Link>
+            </div>
           </div>
         </div>
       </div>

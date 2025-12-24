@@ -1128,32 +1128,34 @@ export default function DocumentPage() {
                   </svg>
                 </button>
                 
-                {/* Copy URL */}
-                <button
-                  onClick={async () => {
-                    const publicUrl = `${window.location.origin}/public/doc/${documentId}`
-                    try {
-                      await navigator.clipboard.writeText(publicUrl)
-                      showToast('URL copied', 'success')
-                    } catch (err) {
-                      const textArea = document.createElement('textarea')
-                      textArea.value = publicUrl
-                      textArea.style.position = 'fixed'
-                      textArea.style.opacity = '0'
-                      document.body?.appendChild(textArea)
-                      textArea.select()
-                      document.execCommand('copy')
-                      textArea.remove()
-                      showToast('URL copied', 'success')
-                    }
-                  }}
-                  className="p-1.5 border border-gray-200 rounded-md hover:bg-gray-50 text-gray-700 transition-colors"
-                  title="Copy URL"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                </button>
+                {/* Copy URL - only show if public */}
+                {isPublic && (
+                  <button
+                    onClick={async () => {
+                      const publicUrl = `${window.location.origin}/public/doc/${documentId}`
+                      try {
+                        await navigator.clipboard.writeText(publicUrl)
+                        showToast('URL copied', 'success')
+                      } catch (err) {
+                        const textArea = document.createElement('textarea')
+                        textArea.value = publicUrl
+                        textArea.style.position = 'fixed'
+                        textArea.style.opacity = '0'
+                        document.body?.appendChild(textArea)
+                        textArea.select()
+                        document.execCommand('copy')
+                        textArea.remove()
+                        showToast('URL copied', 'success')
+                      }
+                    }}
+                    className="p-1.5 border border-green-200 bg-green-50 rounded-md hover:bg-green-100 text-green-700 transition-colors"
+                    title="Copy public URL"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                )}
                 
                 {/* Public/Private toggle */}
                 <button
@@ -1208,10 +1210,10 @@ export default function DocumentPage() {
                   {showExportMenu && (
                     <>
                       <div 
-                        className="fixed inset-0 z-[150]" 
+                        className="fixed inset-0 z-[500]" 
                         onClick={() => setShowExportMenu(false)}
                       />
-                      <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-[160]">
+                      <div className="fixed mt-2 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-[501]" style={{ top: '120px', right: '24px' }}>
                         <button
                           onClick={() => { handleExport('md'); setShowExportMenu(false) }}
                           className="block w-full text-left px-3 py-1.5 hover:bg-gray-50 rounded-t-md text-sm"
