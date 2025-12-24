@@ -445,7 +445,7 @@ export default function Home() {
                 {!session && (
                   <div
                     className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500"
-                    style={{ opacity: showWatermark ? 0.1 : 0 }}
+                    style={{ opacity: showWatermark ? 0.08 : 0 }}
                   >
                     <img
                       src="/padpad.svg"
