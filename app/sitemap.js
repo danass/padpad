@@ -15,7 +15,19 @@ export default function sitemap() {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/features/collaborative-editing`,
+      url: `${baseUrl}/features`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/features/digital-testament`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/features/public-blog`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
@@ -27,7 +39,19 @@ export default function sitemap() {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/features/no-account`,
+      url: `${baseUrl}/features/tabs-and-drive`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/features/version-history`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/features/images-and-drawings`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
@@ -54,4 +78,3 @@ export default function sitemap() {
 
   return routes
 }
-

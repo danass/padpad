@@ -449,6 +449,7 @@ export default function Home() {
                   >
                     <img
                       src="/padpad.svg"
+                      fetchPriority="high"
                       // alt="textpad watermark" 
                       className="w-64 h-64 md:w-96 md:h-96 object-contain"
                     />

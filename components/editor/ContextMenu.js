@@ -1,21 +1,18 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { 
-  Code, 
-  Quote, 
-  Heading1, 
-  Heading2, 
-  Heading3, 
-  Heading4,
-  List, 
-  ListOrdered, 
+import {
+  Code,
+  Quote,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
   CheckSquare,
   Minus,
   Type,
   Strikethrough,
-  Subscript,
-  Superscript,
   Link,
   Bold,
   Italic,
@@ -28,6 +25,7 @@ import { useLanguage } from '@/app/i18n/LanguageContext'
 export default function ContextMenu({ editor }) {
   const { t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
+  const [menuMode, setMenuMode] = useState('selection') // 'selection' or 'insertion'
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const menuRef = useRef(null)
 
@@ -35,23 +33,41 @@ export default function ContextMenu({ editor }) {
     if (!editor) return
 
     const handleContextMenu = (event) => {
-      // Only show custom menu if there's a selection
-      const { selection } = editor.state
-      if (selection.empty) return // No selection, let native menu show
-
       event.preventDefault()
-      
-      // Get position
-      const x = event.clientX
-      const y = event.clientY
-      
-      // Adjust position to keep menu on screen
-      const menuWidth = 220
-      const menuHeight = 400
-      const adjustedX = Math.min(x, window.innerWidth - menuWidth - 10)
-      const adjustedY = Math.min(y, window.innerHeight - menuHeight - 10)
-      
-      setPosition({ x: adjustedX, y: adjustedY })
+
+      // Detect if there's a selection
+      const { selection } = editor.state
+      const hasSelection = !selection.empty
+
+      // Set menu mode
+      setMenuMode(hasSelection ? 'selection' : 'insertion')
+
+      // Get initial position
+      let x = event.clientX
+      let y = event.clientY
+
+      // Estimate menu dimensions based on mode
+      const menuWidth = hasSelection ? 240 : 220
+      const menuHeight = hasSelection ? 300 : 380
+
+      // Adjust X to keep on screen
+      if (x + menuWidth > window.innerWidth) {
+        x = window.innerWidth - menuWidth - 10
+      }
+
+      // Adjust Y: if menu would overflow bottom, position above cursor or at top
+      if (y + menuHeight > window.innerHeight) {
+        // Try to position above the click point
+        const above = y - menuHeight - 10
+        if (above > 0) {
+          y = above
+        } else {
+          // If can't fit above, position at top with scroll
+          y = 10
+        }
+      }
+
+      setPosition({ x: Math.max(10, x), y: Math.max(10, y) })
       setIsOpen(true)
     }
 
@@ -87,93 +103,40 @@ export default function ContextMenu({ editor }) {
     editor.chain().focus().run()
   }
 
-  const menuItems = [
+  const handleLinkAction = () => {
+    if (!editor) return
+    setIsOpen(false)
+
+    // Get selection position for LinkEditor
+    const { selection } = editor.state
+    const { $from } = selection
+    const coords = editor.view.coordsAtPos($from.pos)
+    const editorContainer = editor.view.dom.closest('.prose') || editor.view.dom.parentElement
+    const containerRect = editorContainer?.getBoundingClientRect()
+
+    let position
+    if (containerRect) {
+      position = {
+        top: coords.bottom - containerRect.top + 8,
+        left: coords.left - containerRect.left,
+      }
+    } else {
+      position = {
+        top: coords.bottom + 8,
+        left: coords.left,
+      }
+    }
+
+    // Dispatch event to show LinkEditor (same as toolbar)
+    window.dispatchEvent(new CustomEvent('showLinkEditor', {
+      detail: { position }
+    }))
+  }
+
+  // Selection menu - formatting options
+  const selectionMenuItems = [
     {
-      label: `${t?.blocks || 'Blocks'} ${t?.blocksHint || '(whole paragraph)'}`,
-      items: [
-        {
-          icon: <Type className="w-4 h-4" />,
-          label: t?.paragraph || 'Paragraph',
-          action: () => editor.chain().focus().setParagraph().run(),
-          isActive: editor?.isActive('paragraph'),
-        },
-        {
-          icon: <Heading1 className="w-4 h-4" />,
-          label: t?.heading1 || 'Heading 1',
-          action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
-          isActive: editor?.isActive('heading', { level: 1 }),
-        },
-        {
-          icon: <Heading2 className="w-4 h-4" />,
-          label: t?.heading2 || 'Heading 2',
-          action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-          isActive: editor?.isActive('heading', { level: 2 }),
-        },
-        {
-          icon: <Heading3 className="w-4 h-4" />,
-          label: t?.heading3 || 'Heading 3',
-          action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
-          isActive: editor?.isActive('heading', { level: 3 }),
-        },
-        {
-          icon: <Heading4 className="w-4 h-4" />,
-          label: t?.heading4 || 'Heading 4',
-          action: () => editor.chain().focus().toggleHeading({ level: 4 }).run(),
-          isActive: editor?.isActive('heading', { level: 4 }),
-        },
-      ]
-    },
-    {
-      label: t?.codeAndQuote || 'Code & Quote',
-      items: [
-        {
-          icon: <Code className="w-4 h-4 opacity-60" />,
-          label: t?.inlineCode || 'Inline code',
-          action: () => editor.chain().focus().toggleCode().run(),
-          isActive: editor?.isActive('code'),
-          hint: t?.formattingHint?.replace(/[()]/g, '') || 'selection',
-        },
-        {
-          icon: <Code className="w-4 h-4" />,
-          label: t?.codeBlock || 'Code block',
-          action: () => editor.chain().focus().toggleCodeBlock().run(),
-          isActive: editor?.isActive('codeBlock'),
-          hint: t?.blocksHint?.replace(/[()]/g, '') || 'paragraph',
-        },
-        {
-          icon: <Quote className="w-4 h-4" />,
-          label: t?.quote || 'Quote',
-          action: () => editor.chain().focus().toggleBlockquote().run(),
-          isActive: editor?.isActive('blockquote'),
-          hint: t?.blocksHint?.replace(/[()]/g, '') || 'paragraph',
-        },
-      ]
-    },
-    {
-      label: `${t?.lists || 'Lists'} ${t?.blocksHint || '(paragraph)'}`,
-      items: [
-        {
-          icon: <List className="w-4 h-4" />,
-          label: t?.bulletList || 'Bullet list',
-          action: () => editor.chain().focus().toggleBulletList().run(),
-          isActive: editor?.isActive('bulletList'),
-        },
-        {
-          icon: <ListOrdered className="w-4 h-4" />,
-          label: t?.numberedList || 'Numbered list',
-          action: () => editor.chain().focus().toggleOrderedList().run(),
-          isActive: editor?.isActive('orderedList'),
-        },
-        {
-          icon: <CheckSquare className="w-4 h-4" />,
-          label: t?.taskList || 'Task list',
-          action: () => editor.chain().focus().toggleTaskList().run(),
-          isActive: editor?.isActive('taskList'),
-        },
-      ]
-    },
-    {
-      label: `${t?.formatting || 'Formatting'} ${t?.formattingHint || '(selection)'}`,
+      label: t?.formatting || 'Formatting',
       items: [
         {
           icon: <Bold className="w-4 h-4" />,
@@ -204,47 +167,100 @@ export default function ContextMenu({ editor }) {
         },
         {
           icon: <Highlighter className="w-4 h-4" />,
-          label: t?.highlighted || 'Highlighted',
+          label: t?.highlighted || 'Highlight',
           action: () => editor.chain().focus().toggleHighlight().run(),
           isActive: editor?.isActive('highlight'),
-        },
-        {
-          icon: <Subscript className="w-4 h-4" />,
-          label: t?.subscript || 'Subscript',
-          action: () => editor.chain().focus().toggleSubscript().run(),
-          isActive: editor?.isActive('subscript'),
-        },
-        {
-          icon: <Superscript className="w-4 h-4" />,
-          label: t?.superscript || 'Superscript',
-          action: () => editor.chain().focus().toggleSuperscript().run(),
-          isActive: editor?.isActive('superscript'),
         },
       ]
     },
     {
-      label: t?.other || 'Other',
+      label: t?.codeAndLink || 'Code & Link',
       items: [
         {
-          icon: <Minus className="w-4 h-4" />,
-          label: t?.horizontalRule || 'Horizontal rule',
-          action: () => editor.chain().focus().setHorizontalRule().run(),
-          isActive: false,
+          icon: <Code className="w-4 h-4" />,
+          label: t?.inlineCode || 'Inline code',
+          action: () => editor.chain().focus().toggleCode().run(),
+          isActive: editor?.isActive('code'),
         },
         {
           icon: <Link className="w-4 h-4" />,
           label: t?.link || 'Link',
-          action: () => {
-            const url = window.prompt(t?.linkUrl || 'Link URL:')
-            if (url) {
-              let formattedUrl = url.trim()
-              if (formattedUrl && !/^https?:\/\//i.test(formattedUrl)) {
-                formattedUrl = `https://${formattedUrl}`
-              }
-              editor.chain().focus().setLink({ href: formattedUrl }).run()
-            }
-          },
+          action: handleLinkAction,
           isActive: editor?.isActive('link'),
+        },
+      ]
+    },
+  ]
+
+  // Insertion menu - insert new content
+  const insertionMenuItems = [
+    {
+      label: t?.insert || 'Insert',
+      items: [
+        {
+          icon: <Heading1 className="w-4 h-4" />,
+          label: t?.heading1 || 'Heading 1',
+          action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
+          isActive: editor?.isActive('heading', { level: 1 }),
+        },
+        {
+          icon: <Heading2 className="w-4 h-4" />,
+          label: t?.heading2 || 'Heading 2',
+          action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+          isActive: editor?.isActive('heading', { level: 2 }),
+        },
+        {
+          icon: <Heading3 className="w-4 h-4" />,
+          label: t?.heading3 || 'Heading 3',
+          action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
+          isActive: editor?.isActive('heading', { level: 3 }),
+        },
+        {
+          icon: <Minus className="w-4 h-4" />,
+          label: t?.horizontalRule || 'Horizontal line',
+          action: () => editor.chain().focus().setHorizontalRule().run(),
+          isActive: false,
+        },
+      ]
+    },
+    {
+      label: t?.transform || 'Transform line',
+      items: [
+        {
+          icon: <Type className="w-4 h-4" />,
+          label: t?.paragraph || 'Paragraph',
+          action: () => editor.chain().focus().setParagraph().run(),
+          isActive: editor?.isActive('paragraph'),
+        },
+        {
+          icon: <Quote className="w-4 h-4" />,
+          label: t?.quote || 'Quote',
+          action: () => editor.chain().focus().toggleBlockquote().run(),
+          isActive: editor?.isActive('blockquote'),
+        },
+        {
+          icon: <List className="w-4 h-4" />,
+          label: t?.bulletList || 'Bullet list',
+          action: () => editor.chain().focus().toggleBulletList().run(),
+          isActive: editor?.isActive('bulletList'),
+        },
+        {
+          icon: <ListOrdered className="w-4 h-4" />,
+          label: t?.numberedList || 'Numbered list',
+          action: () => editor.chain().focus().toggleOrderedList().run(),
+          isActive: editor?.isActive('orderedList'),
+        },
+        {
+          icon: <CheckSquare className="w-4 h-4" />,
+          label: t?.taskList || 'Task list',
+          action: () => editor.chain().focus().toggleTaskList().run(),
+          isActive: editor?.isActive('taskList'),
+        },
+        {
+          icon: <Code className="w-4 h-4" />,
+          label: t?.codeBlock || 'Code block',
+          action: () => editor.chain().focus().toggleCodeBlock().run(),
+          isActive: editor?.isActive('codeBlock'),
         },
       ]
     },
@@ -252,23 +268,28 @@ export default function ContextMenu({ editor }) {
 
   if (!isOpen || !editor) return null
 
-  // Split menu items into two columns
-  const leftColumn = menuItems.slice(0, 3) // Blocks, Code & Quote, Lists
-  const rightColumn = menuItems.slice(3) // Formatting, Other
+  const menuItems = menuMode === 'selection' ? selectionMenuItems : insertionMenuItems
+  const headerText = menuMode === 'selection'
+    ? (t?.formatSelection || 'Format selection')
+    : (t?.insertOrTransform || 'Insert / Transform')
+
+  // Calculate max height based on available space
+  const maxHeight = Math.min(window.innerHeight - position.y - 20, 400)
 
   return (
     <div
       ref={menuRef}
-      className="fixed bg-white border border-gray-200 rounded-lg shadow-xl z-[1000] py-1 max-h-[80vh] overflow-y-auto"
+      className="fixed bg-white border border-gray-200 rounded-lg shadow-xl z-[1000] py-1 overflow-y-auto"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
-        minWidth: '420px',
+        minWidth: menuMode === 'selection' ? '220px' : '200px',
+        maxHeight: `${maxHeight}px`,
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t?.convertTo || 'Convert to'}</span>
+      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 sticky top-0 bg-white">
+        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{headerText}</span>
         <button
           onClick={() => setIsOpen(false)}
           className="p-1 hover:bg-gray-100 rounded transition-colors"
@@ -277,77 +298,38 @@ export default function ContextMenu({ editor }) {
         </button>
       </div>
 
-      {/* Two column layout */}
-      <div className="flex">
-        {/* Left column */}
-        <div className="flex-1 border-r border-gray-100">
-          {leftColumn.map((section, sectionIndex) => (
-            <div key={section.label}>
-              {sectionIndex > 0 && <div className="border-t border-gray-100 my-1" />}
-              <div className="px-3 py-1">
-                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{section.label}</span>
-              </div>
-              {section.items.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => handleAction(item.action)}
-                  className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${
-                    item.isActive 
-                      ? 'bg-blue-50 text-blue-700' 
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <span className={item.isActive ? 'text-blue-600' : 'text-gray-500'}>
-                    {item.icon}
-                  </span>
-                  <span className="flex-1">{item.label}</span>
-                  {item.hint && (
-                    <span className="text-[10px] text-gray-400 italic">{item.hint}</span>
-                  )}
-                  {item.isActive && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  )}
-                </button>
-              ))}
+      {/* Menu items */}
+      <div>
+        {menuItems.map((section, sectionIndex) => (
+          <div key={section.label}>
+            {sectionIndex > 0 && <div className="border-t border-gray-100 my-1" />}
+            <div className="px-3 py-1">
+              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{section.label}</span>
             </div>
-          ))}
-        </div>
-        
-        {/* Right column */}
-        <div className="flex-1">
-          {rightColumn.map((section, sectionIndex) => (
-            <div key={section.label}>
-              {sectionIndex > 0 && <div className="border-t border-gray-100 my-1" />}
-              <div className="px-3 py-1">
-                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{section.label}</span>
-              </div>
-              {section.items.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => handleAction(item.action)}
-                  className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${
-                    item.isActive 
-                      ? 'bg-blue-50 text-blue-700' 
-                      : 'text-gray-700 hover:bg-gray-50'
+            {section.items.map((item) => (
+              <button
+                key={item.label}
+                onClick={() => handleAction(item.action)}
+                className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${item.isActive
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-gray-700 hover:bg-gray-50'
                   }`}
-                >
-                  <span className={item.isActive ? 'text-blue-600' : 'text-gray-500'}>
-                    {item.icon}
-                  </span>
-                  <span className="flex-1">{item.label}</span>
-                  {item.shortcut && (
-                    <span className="text-xs text-gray-400">{item.shortcut}</span>
-                  )}
-                  {item.isActive && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  )}
-                </button>
-              ))}
-            </div>
-          ))}
-        </div>
+              >
+                <span className={item.isActive ? 'text-blue-600' : 'text-gray-500'}>
+                  {item.icon}
+                </span>
+                <span className="flex-1">{item.label}</span>
+                {item.shortcut && (
+                  <span className="text-xs text-gray-400">{item.shortcut}</span>
+                )}
+                {item.isActive && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                )}
+              </button>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   )
 }
-

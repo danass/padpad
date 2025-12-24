@@ -9,7 +9,6 @@ export const metadata = {
   title: 'Online Text Editor – Simple & Collaborative | Textpad',
   description: 'Simple online text editor to write, edit and share text instantly. No account required. Collaborative and fast.',
   keywords: 'online text editor, textpad online, online notepad, simple text editor, collaborative text editor, share text online',
-  viewport: 'width=device-width, initial-scale=1',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
@@ -25,6 +24,11 @@ export const metadata = {
     title: 'Online Text Editor – Simple & Collaborative | Textpad',
     description: 'Simple online text editor to write, edit and share text instantly. No account required. Collaborative and fast.',
   },
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({ children }) {

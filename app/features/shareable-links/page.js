@@ -67,7 +67,7 @@ export default function ShareableLinksPage() {
                     <p className="text-sm text-gray-600">
                         <Link href="/" className="text-gray-900 underline">Start writing</Link>
                         {' · '}
-                        <Link href="/features/collaborative-editing" className="text-gray-900 underline">Learn about real-time collaboration</Link>
+                        <Link href="/features/public-blog" className="text-gray-900 underline">Learn about public blog</Link>
                     </p>
                 </div>
             </div>
