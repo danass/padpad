@@ -25,7 +25,7 @@ export async function GET() {
     }
     
     // Check tables
-    const tablesToCheck = ['folders', 'documents', 'document_snapshots', 'document_events']
+    const tablesToCheck = ['folders', 'documents', 'document_snapshots', 'document_events', 'users']
     for (const table of tablesToCheck) {
       try {
         const result = await sql.query(
@@ -144,7 +144,7 @@ export async function GET() {
       folders: ['id', 'name', 'parent_id', 'created_at', 'updated_at', 'user_id'],
       document_snapshots: ['id', 'document_id', 'content_json', 'content_text', 'created_at'],
       document_events: ['id', 'document_id', 'type', 'payload', 'version', 'created_at'],
-      users: ['id', 'birth_date', 'created_at', 'updated_at']
+      users: ['id', 'birth_date', 'testament_slug', 'testament_username', 'avatar_url', 'created_at', 'updated_at']
     }
     
     let allColumnsExist = true
