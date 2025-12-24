@@ -79,6 +79,31 @@ export default function DigitalTestamentPage() {
                     </div>
                 </section>
 
+                {/* Settings Screenshot */}
+                <section className="mb-16">
+                    <div className="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+                                Easy Setup
+                            </h2>
+                            <p className="text-gray-700 mb-4">
+                                Just enter your birth date in Settings. That's it.
+                                Your legacy date is calculated automatically.
+                            </p>
+                            <p className="text-gray-600 text-sm">
+                                You can remove it anytime — your documents go back to private.
+                            </p>
+                        </div>
+                        <div className="rounded-lg overflow-hidden shadow-lg border border-gray-200">
+                            <img
+                                src="/features/screens/settings_digital_legacy_setup.png"
+                                alt="Digital legacy settings"
+                                className="w-full"
+                            />
+                        </div>
+                    </div>
+                </section>
+
                 {/* Use cases */}
                 <section className="mb-16">
                     <h2 className="text-2xl font-semibold text-gray-900 mb-6">
