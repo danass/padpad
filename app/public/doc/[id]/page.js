@@ -32,6 +32,7 @@ export default function PublicDocumentPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [title, setTitle] = useState('')
+  const [isFullWidth, setIsFullWidth] = useState(false)
   const [navigation, setNavigation] = useState({ prev: null, next: null })
   
   const editor = useEditor({
@@ -117,7 +118,8 @@ export default function PublicDocumentPage() {
         const data = await response.json()
         const { document, content, navigation: nav } = data
         
-        setTitle(document.title)
+        setTitle(document.title || 'Untitled')
+        setIsFullWidth(document.is_full_width || false)
         setNavigation(nav || { prev: null, next: null })
         
         // Set editor content - wrap in queueMicrotask to avoid flushSync error
@@ -186,8 +188,8 @@ export default function PublicDocumentPage() {
   
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">{title || 'Untitled'}</h1>
+      <div className={isFullWidth ? 'px-4 sm:px-6 py-12' : 'max-w-4xl mx-auto px-6 py-12'}>
+        <h1 className="text-4xl font-bold text-gray-900 mb-8">{title}</h1>
         <div className="max-w-none">
           <EditorContent editor={editor} />
         </div>

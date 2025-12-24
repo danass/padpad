@@ -63,6 +63,7 @@ export default function DocumentPage() {
   const [showHistory, setShowHistory] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
   const [isPublic, setIsPublic] = useState(false)
+  const [isFullWidth, setIsFullWidth] = useState(false)
   const [autoPublicDate, setAutoPublicDate] = useState(null)
   const [birthDate, setBirthDate] = useState(null)
   const [showAutoPublicModal, setShowAutoPublicModal] = useState(false)
@@ -641,6 +642,7 @@ export default function DocumentPage() {
         setCurrentDocument(document)
         setTitle(document.title)
         setIsPublic(document.is_public || false)
+        setIsFullWidth(document.is_full_width || false)
         
         // Reconstruct content using replayHistory
         let content = replayHistory(snapshot, events)
@@ -1192,6 +1194,43 @@ export default function DocumentPage() {
                     </svg>
                   )}
                 </button>
+                
+                {/* Full-width mode toggle - only show if public */}
+                {isPublic && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const response = await fetch(`/api/documents/${documentId}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ is_full_width: !isFullWidth })
+                        })
+                        if (response.ok) {
+                          setIsFullWidth(!isFullWidth)
+                          showToast(isFullWidth ? 'Normal width' : 'Full width', 'success')
+                        }
+                      } catch (err) {
+                        showToast('Failed to update', 'error')
+                      }
+                    }}
+                    className={`p-1.5 border rounded-md transition-colors ${
+                      isFullWidth 
+                        ? 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100' 
+                        : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                    }`}
+                    title={isFullWidth ? 'Full width - Click for normal' : 'Normal width - Click for full width'}
+                  >
+                    {isFullWidth ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+                      </svg>
+                    )}
+                  </button>
+                )}
                 
                 {/* Export */}
                 <div className="relative">

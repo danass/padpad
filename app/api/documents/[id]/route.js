@@ -132,7 +132,7 @@ export async function PATCH(request, { params }) {
     
     const { id } = await params
     const body = await request.json()
-    const { title, folder_id } = body
+    const { title, folder_id, is_full_width } = body
     
     const updates = []
     const values = []
@@ -146,6 +146,11 @@ export async function PATCH(request, { params }) {
     if (folder_id !== undefined) {
       updates.push(`folder_id = $${paramCount++}`)
       values.push(folder_id)
+    }
+    
+    if (is_full_width !== undefined) {
+      updates.push(`is_full_width = $${paramCount++}`)
+      values.push(is_full_width === true)
     }
     
     if (updates.length === 0) {
