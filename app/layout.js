@@ -1,8 +1,4 @@
 import './globals.css'
-import { ToastProvider } from '@/components/ui/toast'
-import HeaderWrapper from '@/components/layout/HeaderWrapper'
-import Footer from '@/components/layout/Footer'
-import SessionProvider from '@/components/providers/SessionProvider'
 import { LanguageProvider } from '@/app/i18n/LanguageContext'
 
 export const metadata = {
@@ -31,6 +27,7 @@ export const viewport = {
   initialScale: 1,
 }
 
+// Root layout - minimal, shared by all route groups
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -40,19 +37,10 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Lato:wght@300;400;700&family=Open+Sans:wght@300;400;600;700&family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-white min-h-screen flex flex-col" suppressHydrationWarning>
-        <SessionProvider>
-          <LanguageProvider>
-            <ToastProvider>
-              <HeaderWrapper />
-              <main className="flex-1">
-                {children}
-              </main>
-              <Footer />
-            </ToastProvider>
-          </LanguageProvider>
-        </SessionProvider>
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   )
 }
-
