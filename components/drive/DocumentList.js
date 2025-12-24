@@ -15,7 +15,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
   const [dragOverFolder, setDragOverFolder] = useState(null)
   const [editingFolderPlaceholder, setEditingFolderPlaceholder] = useState(null)
   const [viewMode, setViewMode] = useState('list-no-icons') // 'compact', 'list-no-icons'
-  const [sortBy, setSortBy] = useState('date') // 'date', 'name', 'type'
+  const [sortBy, setSortBy] = useState('date') // 'date', 'name', 'type', 'visibility'
   const [sortDirection, setSortDirection] = useState('desc') // 'asc', 'desc'
   const [selectedItems, setSelectedItems] = useState(new Set()) // Multiple select
   
@@ -44,6 +44,17 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
         const nameA = (a.type === 'folder' ? a.name : a.title) || ''
         const nameB = (b.type === 'folder' ? b.name : b.title) || ''
         return nameA.localeCompare(nameB) * direction
+      })
+    } else if (sortBy === 'visibility') {
+      return sorted.sort((a, b) => {
+        // Folders don't have visibility, put them first
+        if (a.type === 'folder' && b.type !== 'folder') return -1
+        if (a.type !== 'folder' && b.type === 'folder') return 1
+        if (a.type === 'folder' && b.type === 'folder') return 0
+        // Sort by visibility
+        const visA = a.is_public ? 1 : 0
+        const visB = b.is_public ? 1 : 0
+        return (visB - visA) * direction
       })
     } else { // date (default)
       return sorted.sort((a, b) => {
@@ -96,6 +107,17 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
       })
       setSelectedItems(new Set())
     }
+  }
+
+  // Set visibility for selected documents
+  const handleSetVisibility = (isPublic) => {
+    if (selectedItems.size === 0 || !onTogglePublic) return
+    // Only apply to documents, not folders
+    const selectedDocs = sortedDocuments.filter(d => selectedItems.has(d.id) && d.type !== 'folder')
+    selectedDocs.forEach(doc => {
+      onTogglePublic(doc.id, isPublic)
+    })
+    setSelectedItems(new Set())
   }
   
   // Build tree structure with hierarchy (only for list-no-icons view)
@@ -231,7 +253,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
             isDragging ? 'opacity-50' : ''
           } ${isDragOver ? 'bg-blue-50 border-blue-200' : ''} ${isSelected ? 'bg-blue-50' : ''}`}
         >
-          <div className="col-span-1 flex items-center gap-2">
+          <div className="col-span-1 flex items-center gap-1">
             <input
               type="checkbox"
               checked={isSelected}
@@ -242,33 +264,30 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
               onClick={(e) => e.stopPropagation()}
               className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
             />
-            {item.type === 'folder' ? (
-              <svg className="w-4 h-4 md:w-5 md:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            )}
           </div>
           {item.type === 'folder' ? (
-            <Link href={`/drive/folder/${item.id}`} className="col-span-4 md:col-span-5">
+            <Link href={`/drive/folder/${item.id}`} className="col-span-5 flex items-center gap-2">
+              <svg className="w-4 h-4 md:w-5 md:h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
               <h3 className="font-medium text-sm md:text-base truncate">{item.name}</h3>
             </Link>
           ) : (
-            <Link href={`/doc/${item.id}`} className="col-span-4 md:col-span-5">
+            <Link href={`/doc/${item.id}`} className="col-span-5 flex items-center gap-2">
+              <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
               <h3 className="font-medium text-sm md:text-base truncate">{item.title || 'Untitled'}</h3>
             </Link>
           )}
           <div className="col-span-1 text-xs md:text-sm text-gray-600 whitespace-nowrap hidden md:block">
-            {item.type === 'folder' ? 'Folder' : 'Document'}
+            {item.type === 'folder' ? 'Folder' : 'Doc'}
           </div>
-          <div className="col-span-2 md:col-span-2 text-xs md:text-sm text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
+          <div className="col-span-3 md:col-span-2 text-xs md:text-sm text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
             <span className="hidden md:inline">{format(new Date(item.updated_at || item.created_at), 'MMM d, yyyy')}</span>
             <span className="md:hidden">{format(new Date(item.updated_at || item.created_at), 'MMM d')}</span>
           </div>
-          <div className="col-span-1 flex justify-center">
+          <div className="col-span-2 flex justify-center">
             {item.type !== 'folder' && onTogglePublic && (
               <button
                 onClick={(e) => {
@@ -357,14 +376,34 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
     <>
       {/* View and Sort Controls */}
       <div className="flex items-center justify-between mb-3 md:mb-4 pb-3 md:pb-4 border-b border-gray-200">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {selectedItems.size > 0 && (
+            <>
             <button
               onClick={handleDeleteSelected}
-              className="px-3 py-1.5 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-            >
-              Delete {selectedItems.size} item(s)
+                className="px-2 py-1 text-xs bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+              >
+                Delete ({selectedItems.size})
+              </button>
+              {onTogglePublic && (
+                <>
+                  <button
+                    onClick={() => handleSetVisibility(true)}
+                    className="px-2 py-1 text-xs bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
+                    title="Make selected documents public"
+                  >
+                    Public
+                  </button>
+                  <button
+                    onClick={() => handleSetVisibility(false)}
+                    className="px-2 py-1 text-xs bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                    title="Make selected documents private"
+                  >
+                    Private
             </button>
+                </>
+              )}
+            </>
           )}
           <span className="text-xs md:text-sm text-gray-600">View:</span>
           <button
@@ -424,7 +463,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                 </div>
                 <button
                   onClick={() => handleSort('name')}
-                  className="col-span-4 md:col-span-5 flex items-center gap-1 md:gap-2 text-left hover:text-gray-900 transition-colors"
+                  className="col-span-5 md:col-span-5 flex items-center gap-1 md:gap-2 text-left hover:text-gray-900 transition-colors"
                 >
                   <span className="truncate">Name</span>
                   {sortBy === 'name' ? (
@@ -435,7 +474,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                 </button>
                 <button
                   onClick={() => handleSort('type')}
-                  className="col-span-2 flex items-center gap-1 md:gap-2 text-left hover:text-gray-900 transition-colors"
+                  className="col-span-1 hidden md:flex items-center gap-1 md:gap-2 text-left hover:text-gray-900 transition-colors"
                 >
                   <span className="truncate">Type</span>
                   {sortBy === 'type' ? (
@@ -446,10 +485,25 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                 </button>
                 <button
                   onClick={() => handleSort('date')}
-                  className="col-span-3 flex items-center gap-1 md:gap-2 text-left hover:text-gray-900 transition-colors"
+                  className="col-span-3 md:col-span-2 flex items-center gap-1 md:gap-2 text-left hover:text-gray-900 transition-colors"
                 >
                   <span className="truncate">Date</span>
                   {sortBy === 'date' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" /> : <ArrowDown className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                  ) : (
+                    <ArrowUpDown className="w-3 h-3 md:w-4 md:h-4 opacity-30 flex-shrink-0" />
+                  )}
+                </button>
+                <button
+                  onClick={() => handleSort('visibility')}
+                  className="col-span-2 md:col-span-2 flex items-center gap-1 text-left hover:text-gray-900 transition-colors"
+                >
+                  <span className="truncate hidden md:inline">Visibility</span>
+                  <svg className="w-4 h-4 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  {sortBy === 'visibility' ? (
                     sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" /> : <ArrowDown className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
                   ) : (
                     <ArrowUpDown className="w-3 h-3 md:w-4 md:h-4 opacity-30 flex-shrink-0" />
