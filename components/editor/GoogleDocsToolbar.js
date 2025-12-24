@@ -1397,51 +1397,59 @@ export default function GoogleDocsToolbar({ editor }) {
             const input = document.createElement('input')
             input.type = 'file'
             input.accept = 'image/*'
+            // Explicitly set multiple to false to ensure single file selection
+            input.multiple = false
             // Don't use capture - let user choose between camera and gallery
             // Append to body to prevent garbage collection on some mobile browsers
-            input.style.display = 'none'
+            input.style.cssText = 'position:absolute;top:-9999px;left:-9999px;opacity:0;'
             document.body.appendChild(input)
             
-            input.onchange = (e) => {
+            const handleChange = (e) => {
               const file = e.target.files?.[0]
               if (file) {
+                // Validate it's an image
+                if (!file.type.startsWith('image/')) {
+                  alert('Please select an image file')
+                  cleanup()
+                  return
+                }
+                
                 const reader = new FileReader()
                 reader.onload = () => {
-                  // Use insertContent instead of setImage to ensure it's inserted
-                  editor.chain().focus().insertContent({
-                    type: 'image',
-                    attrs: { src: reader.result, alt: file.name },
-                  }).run()
-                  // Cleanup
-                  if (input.parentNode) {
-                    document.body.removeChild(input)
+                  if (reader.result) {
+                    // Use insertContent instead of setImage to ensure it's inserted
+                    editor.chain().focus().insertContent({
+                      type: 'image',
+                      attrs: { src: reader.result, alt: file.name || 'image' },
+                    }).run()
                   }
+                  cleanup()
                 }
-                reader.onerror = () => {
-                  console.error('Error reading file')
+                reader.onerror = (err) => {
+                  console.error('Error reading file:', err)
                   alert('Failed to load image')
-                  // Cleanup
-                  if (input.parentNode) {
-                    document.body.removeChild(input)
-                  }
+                  cleanup()
                 }
                 reader.readAsDataURL(file)
               } else {
-                // No file selected, cleanup
-                if (input.parentNode) {
-                  document.body.removeChild(input)
-                }
+                cleanup()
               }
             }
             
-            // Also cleanup if user cancels
-            input.addEventListener('cancel', () => {
+            const cleanup = () => {
+              input.removeEventListener('change', handleChange)
               if (input.parentNode) {
-                document.body.removeChild(input)
+                input.parentNode.removeChild(input)
               }
-            })
+            }
             
-            input.click()
+            input.addEventListener('change', handleChange)
+            
+            // Use setTimeout to ensure the input is in the DOM before clicking
+            // This helps with iOS Safari
+            setTimeout(() => {
+              input.click()
+            }, 100)
           }}
           className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
         >
