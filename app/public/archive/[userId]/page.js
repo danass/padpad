@@ -1,74 +1,84 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import Link from 'next/link'
+import { sql } from '@vercel/postgres'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import Link from 'next/link'
 
-// Use absolute URL to avoid CORS issues with subdomains
-const API_BASE = typeof window !== 'undefined'
-  ? `${window.location.protocol}//www.textpad.cloud`
-  : 'https://www.textpad.cloud'
+export async function generateMetadata({ params }) {
+  const { userId } = await params
+  return {
+    title: `@${userId} - Archive | Textpad`,
+    description: `Public documents from ${userId}`,
+  }
+}
 
-export default function PublicArchivePage() {
-  const params = useParams()
-  const userId = params.userId
+async function getDocuments(userId) {
+  if (!userId) return { documents: [], username: null, error: 'No user ID' }
 
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [documents, setDocuments] = useState([])
-  const [username, setUsername] = useState(null)
+  try {
+    let actualUserId = null
+    let username = null
 
-  useEffect(() => {
-    async function loadDocuments() {
-      if (!userId) return
+    const isUUIDish = /^[0-9a-f-]+$/i.test(userId)
 
-      setLoading(true)
-      setError(null)
-
-      try {
-        // Use absolute URL to main domain
-        const response = await fetch(`${API_BASE}/api/public/users/${userId}/documents`)
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('User not found')
-          } else {
-            setError('Failed to load documents')
-          }
-          setLoading(false)
-          return
-        }
-
-        const data = await response.json()
-        setDocuments(data.documents || [])
-        setUsername(data.username)
-        setLoading(false)
-      } catch (err) {
-        console.error('Error loading documents:', err)
-        setError('An error occurred')
-        setLoading(false)
+    if (!isUUIDish) {
+      const userResult = await sql.query(
+        'SELECT id, testament_username FROM users WHERE testament_username = $1',
+        [userId]
+      )
+      if (userResult.rows.length > 0) {
+        actualUserId = userResult.rows[0].id
+        username = userResult.rows[0].testament_username
       }
     }
 
-    loadDocuments()
-  }, [userId])
+    if (!actualUserId) {
+      const userResult = await sql.query(
+        'SELECT id, testament_username FROM users WHERE id LIKE $1 OR id = $2',
+        [`${userId}%`, userId]
+      )
+      if (userResult.rows.length > 0) {
+        actualUserId = userResult.rows[0].id
+        username = userResult.rows[0].testament_username
+      }
+    }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-pulse text-gray-400">Loading...</div>
-      </div>
+    if (!actualUserId) {
+      return { documents: [], username: null, error: 'User not found' }
+    }
+
+    const result = await sql.query(
+      `SELECT d.id, d.title, d.created_at, d.updated_at
+       FROM documents d
+       WHERE d.user_id = $1 AND d.is_public = true
+       ORDER BY d.updated_at DESC`,
+      [actualUserId]
     )
-  }
 
-  if (error) {
+    return {
+      documents: result.rows.map(doc => ({
+        ...doc,
+        title: (doc.title === 'Untitled' || !doc.title) ? '' : doc.title
+      })),
+      username: username || userId,
+      error: null
+    }
+  } catch (error) {
+    console.error('Error fetching documents:', error)
+    return { documents: [], username: null, error: 'Database error' }
+  }
+}
+
+export default async function PublicArchivePage({ params }) {
+  const { userId } = await params
+  const { documents, username, error } = await getDocuments(userId)
+
+  if (error === 'User not found') {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">Error</h1>
-          <p className="text-gray-600">{error}</p>
-          <a href="https://www.textpad.cloud" className="text-blue-600 hover:underline mt-4 inline-block">
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">User not found</h1>
+          <p className="text-gray-600">No user with this identifier exists.</p>
+          <a href="https://textpad.cloud" className="text-blue-600 hover:underline mt-4 inline-block">
             Go to Textpad
           </a>
         </div>
@@ -93,7 +103,7 @@ export default function PublicArchivePage() {
         {/* Header */}
         <div className="mb-12 text-center">
           <h1 className="text-3xl font-light text-gray-900 mb-2">
-            {username ? `@${username}` : 'Archive'}
+            @{username}
           </h1>
           <p className="text-sm text-gray-500">
             {documents.length} document{documents.length > 1 ? 's' : ''} public{documents.length > 1 ? 's' : ''}
@@ -103,9 +113,9 @@ export default function PublicArchivePage() {
         {/* Document list */}
         <div className="space-y-1">
           {documents.map((doc, index) => (
-            <a
+            <Link
               key={doc.id}
-              href={`https://www.textpad.cloud/public/doc/${doc.id}`}
+              href={`/public/doc/${doc.id}`}
               className="block group"
             >
               <div className="flex items-baseline justify-between py-3 px-4 -mx-4 rounded-lg hover:bg-gray-50 transition-colors">
@@ -121,13 +131,13 @@ export default function PublicArchivePage() {
                   {format(new Date(doc.updated_at), 'd MMM yyyy', { locale: fr })}
                 </span>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
 
         {/* Footer */}
         <div className="mt-12 pt-8 border-t border-gray-100 text-center">
-          <a href="https://www.textpad.cloud" className="text-xs text-gray-400 hover:text-gray-600">
+          <a href="https://textpad.cloud" className="text-xs text-gray-400 hover:text-gray-600">
             textpad.cloud
           </a>
         </div>

@@ -1,19 +1,15 @@
 import '../globals.css'
-import { ToastProvider } from '@/components/ui/toast'
 
 export const metadata = {
-  title: 'textpad - Public Document',
-  description: 'View a public document',
+  title: 'Textpad - Public',
+  description: 'Public content on Textpad',
 }
 
+// Minimal layout for public pages - no auth, no session, no providers
 export default function PublicLayout({ children }) {
   return (
-    <ToastProvider>
+    <div className="min-h-screen bg-white">
       {children}
-    </ToastProvider>
+    </div>
   )
 }
-
-
-
-
