@@ -112,7 +112,26 @@ export default function Home() {
     if (!editor || session) return // Only show watermark when not logged in
     
     const checkContent = () => {
-      const hasContent = editor.getText().trim().length > 0 || (editor.getJSON()?.content && Array.isArray(editor.getJSON().content) && editor.getJSON().content.length > 0)
+      // Check if editor has real content (text or images)
+      const text = editor.getText().trim()
+      const json = editor.getJSON()
+      const hasText = text.length > 0
+      
+      // Check for images or other non-empty nodes
+      let hasImages = false
+      let hasOtherContent = false
+      if (json?.content && Array.isArray(json.content)) {
+        json.content.forEach(node => {
+          if (node.type === 'image') {
+            hasImages = true
+          } else if (node.type !== 'paragraph' || (node.content && node.content.length > 0 && node.content.some(n => n.type !== 'hardBreak' && (n.text || n.type === 'image')))) {
+            hasOtherContent = true
+          }
+        })
+      }
+      
+      const hasContent = hasText || hasImages || hasOtherContent
+      
       if (hasContent) {
         setHasEverHadContent(true)
       }
@@ -126,18 +145,40 @@ export default function Home() {
     
     const handleBlur = () => {
       // Only show watermark again if no content and never had content
-      const hasContent = editor.getText().trim().length > 0 || (editor.getJSON()?.content && Array.isArray(editor.getJSON().content) && editor.getJSON().content.length > 0)
+      const text = editor.getText().trim()
+      const json = editor.getJSON()
+      const hasText = text.length > 0
+      
+      let hasImages = false
+      let hasOtherContent = false
+      if (json?.content && Array.isArray(json.content)) {
+        json.content.forEach(node => {
+          if (node.type === 'image') {
+            hasImages = true
+          } else if (node.type !== 'paragraph' || (node.content && node.content.length > 0 && node.content.some(n => n.type !== 'hardBreak' && (n.text || n.type === 'image')))) {
+            hasOtherContent = true
+          }
+        })
+      }
+      
+      const hasContent = hasText || hasImages || hasOtherContent
       if (!hasContent && !hasEverHadContent) {
         setShowWatermark(true)
       }
     }
     
+    // Check immediately on mount and after a short delay to ensure editor is ready
     checkContent()
+    const timeoutId = setTimeout(() => {
+      checkContent()
+    }, 200)
+    
     editor.on('update', checkContent)
     editor.on('focus', handleFocus)
     editor.on('blur', handleBlur)
     
     return () => {
+      clearTimeout(timeoutId)
       editor.off('update', checkContent)
       editor.off('focus', handleFocus)
       editor.off('blur', handleBlur)
@@ -169,12 +210,29 @@ export default function Home() {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
         const content = JSON.parse(saved)
-        // Use queueMicrotask to avoid flushSync error
-        queueMicrotask(() => {
-          requestAnimationFrame(() => {
-            editor.commands.setContent(content)
-          })
+        // Check if content is actually empty (just empty paragraphs)
+        const hasRealContent = content?.content && Array.isArray(content.content) && content.content.some(node => {
+          if (node.type === 'image') return true
+          if (node.type !== 'paragraph') return true
+          if (node.content && Array.isArray(node.content)) {
+            return node.content.some(n => n.type === 'image' || (n.text && n.text.trim().length > 0))
+          }
+          return false
         })
+        
+        // Only load if there's real content
+        if (hasRealContent) {
+          // Use queueMicrotask to avoid flushSync error
+          queueMicrotask(() => {
+            requestAnimationFrame(() => {
+              editor.commands.setContent(content)
+            })
+          })
+        } else {
+          // Clear empty content from localStorage
+          localStorage.removeItem(STORAGE_KEY)
+          localStorage.removeItem(STORAGE_TIMESTAMP_KEY)
+        }
       }
     } catch (err) {
       console.error('Error loading from localStorage:', err)
@@ -319,7 +377,7 @@ export default function Home() {
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">textpad</h1>
-            <p className="text-sm text-gray-600">Write, edit, and format your text instantly</p>
+            <p className="text-sm text-gray-600">Write, edit, format, and share your text instantly</p>
           </div>
           <div className="flex items-center gap-3">
             {session && (
@@ -369,7 +427,7 @@ export default function Home() {
             <p className="mt-4 text-xs text-gray-500 text-center">
               {session 
                 ? 'Your document is saved locally. Click "Save Document" to save it permanently.'
-                : 'Click "Save" to sign in and save your document permanently. Your work is saved locally for 48 hours.'}
+                : 'Click "Save" to sign in and save your document permanently.'}
             </p>
           </>
         )}

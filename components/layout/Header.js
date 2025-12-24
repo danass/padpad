@@ -92,7 +92,7 @@ export default function Header() {
             {!session && (
               <Link
                 href="/auth/signin"
-                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm font-medium transition-colors"
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm font-medium transition-colors"
               >
                 Sign in
               </Link>

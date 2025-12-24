@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { memo, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { Grid, List, ListChecks, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, onMove, currentFolderId = null, parentFolderId = null, onNavigateToParent }) {
   const router = useRouter()
@@ -13,6 +14,9 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
   const [draggedItem, setDraggedItem] = useState(null)
   const [dragOverFolder, setDragOverFolder] = useState(null)
   const [editingFolderPlaceholder, setEditingFolderPlaceholder] = useState(null)
+  const [viewMode, setViewMode] = useState('list-no-icons') // 'compact', 'list-no-icons'
+  const [sortBy, setSortBy] = useState('date') // 'date', 'name', 'type'
+  const [sortDirection, setSortDirection] = useState('desc') // 'asc', 'desc'
   
   // Build folder map for quick lookup
   const folderMap = useMemo(() => {
@@ -21,18 +25,61 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
     return map
   }, [allFolders])
   
-  // Build tree structure with hierarchy
+  // Sort documents based on sortBy option and direction
+  const sortedDocuments = useMemo(() => {
+    const sorted = [...documents]
+    const direction = sortDirection === 'asc' ? 1 : -1
+    
+    if (sortBy === 'name') {
+      return sorted.sort((a, b) => {
+        const nameA = (a.type === 'folder' ? a.name : a.title) || ''
+        const nameB = (b.type === 'folder' ? b.name : b.title) || ''
+        return nameA.localeCompare(nameB) * direction
+      })
+    } else if (sortBy === 'type') {
+      return sorted.sort((a, b) => {
+        if (a.type === 'folder' && b.type !== 'folder') return -1 * direction
+        if (a.type !== 'folder' && b.type === 'folder') return 1 * direction
+        const nameA = (a.type === 'folder' ? a.name : a.title) || ''
+        const nameB = (b.type === 'folder' ? b.name : b.title) || ''
+        return nameA.localeCompare(nameB) * direction
+      })
+    } else { // date (default)
+      return sorted.sort((a, b) => {
+        const dateA = new Date(a.updated_at || a.created_at || 0)
+        const dateB = new Date(b.updated_at || b.created_at || 0)
+        return (dateB - dateA) * direction
+      })
+    }
+  }, [documents, sortBy, sortDirection])
+  
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      // Toggle direction if same column
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      // Set new column and default to desc
+      setSortBy(column)
+      setSortDirection('desc')
+    }
+  }
+  
+  // Build tree structure with hierarchy (only for list-no-icons view)
   const buildTree = useMemo(() => {
+    if (viewMode === 'compact') {
+      return sortedDocuments.map(item => ({ ...item, children: [] }))
+    }
+    
     const rootItems = []
     const itemMap = new Map()
     
     // First, create map of all items
-    documents.forEach(item => {
+    sortedDocuments.forEach(item => {
       itemMap.set(item.id, { ...item, children: [] })
     })
     
     // Then build tree structure
-    documents.forEach(item => {
+    sortedDocuments.forEach(item => {
       const parentId = item.type === 'folder' ? item.parent_id : item.folder_id
       if (parentId && itemMap.has(parentId)) {
         itemMap.get(parentId).children.push(itemMap.get(item.id))
@@ -41,33 +88,57 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
       }
     })
     
-    // Sort: folders first, then documents
-    const sortItems = (items) => {
-      return items.sort((a, b) => {
-        if (a.type === 'folder' && b.type !== 'folder') return -1
-        if (a.type !== 'folder' && b.type === 'folder') return 1
-        if (a.type === 'folder' && b.type === 'folder') {
-          return (a.name || '').localeCompare(b.name || '')
-        }
-        return new Date(b.updated_at || 0) - new Date(a.updated_at || 0)
-      })
-    }
-    
-    const sortTree = (items) => {
-      sortItems(items)
-      items.forEach(item => {
-        if (item.children && item.children.length > 0) {
-          sortTree(item.children)
-        }
-      })
-    }
-    
-    sortTree(rootItems)
+    // Don't re-sort - already sorted in sortedDocuments
+    // Just maintain the order from sortedDocuments
     return rootItems
-  }, [documents])
+  }, [sortedDocuments, viewMode])
   
-  // Render tree recursively
-  const renderItem = (item, level = 0) => {
+  // Render item for compact grid view
+  const renderCompactGridItem = (item) => {
+    const isDragging = draggedItem?.id === item.id
+    
+    return (
+      <div
+        key={item.id}
+        draggable={!!onMove}
+        onDragStart={(e) => {
+          setDraggedItem(item)
+          e.dataTransfer.effectAllowed = 'move'
+          e.dataTransfer.setData('application/json', JSON.stringify({ id: item.id, type: item.type }))
+        }}
+        onDragEnd={() => setDraggedItem(null)}
+        onContextMenu={(e) => handleContextMenu(e, item)}
+        className={`p-3 border border-gray-200 rounded-md hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer ${
+          isDragging ? 'opacity-50' : ''
+        }`}
+      >
+        {item.type === 'folder' ? (
+          <Link href={`/drive/folder/${item.id}`} className="block">
+            {viewMode !== 'list-no-icons' && (
+              <svg className="w-8 h-8 text-blue-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+            )}
+            <h3 className="font-medium text-sm truncate">{item.name}</h3>
+            <p className="text-xs text-gray-500 mt-1">Folder</p>
+          </Link>
+        ) : (
+          <Link href={`/doc/${item.id}`} className="block">
+            {viewMode !== 'list-no-icons' && (
+              <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            )}
+            <h3 className="font-medium text-sm truncate">{item.title || 'Untitled'}</h3>
+            <p className="text-xs text-gray-500 mt-1">{format(new Date(item.updated_at), 'MMM d, yyyy')}</p>
+          </Link>
+        )}
+      </div>
+    )
+  }
+  
+  // Render item for list view (with icons)
+  const renderListNoIconsItem = (item, level = 0) => {
     const isDragging = draggedItem?.id === item.id
     const isDragOver = dragOverFolder === item.id && item.type === 'folder'
     
@@ -121,59 +192,56 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
             setDragOverFolder(null)
           }}
           onContextMenu={(e) => handleContextMenu(e, item)}
-          className={`flex items-center justify-between px-4 py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 group transition-colors cursor-pointer ${
+          className={`grid grid-cols-12 gap-4 items-center px-4 py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 group transition-colors cursor-pointer ${
             isDragging ? 'opacity-50' : ''
           } ${isDragOver ? 'bg-blue-50 border-blue-200' : ''}`}
-          style={{ paddingLeft: `${level * 1.5 + 1}rem` }}
         >
-          {item.type === 'folder' ? (
-            <Link
-              href={`/drive/folder/${item.id}`}
-              className="flex-1 flex items-center gap-4"
-            >
+          <div className="col-span-1">
+            {item.type === 'folder' ? (
               <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
               </svg>
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">{item.name}</h3>
-                <p className="text-sm text-gray-500">Folder</p>
-              </div>
-            </Link>
-          ) : (
-            <Link
-              href={`/doc/${item.id}`}
-              className="flex-1 flex items-center gap-4"
-            >
+            ) : (
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">{item.title || 'Untitled'}</h3>
-                <p className="text-sm text-gray-500">
-                  Updated {format(new Date(item.updated_at), 'MMM d, yyyy')}
-                </p>
-              </div>
+            )}
+          </div>
+          {item.type === 'folder' ? (
+            <Link href={`/drive/folder/${item.id}`} className="col-span-5">
+              <h3 className="font-medium">{item.name}</h3>
+            </Link>
+          ) : (
+            <Link href={`/doc/${item.id}`} className="col-span-5">
+              <h3 className="font-medium">{item.title || 'Untitled'}</h3>
             </Link>
           )}
-          
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              if (confirm(`Are you sure you want to delete this ${item.type === 'folder' ? 'folder' : 'document'}?`)) {
-                onDelete(item.id)
-              }
-            }}
-            className="opacity-0 group-hover:opacity-100 px-3 py-1 text-red-500 hover:bg-red-50 rounded transition-colors"
-          >
-            Delete
-          </button>
+          <div className="col-span-2 text-sm text-gray-600">
+            {item.type === 'folder' ? 'Folder' : 'Document'}
+          </div>
+          <div className="col-span-3 text-sm text-gray-500">
+            {format(new Date(item.updated_at || item.created_at), 'MMM d, yyyy')}
+          </div>
+          <div className="col-span-1 flex justify-end">
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (confirm(`Are you sure you want to delete this ${item.type === 'folder' ? 'folder' : 'document'}?`)) {
+                  onDelete(item.id)
+                }
+              }}
+              className="opacity-0 group-hover:opacity-100 px-2 py-1 text-red-500 hover:bg-red-50 rounded transition-colors text-sm"
+            >
+              Delete
+            </button>
+          </div>
         </div>
         
         {/* Render children recursively */}
         {item.children && item.children.length > 0 && (
           <div>
-            {item.children.map(child => renderItem(child, level + 1))}
+            {item.children.map(child => renderListNoIconsItem(child, level + 1))}
           </div>
         )}
       </div>
@@ -210,8 +278,33 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
   
   return (
     <>
+      {/* View and Sort Controls */}
+      <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">View:</span>
+          <button
+            onClick={() => setViewMode('compact')}
+            className={`p-2 rounded transition-colors ${
+              viewMode === 'compact' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title="Compact grid view"
+          >
+            <Grid className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setViewMode('list-no-icons')}
+            className={`p-2 rounded transition-colors ${
+              viewMode === 'list-no-icons' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title="List view"
+          >
+            <List className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+      
       <div 
-        className="space-y-0 border border-gray-200 rounded-md overflow-hidden"
+        className={viewMode === 'compact' ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3' : ''}
         onDragOver={(e) => {
           if (draggedItem && onMove) {
             e.preventDefault()
@@ -229,7 +322,56 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
           }
         }}
       >
-        {buildTree.map(item => renderItem(item, 0))}
+        {viewMode === 'compact' ? (
+          buildTree.map(item => renderCompactGridItem(item))
+        ) : (
+          <div className="border border-gray-200 rounded-md overflow-hidden">
+            {/* Table header with sortable columns */}
+            <div className="bg-gray-50 border-b border-gray-200">
+              <div className="grid grid-cols-12 gap-4 px-4 py-3 text-sm font-medium text-gray-700">
+                <div className="col-span-1"></div>
+                <button
+                  onClick={() => handleSort('name')}
+                  className="col-span-5 flex items-center gap-2 text-left hover:text-gray-900 transition-colors"
+                >
+                  <span>Name</span>
+                  {sortBy === 'name' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                  ) : (
+                    <ArrowUpDown className="w-4 h-4 opacity-30" />
+                  )}
+                </button>
+                <button
+                  onClick={() => handleSort('type')}
+                  className="col-span-2 flex items-center gap-2 text-left hover:text-gray-900 transition-colors"
+                >
+                  <span>Type</span>
+                  {sortBy === 'type' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                  ) : (
+                    <ArrowUpDown className="w-4 h-4 opacity-30" />
+                  )}
+                </button>
+                <button
+                  onClick={() => handleSort('date')}
+                  className="col-span-3 flex items-center gap-2 text-left hover:text-gray-900 transition-colors"
+                >
+                  <span>Date</span>
+                  {sortBy === 'date' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                  ) : (
+                    <ArrowUpDown className="w-4 h-4 opacity-30" />
+                  )}
+                </button>
+                <div className="col-span-1"></div>
+              </div>
+            </div>
+            {/* Table body */}
+            <div>
+              {buildTree.map(item => renderListNoIconsItem(item, 0))}
+            </div>
+          </div>
+        )}
       </div>
       
       {contextMenu && (

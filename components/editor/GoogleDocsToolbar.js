@@ -255,10 +255,10 @@ export default function GoogleDocsToolbar({ editor }) {
             }
             setShowFontFamily(!showFontFamily)
           }}
-          className="px-2 py-1.5 min-w-[80px] text-left text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
+          className="px-2 py-1.5 h-8 min-w-[90px] text-left text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
           title={currentFontFamily}
         >
-          <span style={{ fontFamily: currentFontFamily }} className="truncate max-w-[60px]">{currentFontFamily}</span>
+          <span style={{ fontFamily: currentFontFamily }} className="truncate max-w-[70px]">{currentFontFamily}</span>
           <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />
         </button>
         {showFontFamily && (
@@ -297,15 +297,15 @@ export default function GoogleDocsToolbar({ editor }) {
       </div>
 
       {/* Font Size */}
-      <div className="relative flex items-center border border-gray-300 rounded" ref={fontSizeRef}>
+      <div className="relative flex items-center border border-gray-300 rounded h-8" ref={fontSizeRef}>
         <button
           onClick={handleFontSizeDecrease}
-          className="px-2 py-1.5 hover:bg-gray-100 text-gray-700"
+          className="px-2 h-full hover:bg-gray-100 text-gray-700 flex items-center"
           title="Decrease font size"
         >
           <Minus className="w-4 h-4" />
         </button>
-        <div className="relative">
+        <div className="relative h-full flex items-center">
           <input
             type="number"
             value={fontSizeDisplay === 'inherited' ? '' : fontSizeDisplay}
@@ -337,7 +337,7 @@ export default function GoogleDocsToolbar({ editor }) {
             }}
             min="8"
             max="400"
-            className="w-20 px-2 py-1.5 text-center text-sm border-x border-gray-300 focus:outline-none focus:ring-0"
+            className="w-20 px-2 h-full text-center text-xs border-x border-gray-300 focus:outline-none focus:ring-0"
             style={{
               WebkitAppearance: 'textfield',
               MozAppearance: 'textfield'
@@ -351,7 +351,7 @@ export default function GoogleDocsToolbar({ editor }) {
         </div>
         <button
           onClick={handleFontSizeIncrease}
-          className="px-2 py-1.5 hover:bg-gray-100 text-gray-700"
+          className="px-2 h-full hover:bg-gray-100 text-gray-700 flex items-center"
           title="Increase font size"
         >
           <Plus className="w-4 h-4" />
@@ -368,7 +368,7 @@ export default function GoogleDocsToolbar({ editor }) {
             }
             setShowLineHeight(!showLineHeight)
           }}
-          className="px-2 py-1.5 min-w-[60px] text-left text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
+          className="px-2 py-1.5 h-8 min-w-[90px] text-left text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
           title="Line Height"
         >
           <span className="truncate">{currentLineHeight || 'Default'}</span>
@@ -415,7 +415,7 @@ export default function GoogleDocsToolbar({ editor }) {
       {/* Formatting Buttons */}
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`p-1.5 rounded hover:bg-gray-100 ${
+        className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
           editor.isActive('bold') ? 'bg-gray-200' : ''
         }`}
         title="Bold (Ctrl+B)"
@@ -425,7 +425,7 @@ export default function GoogleDocsToolbar({ editor }) {
       
       <button
         onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={`p-1.5 rounded hover:bg-gray-100 ${
+        className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
           editor.isActive('italic') ? 'bg-gray-200' : ''
         }`}
         title="Italic (Ctrl+I)"
@@ -435,7 +435,7 @@ export default function GoogleDocsToolbar({ editor }) {
       
       <button
         onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={`p-1.5 rounded hover:bg-gray-100 ${
+        className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
           editor.isActive('underline') ? 'bg-gray-200' : ''
         }`}
         title="Underline (Ctrl+U)"
@@ -458,7 +458,7 @@ export default function GoogleDocsToolbar({ editor }) {
             .setTextAlign('left')
             .run()
         }}
-        className="p-1.5 rounded hover:bg-gray-100"
+        className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
         title="Clear Formatting"
       >
         <Eraser className="w-4 h-4" />
@@ -476,7 +476,7 @@ export default function GoogleDocsToolbar({ editor }) {
             }
             setShowTextColor(!showTextColor)
           }}
-          className={`p-1.5 rounded hover:bg-gray-100 ${
+          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
             showTextColor ? 'bg-gray-200' : ''
           }`}
           title="Text Color"
@@ -544,7 +544,7 @@ export default function GoogleDocsToolbar({ editor }) {
             }
             setShowHighlightColor(!showHighlightColor)
           }}
-          className={`p-1.5 rounded hover:bg-gray-100 ${
+          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
             showHighlightColor ? 'bg-gray-200' : ''
           }`}
           title="Highlight Color"
@@ -608,7 +608,7 @@ export default function GoogleDocsToolbar({ editor }) {
             }
             setShowAlign(!showAlign)
           }}
-          className={`p-1.5 rounded hover:bg-gray-100 flex items-center gap-1 ${
+          className={`p-1.5 h-8 rounded hover:bg-gray-100 flex items-center justify-center gap-1 ${
             showAlign ? 'bg-gray-200' : ''
           }`}
           title="Text Alignment"
@@ -680,7 +680,7 @@ export default function GoogleDocsToolbar({ editor }) {
       {/* Lists */}
       <button
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`p-1.5 rounded hover:bg-gray-100 ${
+        className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
           editor.isActive('bulletList') ? 'bg-gray-200' : ''
         }`}
         title="Bullet List"
@@ -690,7 +690,7 @@ export default function GoogleDocsToolbar({ editor }) {
       
       <button
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`p-1.5 rounded hover:bg-gray-100 ${
+        className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
           editor.isActive('orderedList') ? 'bg-gray-200' : ''
         }`}
         title="Numbered List"
@@ -718,7 +718,7 @@ export default function GoogleDocsToolbar({ editor }) {
           }
           input.click()
         }}
-        className="p-1.5 rounded hover:bg-gray-100"
+        className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
         title="Insert Image"
       >
         <Image className="w-4 h-4" />
@@ -732,7 +732,7 @@ export default function GoogleDocsToolbar({ editor }) {
             editor.chain().focus().setLink({ href: url }).run()
           }
         }}
-        className={`p-1.5 rounded hover:bg-gray-100 ${
+        className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
           editor.isActive('link') ? 'bg-gray-200' : ''
         }`}
         title="Insert Link"
@@ -746,7 +746,7 @@ export default function GoogleDocsToolbar({ editor }) {
       <button
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().chain().focus().undo().run()}
-        className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50"
+        className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center"
         title="Undo (Ctrl+Z)"
       >
         <Undo className="w-4 h-4" />
@@ -755,7 +755,7 @@ export default function GoogleDocsToolbar({ editor }) {
       <button
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().chain().focus().redo().run()}
-        className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50"
+        className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center"
         title="Redo (Ctrl+Y)"
       >
         <Redo className="w-4 h-4" />
