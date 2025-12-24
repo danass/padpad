@@ -596,5 +596,18 @@ input[type="search"] {
   font-family: inherit;
 }
 
+/* Prevent layout shift on mobile text selection */
+@media (max-width: 768px) {
+  .ProseMirror {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: auto;
+  }
+  
+  /* Prevent iOS selection menu from causing layout shift */
+  .ProseMirror * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 /* Remove dark mode styles - using light theme only */
 

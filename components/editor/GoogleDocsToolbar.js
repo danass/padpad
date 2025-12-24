@@ -19,7 +19,8 @@ import {
   ChevronDown,
   Minus,
   Plus,
-  Eraser
+  Eraser,
+  Paintbrush
 } from 'lucide-react'
 
 const FONT_FAMILIES = [
@@ -82,6 +83,56 @@ export default function GoogleDocsToolbar({ editor }) {
   const textColorRef = useRef(null)
   const highlightColorRef = useRef(null)
   const alignRef = useRef(null)
+  
+  // Active style state - stores the current active formatting
+  const [activeStyle, setActiveStyle] = useState({
+    fontFamily: 'Arial',
+    fontSize: 16,
+    bold: false,
+    italic: false,
+    underline: false,
+    color: '#000000',
+    highlightColor: null,
+    lineHeight: null,
+    align: 'left'
+  })
+  
+  // Paint mode state
+  const PAINT_MODE_KEY = 'textpad_paint_mode'
+  const PAINT_MODE_TOOLTIP_KEY = 'textpad_paint_mode_tooltip_shown'
+  const [paintMode, setPaintMode] = useState(false)
+  const [showPaintTooltip, setShowPaintTooltip] = useState(false)
+  
+  // Load paint mode from localStorage on mount
+  useEffect(() => {
+    const savedPaintMode = localStorage.getItem(PAINT_MODE_KEY)
+    if (savedPaintMode === 'true') {
+      setPaintMode(true)
+    }
+    
+    const tooltipShown = localStorage.getItem(PAINT_MODE_TOOLTIP_KEY)
+    if (tooltipShown !== 'true') {
+      setShowPaintTooltip(true)
+    }
+  }, [])
+  
+  // Save paint mode to localStorage
+  const togglePaintMode = () => {
+    const newPaintMode = !paintMode
+    setPaintMode(newPaintMode)
+    localStorage.setItem(PAINT_MODE_KEY, newPaintMode.toString())
+    
+    // Show tooltip on first activation
+    if (newPaintMode && !localStorage.getItem(PAINT_MODE_TOOLTIP_KEY)) {
+      setShowPaintTooltip(true)
+      localStorage.setItem(PAINT_MODE_TOOLTIP_KEY, 'true')
+    }
+  }
+  
+  const dismissPaintTooltip = () => {
+    setShowPaintTooltip(false)
+    localStorage.setItem(PAINT_MODE_TOOLTIP_KEY, 'true')
+  }
 
   if (!editor) {
     return null
@@ -177,12 +228,16 @@ export default function GoogleDocsToolbar({ editor }) {
 
   const handleFontFamilyChange = (font) => {
     editor.chain().focus().setFontFamily(font).run()
+    setActiveStyle(prev => ({ ...prev, fontFamily: font }))
+    shouldApplyActiveStyleRef.current = true
     setShowFontFamily(false)
   }
 
   const handleFontSizeChange = (size) => {
     editor.chain().focus().setFontSize(`${size}px`).run()
     setFontSize(size)
+    setActiveStyle(prev => ({ ...prev, fontSize: size }))
+    shouldApplyActiveStyleRef.current = true
     setShowFontSize(false)
   }
 
@@ -200,6 +255,8 @@ export default function GoogleDocsToolbar({ editor }) {
     setFontSize(newSize)
     setFontSizeDisplay(newSize.toString())
     editor.chain().focus().setFontSize(`${newSize}px`).run()
+    setActiveStyle(prev => ({ ...prev, fontSize: newSize }))
+    shouldApplyActiveStyleRef.current = true
   }
 
   const handleFontSizeIncrease = () => {
@@ -208,20 +265,28 @@ export default function GoogleDocsToolbar({ editor }) {
     setFontSize(newSize)
     setFontSizeDisplay(newSize.toString())
     editor.chain().focus().setFontSize(`${newSize}px`).run()
+    setActiveStyle(prev => ({ ...prev, fontSize: newSize }))
+    shouldApplyActiveStyleRef.current = true
   }
 
   const handleTextColorChange = (color) => {
     editor.chain().focus().setColor(color).run()
+    setActiveStyle(prev => ({ ...prev, color }))
+    shouldApplyActiveStyleRef.current = true
     setShowTextColor(false)
   }
 
   const handleHighlightColorChange = (color) => {
     editor.chain().focus().toggleHighlight({ color }).run()
+    setActiveStyle(prev => ({ ...prev, highlightColor: color }))
+    shouldApplyActiveStyleRef.current = true
     setShowHighlightColor(false)
   }
 
   const handleAlignChange = (align) => {
     editor.chain().focus().setTextAlign(align).run()
+    setActiveStyle(prev => ({ ...prev, align }))
+    shouldApplyActiveStyleRef.current = true
     setShowAlign(false)
   }
 
@@ -231,8 +296,158 @@ export default function GoogleDocsToolbar({ editor }) {
     } else {
       editor.chain().focus().setLineHeight(lineHeight).run()
     }
+    setActiveStyle(prev => ({ ...prev, lineHeight }))
+    shouldApplyActiveStyleRef.current = true
     setShowLineHeight(false)
   }
+  
+  // Apply active style to selected text
+  const applyActiveStyle = () => {
+    if (!editor) return
+    
+    const chain = editor.chain().focus()
+    
+    // Apply font family
+    chain.setFontFamily(activeStyle.fontFamily)
+    
+    // Apply font size
+    chain.setFontSize(`${activeStyle.fontSize}px`)
+    
+    // Apply text color
+    chain.setColor(activeStyle.color)
+    
+    // Apply line height
+    if (activeStyle.lineHeight) {
+      chain.setLineHeight(activeStyle.lineHeight)
+    } else {
+      chain.unsetLineHeight()
+    }
+    
+    // Apply alignment
+    chain.setTextAlign(activeStyle.align)
+    
+    // Apply bold, italic, underline
+    if (activeStyle.bold) {
+      chain.setBold()
+    } else {
+      chain.unsetBold()
+    }
+    
+    if (activeStyle.italic) {
+      chain.setItalic()
+    } else {
+      chain.unsetItalic()
+    }
+    
+    if (activeStyle.underline) {
+      chain.setUnderline()
+    } else {
+      chain.unsetUnderline()
+    }
+    
+    // Apply highlight
+    if (activeStyle.highlightColor) {
+      chain.toggleHighlight({ color: activeStyle.highlightColor })
+    } else {
+      chain.unsetHighlight()
+    }
+    
+    chain.run()
+  }
+  
+  // Track if we should apply active style (set to true when style is changed via toolbar)
+  const shouldApplyActiveStyleRef = useRef(false)
+  
+  // Listen for selection changes and apply active style
+  // In paint mode, always apply active style to selections
+  useEffect(() => {
+    if (!editor) return
+    
+    let lastSelection = null
+    
+    const handleSelectionUpdate = () => {
+      const { selection } = editor.state
+      
+      // Only apply if there's a selection (not just a cursor)
+      if (selection.empty) {
+        lastSelection = null
+        shouldApplyActiveStyleRef.current = false
+        return
+      }
+      
+      // Check if this is a new selection (different from last)
+      const selectionKey = `${selection.from}-${selection.to}`
+      if (lastSelection === selectionKey) {
+        return // Same selection, don't reapply
+      }
+      
+      lastSelection = selectionKey
+      
+      // In paint mode, always apply active style to new selections
+      if (paintMode) {
+        setTimeout(() => {
+          if (!editor.state.selection.empty) {
+            applyActiveStyle()
+          }
+        }, 10)
+      } else {
+        // Normal mode: only apply if we just changed a style in toolbar
+        if (shouldApplyActiveStyleRef.current) {
+          setTimeout(() => {
+            if (!editor.state.selection.empty) {
+              applyActiveStyle()
+            }
+          }, 10)
+          shouldApplyActiveStyleRef.current = false
+        }
+      }
+    }
+    
+    editor.on('selectionUpdate', handleSelectionUpdate)
+    
+    return () => {
+      editor.off('selectionUpdate', handleSelectionUpdate)
+    }
+  }, [editor, activeStyle, paintMode])
+  
+  // Update active style from editor when selection changes (but don't apply it back)
+  // In paint mode, we don't update the active style from selection
+  useEffect(() => {
+    if (!editor) return
+    
+    const updateActiveStyleFromEditor = () => {
+      // In paint mode, don't update active style from selection
+      if (paintMode) return
+      
+      // Only update if we're not in the middle of applying active style
+      if (shouldApplyActiveStyleRef.current) return
+      
+      const attrs = editor.getAttributes('textStyle')
+      const isBold = editor.isActive('bold')
+      const isItalic = editor.isActive('italic')
+      const isUnderline = editor.isActive('underline')
+      const highlight = editor.getAttributes('highlight')
+      const align = editor.getAttributes('textAlign')?.textAlign || 'left'
+      
+      setActiveStyle(prev => ({
+        ...prev,
+        fontFamily: attrs.fontFamily || prev.fontFamily,
+        fontSize: attrs.fontSize ? parseInt(attrs.fontSize.replace('px', '')) : prev.fontSize,
+        bold: isBold,
+        italic: isItalic,
+        underline: isUnderline,
+        color: attrs.color || prev.color,
+        highlightColor: highlight?.color || prev.highlightColor,
+        align: align
+      }))
+    }
+    
+    editor.on('selectionUpdate', updateActiveStyleFromEditor)
+    
+    return () => {
+      editor.off('selectionUpdate', updateActiveStyleFromEditor)
+    }
+  }, [editor, paintMode])
 
   const LINE_HEIGHT_OPTIONS = [
     { value: null, label: 'Default' },
@@ -244,9 +459,9 @@ export default function GoogleDocsToolbar({ editor }) {
   ]
 
   return (
-    <div className="flex items-center gap-0.5 p-1 border-b border-gray-200 bg-white overflow-x-auto flex-wrap" style={{ position: 'relative', zIndex: 1 }}>
+    <div className="flex items-center gap-1 md:gap-0.5 p-2 md:p-1 border-b border-gray-200 bg-white overflow-x-auto flex-wrap sticky top-0 z-50" style={{ position: 'sticky', top: 0, zIndex: 50 }}>
       {/* Font Family */}
-      <div className="relative" ref={fontFamilyRef} style={{ zIndex: 1000 }}>
+      <div className="relative" ref={fontFamilyRef}>
         <button
           onClick={() => {
             if (fontFamilyRef.current) {
@@ -255,11 +470,11 @@ export default function GoogleDocsToolbar({ editor }) {
             }
             setShowFontFamily(!showFontFamily)
           }}
-          className="px-2 py-1.5 h-8 min-w-[90px] text-left text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
+          className="px-2 md:px-2 py-2 md:py-1.5 h-10 md:h-8 min-w-[100px] md:min-w-[90px] text-left text-sm md:text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
           title={currentFontFamily}
         >
           <span style={{ fontFamily: currentFontFamily }} className="truncate max-w-[70px]">{currentFontFamily}</span>
-          <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />
+          <ChevronDown className="w-4 h-4 md:w-3 md:h-3 text-gray-500 flex-shrink-0" />
         </button>
         {showFontFamily && (
           <>
@@ -271,9 +486,10 @@ export default function GoogleDocsToolbar({ editor }) {
             <div 
               className="fixed bg-white border border-gray-300 rounded shadow-lg max-h-64 overflow-y-auto w-48" 
               style={{ 
-                zIndex: 10000,
-                top: fontFamilyPosition.top,
-                left: fontFamilyPosition.left
+                zIndex: 10001,
+                position: 'fixed',
+                top: `${fontFamilyPosition.top}px`,
+                left: `${fontFamilyPosition.left}px`
               }}
             >
             {FONT_FAMILIES.map((font) => (
@@ -297,13 +513,13 @@ export default function GoogleDocsToolbar({ editor }) {
       </div>
 
       {/* Font Size */}
-      <div className="relative flex items-center border border-gray-300 rounded h-8" ref={fontSizeRef}>
+      <div className="relative flex items-center border border-gray-300 rounded h-10 md:h-8" ref={fontSizeRef}>
         <button
           onClick={handleFontSizeDecrease}
           className="px-2 h-full hover:bg-gray-100 text-gray-700 flex items-center"
           title="Decrease font size"
         >
-          <Minus className="w-4 h-4" />
+          <Minus className="w-5 h-5 md:w-4 md:h-4" />
         </button>
         <div className="relative h-full flex items-center">
           <input
@@ -322,12 +538,14 @@ export default function GoogleDocsToolbar({ editor }) {
                 setFontSizeDisplay('inherited')
                 editor.chain().focus().unsetFontSize().run()
               } else {
-                const numValue = parseInt(value)
-                if (!isNaN(numValue) && numValue > 0) {
-                  setFontSize(numValue)
-                  setFontSizeDisplay(numValue.toString())
-                  editor.chain().focus().setFontSize(`${numValue}px`).run()
-                }
+                  const numValue = parseInt(value)
+                  if (!isNaN(numValue) && numValue > 0) {
+                    setFontSize(numValue)
+                    setFontSizeDisplay(numValue.toString())
+                    editor.chain().focus().setFontSize(`${numValue}px`).run()
+                    setActiveStyle(prev => ({ ...prev, fontSize: numValue }))
+                    shouldApplyActiveStyleRef.current = true
+                  }
               }
             }}
             onKeyDown={(e) => {
@@ -337,7 +555,7 @@ export default function GoogleDocsToolbar({ editor }) {
             }}
             min="8"
             max="400"
-            className="w-20 px-2 h-full text-center text-xs border-x border-gray-300 focus:outline-none focus:ring-0"
+            className="w-24 md:w-20 px-2 h-full text-center text-sm md:text-xs border-x border-gray-300 focus:outline-none focus:ring-0"
             style={{
               WebkitAppearance: 'textfield',
               MozAppearance: 'textfield'
@@ -354,12 +572,12 @@ export default function GoogleDocsToolbar({ editor }) {
           className="px-2 h-full hover:bg-gray-100 text-gray-700 flex items-center"
           title="Increase font size"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5 md:w-4 md:h-4" />
         </button>
       </div>
 
       {/* Line Height */}
-      <div className="relative" ref={lineHeightRef} style={{ zIndex: 1000 }}>
+      <div className="relative" ref={lineHeightRef}>
         <button
           onClick={() => {
             if (lineHeightRef.current) {
@@ -368,11 +586,11 @@ export default function GoogleDocsToolbar({ editor }) {
             }
             setShowLineHeight(!showLineHeight)
           }}
-          className="px-2 py-1.5 h-8 min-w-[90px] text-left text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
+          className="px-2 md:px-2 py-2 md:py-1.5 h-10 md:h-8 min-w-[100px] md:min-w-[90px] text-left text-sm md:text-xs border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-between gap-1"
           title="Line Height"
         >
           <span className="truncate">{currentLineHeight || 'Default'}</span>
-          <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />
+          <ChevronDown className="w-4 h-4 md:w-3 md:h-3 text-gray-500 flex-shrink-0" />
         </button>
         {showLineHeight && (
           <>
@@ -384,9 +602,10 @@ export default function GoogleDocsToolbar({ editor }) {
             <div 
               className="fixed bg-white border border-gray-300 rounded shadow-lg w-32" 
               style={{ 
-                zIndex: 10000,
-                top: lineHeightPosition.top,
-                left: lineHeightPosition.left
+                zIndex: 10001,
+                position: 'fixed',
+                top: `${lineHeightPosition.top}px`,
+                left: `${lineHeightPosition.left}px`
               }}
             >
               {LINE_HEIGHT_OPTIONS.map((option) => (
@@ -410,37 +629,92 @@ export default function GoogleDocsToolbar({ editor }) {
         )}
       </div>
 
-      <div className="w-px h-6 bg-gray-300 mx-0.5" />
+      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
+
+      {/* Paint Mode Toggle */}
+      <div className="relative">
+        <button
+          onClick={togglePaintMode}
+          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+            paintMode ? 'bg-blue-100 text-blue-600' : ''
+          }`}
+          title="Paint Mode - Apply active style to all selections"
+        >
+          <Paintbrush className="w-5 h-5 md:w-4 md:h-4" />
+        </button>
+        
+        {/* Tooltip on first activation */}
+        {showPaintTooltip && paintMode && (
+          <>
+            <div 
+              className="fixed inset-0 z-[10002]" 
+              onClick={dismissPaintTooltip}
+            />
+            <div 
+              className="absolute top-full left-0 mt-2 w-64 bg-gray-900 text-white text-sm rounded-lg p-3 shadow-xl z-[10003]"
+              style={{ position: 'fixed' }}
+            >
+              <div className="font-semibold mb-1">Paint Mode</div>
+              <div className="text-gray-300 text-xs">
+                When Paint Mode is active, your current style settings (font, size, color, etc.) will be automatically applied to any text you select or click on. The style won't change when you click on different text - it stays fixed to your preset.
+              </div>
+              <button
+                onClick={dismissPaintTooltip}
+                className="mt-2 text-xs text-blue-300 hover:text-blue-200 underline"
+              >
+                Got it
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Formatting Buttons */}
       <button
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+        onClick={() => {
+          const newBold = !editor.isActive('bold')
+          editor.chain().focus().toggleBold().run()
+          setActiveStyle(prev => ({ ...prev, bold: newBold }))
+          shouldApplyActiveStyleRef.current = true
+        }}
+        className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
           editor.isActive('bold') ? 'bg-gray-200' : ''
         }`}
         title="Bold (Ctrl+B)"
       >
-        <Bold className="w-4 h-4" />
+        <Bold className="w-5 h-5 md:w-4 md:h-4" />
       </button>
       
       <button
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+        onClick={() => {
+          const newItalic = !editor.isActive('italic')
+          editor.chain().focus().toggleItalic().run()
+          setActiveStyle(prev => ({ ...prev, italic: newItalic }))
+          shouldApplyActiveStyleRef.current = true
+        }}
+        className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
           editor.isActive('italic') ? 'bg-gray-200' : ''
         }`}
         title="Italic (Ctrl+I)"
       >
-        <Italic className="w-4 h-4" />
+        <Italic className="w-5 h-5 md:w-4 md:h-4" />
       </button>
       
       <button
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+        onClick={() => {
+          const newUnderline = !editor.isActive('underline')
+          editor.chain().focus().toggleUnderline().run()
+          setActiveStyle(prev => ({ ...prev, underline: newUnderline }))
+          shouldApplyActiveStyleRef.current = true
+        }}
+        className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
           editor.isActive('underline') ? 'bg-gray-200' : ''
         }`}
         title="Underline (Ctrl+U)"
       >
-        <Underline className="w-4 h-4" />
+        <Underline className="w-5 h-5 md:w-4 md:h-4" />
       </button>
 
       <button
@@ -461,13 +735,13 @@ export default function GoogleDocsToolbar({ editor }) {
         className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
         title="Clear Formatting"
       >
-        <Eraser className="w-4 h-4" />
+        <Eraser className="w-5 h-5 md:w-4 md:h-4" />
       </button>
 
-      <div className="w-px h-6 bg-gray-300 mx-0.5" />
+      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Text Color */}
-      <div className="relative" ref={textColorRef} style={{ zIndex: 1000 }}>
+      <div className="relative" ref={textColorRef}>
         <button
           onClick={() => {
             if (textColorRef.current) {
@@ -476,13 +750,13 @@ export default function GoogleDocsToolbar({ editor }) {
             }
             setShowTextColor(!showTextColor)
           }}
-          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
+          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
             showTextColor ? 'bg-gray-200' : ''
           }`}
           title="Text Color"
         >
           <div className="relative">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
             <div 
@@ -501,9 +775,10 @@ export default function GoogleDocsToolbar({ editor }) {
             <div 
               className="fixed bg-white border border-gray-300 rounded shadow-lg p-3 w-64" 
               style={{ 
-                zIndex: 10000,
-                top: textColorPosition.top,
-                left: textColorPosition.left
+                zIndex: 10001,
+                position: 'fixed',
+                top: `${textColorPosition.top}px`,
+                left: `${textColorPosition.left}px`
               }}
             >
             <div className="grid grid-cols-10 gap-1 mb-3">
@@ -527,7 +802,7 @@ export default function GoogleDocsToolbar({ editor }) {
               className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center justify-center"
               title="Custom Color"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-5 h-5 md:w-4 md:h-4" />
             </button>
           </div>
           </>
@@ -535,7 +810,7 @@ export default function GoogleDocsToolbar({ editor }) {
       </div>
 
       {/* Highlight Color */}
-      <div className="relative" ref={highlightColorRef} style={{ zIndex: 1000 }}>
+      <div className="relative" ref={highlightColorRef}>
         <button
           onClick={() => {
             if (highlightColorRef.current) {
@@ -563,9 +838,10 @@ export default function GoogleDocsToolbar({ editor }) {
             <div 
               className="fixed bg-white border border-gray-300 rounded shadow-lg p-3 w-64" 
               style={{ 
-                zIndex: 10000,
-                top: highlightColorRef.current ? highlightColorRef.current.getBoundingClientRect().bottom + 4 : 0,
-                left: highlightColorRef.current ? highlightColorRef.current.getBoundingClientRect().left : 0
+                zIndex: 10001,
+                position: 'fixed',
+                top: `${highlightColorPosition.top}px`,
+                left: `${highlightColorPosition.left}px`
               }}
             >
             <div className="grid grid-cols-9 gap-1 mb-3">
@@ -589,17 +865,17 @@ export default function GoogleDocsToolbar({ editor }) {
               className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center justify-center"
               title="Custom Color"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-5 h-5 md:w-4 md:h-4" />
             </button>
           </div>
           </>
         )}
       </div>
 
-      <div className="w-px h-6 bg-gray-300 mx-0.5" />
+      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Alignment */}
-      <div className="relative" ref={alignRef} style={{ zIndex: 1000 }}>
+      <div className="relative" ref={alignRef}>
         <button
           onClick={() => {
             if (alignRef.current) {
@@ -608,16 +884,16 @@ export default function GoogleDocsToolbar({ editor }) {
             }
             setShowAlign(!showAlign)
           }}
-          className={`p-1.5 h-8 rounded hover:bg-gray-100 flex items-center justify-center gap-1 ${
+          className={`p-2 md:p-1.5 h-10 md:h-8 rounded hover:bg-gray-100 flex items-center justify-center gap-1 ${
             showAlign ? 'bg-gray-200' : ''
           }`}
           title="Text Alignment"
         >
-          {currentAlign === 'left' && <AlignLeft className="w-4 h-4" />}
-          {currentAlign === 'center' && <AlignCenter className="w-4 h-4" />}
-          {currentAlign === 'right' && <AlignRight className="w-4 h-4" />}
-          {currentAlign === 'justify' && <AlignJustify className="w-4 h-4" />}
-          <ChevronDown className="w-3 h-3 text-gray-500" />
+          {currentAlign === 'left' && <AlignLeft className="w-5 h-5 md:w-4 md:h-4" />}
+          {currentAlign === 'center' && <AlignCenter className="w-5 h-5 md:w-4 md:h-4" />}
+          {currentAlign === 'right' && <AlignRight className="w-5 h-5 md:w-4 md:h-4" />}
+          {currentAlign === 'justify' && <AlignJustify className="w-5 h-5 md:w-4 md:h-4" />}
+          <ChevronDown className="w-4 h-4 md:w-3 md:h-3 text-gray-500" />
         </button>
         {showAlign && (
           <>
@@ -629,9 +905,10 @@ export default function GoogleDocsToolbar({ editor }) {
             <div 
               className="fixed bg-white border border-gray-300 rounded shadow-lg" 
               style={{ 
-                zIndex: 10000,
-                top: alignPosition.top,
-                left: alignPosition.left
+                zIndex: 10001,
+                position: 'fixed',
+                top: `${alignPosition.top}px`,
+                left: `${alignPosition.left}px`
               }}
             >
             <button
@@ -675,7 +952,7 @@ export default function GoogleDocsToolbar({ editor }) {
         )}
       </div>
 
-      <div className="w-px h-6 bg-gray-300 mx-0.5" />
+      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Lists */}
       <button
@@ -685,7 +962,7 @@ export default function GoogleDocsToolbar({ editor }) {
         }`}
         title="Bullet List"
       >
-        <List className="w-4 h-4" />
+        <List className="w-5 h-5 md:w-4 md:h-4" />
       </button>
       
       <button
@@ -695,10 +972,10 @@ export default function GoogleDocsToolbar({ editor }) {
         }`}
         title="Numbered List"
       >
-        <ListOrdered className="w-4 h-4" />
+        <ListOrdered className="w-5 h-5 md:w-4 md:h-4" />
       </button>
 
-      <div className="w-px h-6 bg-gray-300 mx-0.5" />
+      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Image */}
       <button
@@ -721,7 +998,7 @@ export default function GoogleDocsToolbar({ editor }) {
         className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
         title="Insert Image"
       >
-        <Image className="w-4 h-4" />
+        <Image className="w-5 h-5 md:w-4 md:h-4" />
       </button>
 
       {/* Link */}
@@ -737,10 +1014,10 @@ export default function GoogleDocsToolbar({ editor }) {
         }`}
         title="Insert Link"
       >
-        <Link className="w-4 h-4" />
+        <Link className="w-5 h-5 md:w-4 md:h-4" />
       </button>
 
-      <div className="w-px h-6 bg-gray-300 mx-0.5" />
+      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
       {/* Undo/Redo */}
       <button
@@ -749,7 +1026,7 @@ export default function GoogleDocsToolbar({ editor }) {
         className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center"
         title="Undo (Ctrl+Z)"
       >
-        <Undo className="w-4 h-4" />
+        <Undo className="w-5 h-5 md:w-4 md:h-4" />
       </button>
       
       <button
@@ -758,7 +1035,7 @@ export default function GoogleDocsToolbar({ editor }) {
         className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center"
         title="Redo (Ctrl+Y)"
       >
-        <Redo className="w-4 h-4" />
+        <Redo className="w-5 h-5 md:w-4 md:h-4" />
       </button>
     </div>
   )

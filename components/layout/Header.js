@@ -2,16 +2,19 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Tabs from './Tabs'
 
 export default function Header() {
   const pathname = usePathname()
+  const router = useRouter()
   const { data: session } = useSession()
   const [isAdmin, setIsAdmin] = useState(false)
   const [customAvatar, setCustomAvatar] = useState(null)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const menuRef = useRef(null)
   
   const isDrive = pathname?.startsWith('/drive')
   const isDoc = pathname?.startsWith('/doc')
@@ -48,6 +51,22 @@ export default function Header() {
       setIsAdmin(false)
     }
   }
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowUserMenu(false)
+      }
+    }
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+  }, [showUserMenu])
   
   return (
     <header className="border-b border-gray-200 bg-white">
@@ -77,31 +96,19 @@ export default function Header() {
           
           {/* Right side - Actions */}
           <div className="flex items-center gap-3">
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  isAdminPage
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                Admin
-              </Link>
-            )}
             {!session && (
               <Link
                 href="/auth/signin"
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm font-medium transition-colors"
+                className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium transition-colors"
               >
                 Sign in
               </Link>
             )}
             {session && (
-              <>
-                <Link
-                  href="/settings"
-                  className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-gray-200 hover:ring-2 hover:ring-gray-300 transition-all cursor-pointer"
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="w-8 h-8 md:w-9 md:h-9 rounded-full overflow-hidden flex items-center justify-center bg-gray-200 hover:ring-2 hover:ring-gray-300 transition-all cursor-pointer"
                 >
                   {customAvatar ? (
                     <img 
@@ -126,18 +133,62 @@ export default function Header() {
                       className="w-full h-full object-cover"
                     />
                   )}
-                </Link>
-                <button
-                  onClick={() => {
-                    // Clear tabs before signing out
-                    localStorage.removeItem('openTabs')
-                    signOut({ callbackUrl: '/' })
-                  }}
-                  className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-100 transition-colors"
-                >
-                  Sign out
                 </button>
-              </>
+                
+                {showUserMenu && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setShowUserMenu(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-48 md:w-56 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                      <div className="py-1">
+                        {!isDrive && (
+                          <Link
+                            href="/drive"
+                            onClick={() => setShowUserMenu(false)}
+                            className="block px-4 py-2.5 md:py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
+                            Go to Drive
+                          </Link>
+                        )}
+                        <Link
+                          href="/settings"
+                          onClick={() => setShowUserMenu(false)}
+                          className="block px-4 py-2.5 md:py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
+                          Settings
+                        </Link>
+                        {isAdmin && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setShowUserMenu(false)}
+                            className={`block px-4 py-2.5 md:py-2 text-sm transition-colors ${
+                              isAdminPage
+                                ? 'bg-gray-100 text-gray-900 font-medium'
+                                : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            Admin
+                          </Link>
+                        )}
+                        <div className="border-t border-gray-200 my-1"></div>
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false)
+                            // Clear tabs before signing out
+                            localStorage.removeItem('openTabs')
+                            signOut({ callbackUrl: '/' })
+                          }}
+                          className="block w-full text-left px-4 py-2.5 md:py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             )}
           </div>
         </div>

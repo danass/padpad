@@ -231,19 +231,19 @@ export default function DrivePage() {
   
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Drive</h1>
-          <p className="text-sm text-gray-500">Manage your documents and folders</p>
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8">
+        <div className="mb-4 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1 md:mb-2">Drive</h1>
+          <p className="text-xs md:text-sm text-gray-500">Manage your documents and folders</p>
         </div>
         
-        <div className="mb-6 max-w-2xl">
+        <div className="mb-4 md:mb-6 max-w-2xl">
           <SearchBar onResults={handleSearchResults} />
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Documents</h2>
+        <div className="bg-white border border-gray-200 rounded-md p-3 md:p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0 mb-4">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900">Documents</h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={async () => {
@@ -253,15 +253,15 @@ export default function DrivePage() {
                   }
                 }}
                 disabled={creatingFolder}
-                className="px-3 py-1.5 bg-gray-200 text-gray-900 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors flex items-center gap-1"
+                className="px-4 md:px-3 py-2.5 md:py-1.5 bg-gray-200 text-gray-900 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-sm font-medium transition-colors flex items-center gap-1.5 md:gap-1"
               >
-                <span>+</span>
-                <span>{creatingFolder ? 'Creating...' : 'New Folder'}</span>
+                <span className="text-base md:text-sm">+</span>
+                <span className="text-sm md:text-sm">{creatingFolder ? 'Creating...' : 'New Folder'}</span>
               </button>
               <button
                 onClick={createDocument}
                 disabled={creatingDoc}
-                className="px-3 py-1.5 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+                className="px-4 md:px-3 py-2.5 md:py-1.5 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-sm font-medium transition-colors"
               >
                 {creatingDoc ? 'Creating...' : '+ New Document'}
               </button>

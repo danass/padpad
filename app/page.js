@@ -373,34 +373,20 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white">
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">textpad</h1>
-            <p className="text-sm text-gray-600">Write, edit, format, and share your text instantly</p>
-          </div>
-          <div className="flex items-center gap-3">
-            {session && (
-              <NextLink
-                href="/drive"
-                className="px-4 py-2 text-gray-700 hover:text-gray-900 rounded-md hover:bg-gray-100 text-sm font-medium transition-colors"
-              >
-                Go to Drive
-              </NextLink>
-            )}
-            <button
-              onClick={handleSave}
-              disabled={saving || !editor || (() => {
-                const json = editor.getJSON()
-                const hasText = editor.getText().trim().length > 0
-                const hasContent = json?.content && Array.isArray(json.content) && json.content.length > 0
-                return !hasText && !hasContent
-              })()}
-              className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors fixed bottom-4 right-4 z-50 shadow-lg md:static md:shadow-none"
-            >
-              {saving ? 'Saving...' : session ? 'Save Document' : 'Save'}
-            </button>
-          </div>
+      <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-8">
+        <div className="mb-4 md:mb-6 flex items-center justify-end">
+          <button
+            onClick={handleSave}
+            disabled={saving || !editor || (() => {
+              const json = editor.getJSON()
+              const hasText = editor.getText().trim().length > 0
+              const hasContent = json?.content && Array.isArray(json.content) && json.content.length > 0
+              return !hasText && !hasContent
+            })()}
+            className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors fixed bottom-4 right-4 z-50 shadow-lg md:static md:shadow-none"
+          >
+            {saving ? 'Saving...' : session ? 'Save Document' : 'Save'}
+          </button>
         </div>
 
         {editor && (

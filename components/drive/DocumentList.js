@@ -192,34 +192,34 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
             setDragOverFolder(null)
           }}
           onContextMenu={(e) => handleContextMenu(e, item)}
-          className={`grid grid-cols-12 gap-4 items-center px-4 py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 group transition-colors cursor-pointer ${
+          className={`grid grid-cols-12 gap-2 md:gap-4 items-center px-2 md:px-4 py-2.5 md:py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 group transition-colors cursor-pointer ${
             isDragging ? 'opacity-50' : ''
           } ${isDragOver ? 'bg-blue-50 border-blue-200' : ''}`}
         >
           <div className="col-span-1">
             {item.type === 'folder' ? (
-              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 md:w-5 md:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
               </svg>
             ) : (
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             )}
           </div>
           {item.type === 'folder' ? (
             <Link href={`/drive/folder/${item.id}`} className="col-span-5">
-              <h3 className="font-medium">{item.name}</h3>
+              <h3 className="font-medium text-sm md:text-base">{item.name}</h3>
             </Link>
           ) : (
             <Link href={`/doc/${item.id}`} className="col-span-5">
-              <h3 className="font-medium">{item.title || 'Untitled'}</h3>
+              <h3 className="font-medium text-sm md:text-base">{item.title || 'Untitled'}</h3>
             </Link>
           )}
-          <div className="col-span-2 text-sm text-gray-600">
+          <div className="col-span-2 text-xs md:text-sm text-gray-600">
             {item.type === 'folder' ? 'Folder' : 'Document'}
           </div>
-          <div className="col-span-3 text-sm text-gray-500">
+          <div className="col-span-3 text-xs md:text-sm text-gray-500">
             {format(new Date(item.updated_at || item.created_at), 'MMM d, yyyy')}
           </div>
           <div className="col-span-1 flex justify-end">
@@ -231,7 +231,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                   onDelete(item.id)
                 }
               }}
-              className="opacity-0 group-hover:opacity-100 px-2 py-1 text-red-500 hover:bg-red-50 rounded transition-colors text-sm"
+              className="opacity-0 group-hover:opacity-100 px-3 md:px-2 py-2 md:py-1 text-red-500 hover:bg-red-50 rounded transition-colors text-xs md:text-sm"
             >
               Delete
             </button>
@@ -279,26 +279,26 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
   return (
     <>
       {/* View and Sort Controls */}
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+      <div className="flex items-center justify-between mb-3 md:mb-4 pb-3 md:pb-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">View:</span>
+          <span className="text-xs md:text-sm text-gray-600">View:</span>
           <button
             onClick={() => setViewMode('compact')}
-            className={`p-2 rounded transition-colors ${
+            className={`p-2.5 md:p-2 rounded transition-colors ${
               viewMode === 'compact' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
             }`}
             title="Compact grid view"
           >
-            <Grid className="w-4 h-4" />
+            <Grid className="w-5 h-5 md:w-4 md:h-4" />
           </button>
           <button
             onClick={() => setViewMode('list-no-icons')}
-            className={`p-2 rounded transition-colors ${
+            className={`p-2.5 md:p-2 rounded transition-colors ${
               viewMode === 'list-no-icons' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
             }`}
             title="List view"
           >
-            <List className="w-4 h-4" />
+            <List className="w-5 h-5 md:w-4 md:h-4" />
           </button>
         </div>
       </div>
@@ -328,7 +328,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
           <div className="border border-gray-200 rounded-md overflow-hidden">
             {/* Table header with sortable columns */}
             <div className="bg-gray-50 border-b border-gray-200">
-              <div className="grid grid-cols-12 gap-4 px-4 py-3 text-sm font-medium text-gray-700">
+              <div className="grid grid-cols-12 gap-2 md:gap-4 px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium text-gray-700">
                 <div className="col-span-1"></div>
                 <button
                   onClick={() => handleSort('name')}
@@ -336,9 +336,9 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                 >
                   <span>Name</span>
                   {sortBy === 'name' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 md:w-4 md:h-4" /> : <ArrowDown className="w-3 h-3 md:w-4 md:h-4" />
                   ) : (
-                    <ArrowUpDown className="w-4 h-4 opacity-30" />
+                    <ArrowUpDown className="w-3 h-3 md:w-4 md:h-4 opacity-30" />
                   )}
                 </button>
                 <button
