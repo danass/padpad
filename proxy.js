@@ -21,13 +21,14 @@ export async function proxy(request) {
         return NextResponse.redirect(wwwUrl)
       }
 
-      // For root path, rewrite to user's archive page
+      // ONLY for root path, rewrite to user's archive page
       if (pathname === '/' || pathname === '') {
         return NextResponse.rewrite(new URL(`/public/archive/${subdomain}`, request.url))
       }
 
-      // For other paths, rewrite with subdomain prefix
-      return NextResponse.rewrite(new URL(`/public/archive/${subdomain}${pathname}`, request.url))
+      // For ALL other paths, just let them through normally (no rewrite)
+      // This means /public/doc/xxx will work the same as on www
+      return NextResponse.next()
     }
   }
 
