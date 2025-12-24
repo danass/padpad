@@ -7,6 +7,7 @@ import NextLink from 'next/link'
 import SEOKeywords from '@/components/SEOKeywords'
 import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 import ContextMenu from '@/components/editor/ContextMenu'
+import LinkEditor from '@/components/editor/LinkEditor'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -44,6 +45,7 @@ export default function Home() {
   const [showWatermark, setShowWatermark] = useState(true)
   const [hasEverHadContent, setHasEverHadContent] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [linkEditorPosition, setLinkEditorPosition] = useState(null)
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -266,6 +268,18 @@ export default function Home() {
     setMounted(true)
   }, [])
 
+  // Listen for showLinkEditor event from toolbar
+  useEffect(() => {
+    const handleShowLinkEditor = (e) => {
+      setLinkEditorPosition(e.detail.position)
+    }
+
+    window.addEventListener('showLinkEditor', handleShowLinkEditor)
+    return () => {
+      window.removeEventListener('showLinkEditor', handleShowLinkEditor)
+    }
+  }, [])
+
   // Clear localStorage when browser is closed (using beforeunload)
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -442,6 +456,13 @@ export default function Home() {
                 )}
                 {mounted && <EditorContent editor={editor} />}
                 <ContextMenu editor={editor} />
+                {linkEditorPosition && (
+                  <LinkEditor
+                    editor={editor}
+                    position={linkEditorPosition}
+                    onClose={() => setLinkEditorPosition(null)}
+                  />
+                )}
               </div>
               <p className="mt-4 text-xs text-gray-500 text-center">
                 {session
