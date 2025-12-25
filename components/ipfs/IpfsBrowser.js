@@ -79,7 +79,21 @@ export default function IpfsBrowser({ isOpen, onClose, onSelectFile }) {
                 })
 
                 if (!uploadResponse.ok) {
-                    throw new Error(`Failed to upload ${file.name}`)
+                    // Try to get error message from response
+                    let errorMsg = `Failed to upload ${file.name}`
+                    try {
+                        const responseText = await uploadResponse.text()
+                        // Parse XML error from S3/Filebase
+                        const messageMatch = responseText.match(/<Message>(.*?)<\/Message>/)
+                        if (messageMatch) {
+                            errorMsg = messageMatch[1]
+                        }
+                    } catch (e) {
+                        // If CORS blocks reading the response, give a helpful message
+                        const sizeMB = (file.size / (1024 * 1024)).toFixed(1)
+                        errorMsg = `Upload failed for ${file.name} (${sizeMB} MB). Free Filebase accounts have a 25MB limit.`
+                    }
+                    throw new Error(errorMsg)
                 }
             }
 
