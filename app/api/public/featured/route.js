@@ -49,11 +49,23 @@ export async function GET(request) {
                 }
                 content = snapshot.content_json || replayHistory(snapshot, [])
 
-                // Extract first image from content
+                // Extract first image from content (including drawings)
                 if (content && content.content) {
                     for (const node of content.content) {
                         if (node.type === 'image' && node.attrs && node.attrs.src) {
                             firstImage = node.attrs.src
+                            break
+                        }
+                        // Check for drawing nodes - they store paths as SVG data
+                        if (node.type === 'drawing' && node.attrs && node.attrs.paths && node.attrs.paths.length > 0) {
+                            // Generate a data URL from the drawing paths
+                            const width = node.attrs.width || 400
+                            const height = node.attrs.height || 300
+                            const pathsData = node.attrs.paths.map(p =>
+                                `<path d="${p.d}" stroke="${p.color || '#000'}" stroke-width="${p.strokeWidth || 2}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+                            ).join('')
+                            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${pathsData}</svg>`
+                            firstImage = `data:image/svg+xml,${encodeURIComponent(svg)}`
                             break
                         }
                         // Check nested content for images
