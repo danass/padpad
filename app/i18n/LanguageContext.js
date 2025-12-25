@@ -13,7 +13,29 @@ export function LanguageProvider({ children, initialLocale }) {
 
   // Sync with localStorage/cookie on mount
   useEffect(() => {
-    // Check for textpad_locale cookie (set by /fr and /en pages)
+    // Check for ?locale= URL param (from /fr and /en redirects)
+    const urlParams = new URLSearchParams(window.location.search)
+    const urlLocale = urlParams.get('locale')
+
+    if (urlLocale && locales.includes(urlLocale)) {
+      // Set the cookie and localStorage
+      document.cookie = `textpad_locale=${urlLocale}; path=/; max-age=31536000; samesite=lax`
+      localStorage.setItem('locale', urlLocale)
+      setLocale(urlLocale)
+      setT(translations[urlLocale])
+      document.documentElement.setAttribute('lang', urlLocale)
+
+      // Clean URL by removing the locale param
+      urlParams.delete('locale')
+      const newUrl = urlParams.toString()
+        ? `${window.location.pathname}?${urlParams.toString()}`
+        : window.location.pathname
+      window.history.replaceState({}, '', newUrl)
+      setIsReady(true)
+      return
+    }
+
+    // Check for textpad_locale cookie
     const cookieMatch = document.cookie.match(/textpad_locale=([^;]+)/)
     const cookieLocale = cookieMatch ? cookieMatch[1] : null
 
@@ -23,7 +45,7 @@ export function LanguageProvider({ children, initialLocale }) {
     // Priority: cookie > localStorage > browser > server-provided
     const effectiveLocale = cookieLocale || savedLocale || initialLocale || browserLocale
 
-    console.log('🌐 LanguageProvider init:', { cookieLocale, savedLocale, browserLocale, initialLocale, effectiveLocale })
+    console.log('🌐 LanguageProvider init:', { urlLocale, cookieLocale, savedLocale, browserLocale, initialLocale, effectiveLocale })
 
     if (locales.includes(effectiveLocale)) {
       setLocale(effectiveLocale)

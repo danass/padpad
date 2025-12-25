@@ -8,7 +8,6 @@ import SEOKeywords from '@/components/SEOKeywords'
 import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 import ContextMenu from '@/components/editor/ContextMenu'
 import LinkEditor from '@/components/editor/LinkEditor'
-import FeaturedArticlesClient from '@/components/home/FeaturedArticlesClient'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -513,8 +512,18 @@ export default function HomeClient({ featuredArticles = [] }) {
             </>
           )}
 
-          {/* Featured Articles */}
-          <FeaturedArticlesClient articles={featuredArticles} />
+          {/* Quick Links */}
+          <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center gap-6 text-sm text-gray-500">
+            <NextLink href="/featured" className="hover:text-gray-900 transition-colors">
+              Featured Articles
+            </NextLink>
+            <NextLink href="/features" className="hover:text-gray-900 transition-colors">
+              All Features
+            </NextLink>
+            <NextLink href="/credits" className="hover:text-gray-900 transition-colors">
+              Credits
+            </NextLink>
+          </div>
         </div>
       </main>
     </>

@@ -17,11 +17,11 @@ export async function generateMetadata() {
 }
 
 export default async function FrenchPage() {
+    // Set cookie via response header
     const cookieStore = await cookies()
-    cookieStore.set('textpad_locale', 'fr', {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 365, // 1 year
-        sameSite: 'lax',
-    })
-    redirect('/')
+    // Note: cookies().set() doesn't work in Server Components, use redirect with cookie in response
+
+    // Use a redirect that includes Set-Cookie header via next.config or middleware
+    // For now, redirect to a client page that sets the cookie
+    redirect('/?locale=fr')
 }

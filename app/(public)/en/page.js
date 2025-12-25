@@ -17,11 +17,5 @@ export async function generateMetadata() {
 }
 
 export default async function EnglishPage() {
-    const cookieStore = await cookies()
-    cookieStore.set('textpad_locale', 'en', {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 365, // 1 year
-        sameSite: 'lax',
-    })
-    redirect('/')
+    redirect('/?locale=en')
 }
