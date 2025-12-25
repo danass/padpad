@@ -1,42 +1,109 @@
-'use client'
-
-import { useEffect, useState } from 'react'
+import { sql } from '@vercel/postgres'
 import Link from 'next/link'
-import Image from 'next/image'
+import { replayHistory } from '@/lib/editor/history-replay'
 
-export default function FeaturedPage() {
-    const [articles, setArticles] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [page, setPage] = useState(1)
-    const [totalPages, setTotalPages] = useState(1)
+export const dynamic = 'force-dynamic'
 
-    useEffect(() => {
-        fetchArticles()
-    }, [page])
+async function getFeaturedArticles(page = 1, limit = 20) {
+    try {
+        const offset = (page - 1) * limit
 
-    const fetchArticles = async () => {
-        setLoading(true)
-        try {
-            const response = await fetch(`/api/public/featured?limit=20&page=${page}`)
-            if (response.ok) {
-                const data = await response.json()
-                setArticles(data.documents)
-                setTotalPages(data.totalPages)
-            }
-        } catch (error) {
-            console.error('Error fetching featured articles:', error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    if (loading && articles.length === 0) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-            </div>
+        const result = await sql.query(
+            `SELECT d.*, u.testament_username, u.avatar_url
+             FROM documents d
+             LEFT JOIN users u ON d.user_id = u.id
+             WHERE d.is_featured = true AND d.is_public = true
+             ORDER BY d.featured_at DESC NULLS LAST, d.updated_at DESC
+             LIMIT $1 OFFSET $2`,
+            [limit, offset]
         )
+
+        const countResult = await sql.query(
+            `SELECT COUNT(*) as total FROM documents WHERE is_featured = true AND is_public = true`
+        )
+        const total = parseInt(countResult.rows[0].total)
+
+        const articles = await Promise.all(result.rows.map(async (doc) => {
+            const snapshotResult = await sql.query(
+                `SELECT * FROM document_snapshots 
+                 WHERE document_id = $1 
+                 ORDER BY created_at DESC 
+                 LIMIT 1`,
+                [doc.id]
+            )
+
+            let firstImage = null
+            let textPreview = ''
+
+            if (snapshotResult.rows.length > 0) {
+                let snapshot = snapshotResult.rows[0]
+                if (snapshot.content_json && typeof snapshot.content_json === 'string') {
+                    try { snapshot.content_json = JSON.parse(snapshot.content_json) } catch (e) { }
+                }
+                const content = snapshot.content_json || replayHistory(snapshot, [])
+
+                // Extract first image
+                if (content && content.content) {
+                    for (const node of content.content) {
+                        if (node.type === 'image' && node.attrs && node.attrs.src) {
+                            firstImage = node.attrs.src
+                            break
+                        }
+                        if (node.type === 'drawing' && node.attrs && node.attrs.paths && node.attrs.paths.length > 0) {
+                            const width = node.attrs.width || 400
+                            const height = node.attrs.height || 300
+                            const pathsData = node.attrs.paths.map(p =>
+                                `<path d="${p.d}" stroke="${p.color || '#000'}" stroke-width="${p.strokeWidth || 2}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+                            ).join('')
+                            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${pathsData}</svg>`
+                            firstImage = `data:image/svg+xml,${encodeURIComponent(svg)}`
+                            break
+                        }
+                    }
+
+                    // Extract text preview
+                    for (const node of content.content) {
+                        if ((node.type === 'paragraph' || node.type === 'heading') && node.content) {
+                            for (const child of node.content) {
+                                if (child.type === 'text') {
+                                    textPreview += child.text + ' '
+                                }
+                            }
+                        }
+                        if (textPreview.length > 200) break
+                    }
+                }
+            }
+
+            return {
+                id: doc.id,
+                title: doc.title || 'Untitled',
+                textPreview: textPreview.trim().substring(0, 200),
+                firstImage,
+                updatedAt: doc.updated_at,
+                featuredAt: doc.featured_at,
+                author: {
+                    username: doc.testament_username,
+                    avatarUrl: doc.avatar_url,
+                },
+            }
+        }))
+
+        return {
+            articles,
+            total,
+            totalPages: Math.ceil(total / limit)
+        }
+    } catch (error) {
+        console.error('Error fetching featured:', error)
+        return { articles: [], total: 0, totalPages: 0 }
     }
+}
+
+export default async function FeaturedPage({ searchParams }) {
+    const params = await searchParams
+    const page = parseInt(params?.page || '1')
+    const { articles, totalPages } = await getFeaturedArticles(page)
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -47,10 +114,9 @@ export default function FeaturedPage() {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        Back to Home
+                        Home
                     </Link>
-                    <h1 className="text-4xl font-bold text-gray-900 mb-2">Featured Articles</h1>
-                    <p className="text-gray-600">Discover our handpicked selection of outstanding content</p>
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">Featured</h1>
                 </div>
             </header>
 
@@ -130,23 +196,21 @@ export default function FeaturedPage() {
                         {/* Pagination */}
                         {totalPages > 1 && (
                             <div className="flex justify-center gap-2 mt-12">
-                                <button
-                                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                                    disabled={page === 1}
-                                    className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                <Link
+                                    href={`/featured?page=${Math.max(1, page - 1)}`}
+                                    className={`px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 ${page === 1 ? 'opacity-50 pointer-events-none' : ''}`}
                                 >
                                     Previous
-                                </button>
+                                </Link>
                                 <span className="px-4 py-2 text-gray-600">
                                     Page {page} of {totalPages}
                                 </span>
-                                <button
-                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                    disabled={page === totalPages}
-                                    className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                <Link
+                                    href={`/featured?page=${Math.min(totalPages, page + 1)}`}
+                                    className={`px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 ${page === totalPages ? 'opacity-50 pointer-events-none' : ''}`}
                                 >
                                     Next
-                                </button>
+                                </Link>
                             </div>
                         )}
                     </>
