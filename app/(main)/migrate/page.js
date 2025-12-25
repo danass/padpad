@@ -14,16 +14,18 @@ export default function MigratePage() {
   const [checkingAdmins, setCheckingAdmins] = useState(true)
   const [dbNeedsMigration, setDbNeedsMigration] = useState(true)
   const [checkingDb, setCheckingDb] = useState(true)
-  
+  const [featuredLoading, setFeaturedLoading] = useState(false)
+  const [featuredResult, setFeaturedResult] = useState(null)
+
   const runMigration = async () => {
     setLoading(true)
     setResult(null)
-    
+
     try {
       const response = await fetch('/api/migrate', {
         method: 'POST'
       })
-      
+
       const data = await response.json()
       setResult(data)
     } catch (error) {
@@ -32,16 +34,16 @@ export default function MigratePage() {
       setLoading(false)
     }
   }
-  
+
   const runAdminMigration = async () => {
     setAdminLoading(true)
     setAdminResult(null)
-    
+
     try {
       const response = await fetch('/api/migrate-admin', {
         method: 'POST'
       })
-      
+
       const data = await response.json()
       setAdminResult(data)
     } catch (error) {
@@ -50,23 +52,38 @@ export default function MigratePage() {
       setAdminLoading(false)
     }
   }
-  
+
+  const runFeaturedMigration = async () => {
+    setFeaturedLoading(true)
+    setFeaturedResult(null)
+
+    try {
+      const response = await fetch('/api/migrate-featured')
+      const data = await response.json()
+      setFeaturedResult(data)
+    } catch (error) {
+      setFeaturedResult({ success: false, error: error.message })
+    } finally {
+      setFeaturedLoading(false)
+    }
+  }
+
   const setupAdmin = async () => {
     if (!adminEmail || !adminEmail.includes('@')) {
       setAdminResult({ success: false, error: 'Please enter a valid email address' })
       return
     }
-    
+
     setAdminLoading(true)
     setAdminResult(null)
-    
+
     try {
       const response = await fetch('/api/admin/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: adminEmail })
       })
-      
+
       const data = await response.json()
       setAdminResult(data)
       if (data.success) {
@@ -114,25 +131,25 @@ export default function MigratePage() {
     checkAdminsExist()
     checkDbSetup()
   }, [])
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-8">
       <div className="max-w-2xl w-full bg-white border border-gray-200 rounded-md shadow-lg p-8">
         <h1 className="text-3xl font-bold mb-6 text-gray-900">Database Migration</h1>
-        
+
         {!checkingDb && dbNeedsMigration && (
           <p className="mb-6 text-gray-600">
             This will create all necessary database tables, indexes, and functions.
             Safe to run multiple times - it will skip existing objects.
           </p>
         )}
-        
+
         {!checkingDb && !dbNeedsMigration && (
           <p className="mb-6 text-green-600">
             ✓ Database is already set up. You can still run migrations to ensure all tables and indexes are up to date.
           </p>
         )}
-        
+
         <div className="space-y-4 mb-6">
           {!checkingDb && dbNeedsMigration && (
             <div>
@@ -145,14 +162,34 @@ export default function MigratePage() {
               </button>
             </div>
           )}
-          
+
+          {/* Featured Migration */}
+          <div className="border-t pt-4">
+            <h2 className="text-lg font-semibold mb-3 text-gray-900">Featured Articles Migration</h2>
+            <p className="mb-4 text-sm text-gray-600">
+              Add is_featured and featured_at columns to documents table.
+            </p>
+            <button
+              onClick={runFeaturedMigration}
+              disabled={featuredLoading}
+              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+            >
+              {featuredLoading ? 'Running...' : 'Run Featured Migration'}
+            </button>
+            {featuredResult && (
+              <div className={`mt-3 p-3 rounded-lg ${featuredResult.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                {featuredResult.success ? '✓ ' + (featuredResult.message || 'Migration completed') : '✗ ' + (featuredResult.error || 'Failed')}
+              </div>
+            )}
+          </div>
+
           {!checkingAdmins && !adminsExist && (
             <div className="border-t pt-4">
               <h2 className="text-lg font-semibold mb-3 text-gray-900">Admin Setup</h2>
               <p className="mb-4 text-sm text-gray-600">
                 First, run the admin migration to create the admins table. Then add your first admin user.
               </p>
-              
+
               <div className="mb-4">
                 <button
                   onClick={runAdminMigration}
@@ -162,7 +199,7 @@ export default function MigratePage() {
                   {adminLoading ? 'Running...' : 'Run Admin Migration'}
                 </button>
               </div>
-              
+
               <div className="flex gap-2">
                 <input
                   type="email"
@@ -182,23 +219,21 @@ export default function MigratePage() {
             </div>
           )}
         </div>
-        
+
         {result && (
-          <div className={`p-4 rounded-lg mb-4 ${
-            result.success 
-              ? 'bg-green-50 border border-green-200' 
-              : 'bg-red-50 border border-red-200'
-          }`}>
-            <h2 className={`font-semibold mb-2 ${
-              result.success ? 'text-green-800' : 'text-red-800'
+          <div className={`p-4 rounded-lg mb-4 ${result.success
+            ? 'bg-green-50 border border-green-200'
+            : 'bg-red-50 border border-red-200'
             }`}>
+            <h2 className={`font-semibold mb-2 ${result.success ? 'text-green-800' : 'text-red-800'
+              }`}>
               {result.success ? '✓ Migration Successful' : '✗ Migration Failed'}
             </h2>
-            
+
             {result.error && (
               <p className="text-red-600 mb-4">{result.error}</p>
             )}
-            
+
             {result.results && (
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {result.results.map((r, i) => (
@@ -218,27 +253,25 @@ export default function MigratePage() {
             )}
           </div>
         )}
-        
+
         {adminResult && (
-          <div className={`p-4 rounded-lg ${
-            adminResult.success 
-              ? 'bg-green-50 border border-green-200' 
-              : 'bg-red-50 border border-red-200'
-          }`}>
-            <h2 className={`font-semibold mb-2 ${
-              adminResult.success ? 'text-green-800' : 'text-red-800'
+          <div className={`p-4 rounded-lg ${adminResult.success
+            ? 'bg-green-50 border border-green-200'
+            : 'bg-red-50 border border-red-200'
             }`}>
+            <h2 className={`font-semibold mb-2 ${adminResult.success ? 'text-green-800' : 'text-red-800'
+              }`}>
               {adminResult.success ? '✓ Admin Setup Successful' : '✗ Admin Setup Failed'}
             </h2>
-            
+
             {adminResult.error && (
               <p className="text-red-600 mb-4">{adminResult.error}</p>
             )}
-            
+
             {adminResult.message && (
               <p className="text-green-600 mb-4">{adminResult.message}</p>
             )}
-            
+
             {adminResult.results && (
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {adminResult.results.map((r, i) => (
@@ -258,7 +291,7 @@ export default function MigratePage() {
             )}
           </div>
         )}
-        
+
         <div className="mt-6 pt-6 border-t">
           <a
             href="/drive"
