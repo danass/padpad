@@ -113,59 +113,39 @@ export default function LinkPreviewComponent({ node, updateAttributes, deleteNod
         )
     }
 
-    // Rich preview - compact horizontal layout with max width
+    // Rich preview - super compact like a button/chip
     return (
-        <NodeViewWrapper className="link-preview-wrapper my-2" data-drag-handle>
-            <div
-                className="border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer group relative bg-gray-50 max-w-sm inline-block"
+        <NodeViewWrapper className="link-preview-wrapper inline" data-drag-handle>
+            <span
+                className="inline-flex items-center gap-1.5 px-2 py-1 border border-gray-200 rounded-full hover:border-gray-300 hover:bg-gray-50 transition-all cursor-pointer group relative text-sm"
                 onClick={handleClick}
             >
-                {/* Delete button */}
+                {/* Favicon */}
+                {(favicon || image) && (
+                    <img
+                        src={favicon || image}
+                        alt=""
+                        className="w-4 h-4 rounded-sm flex-shrink-0"
+                        onError={(e) => { e.target.style.display = 'none' }}
+                    />
+                )}
+
+                {/* Site name / title - very short */}
+                <span className="text-gray-700 truncate max-w-[120px]">
+                    {siteName || title || new URL(url).hostname}
+                </span>
+
+                {/* Delete button on hover */}
                 {editor.isEditable && (
                     <button
                         onClick={(e) => { e.stopPropagation(); deleteNode() }}
-                        className="absolute top-1 right-1 p-1 bg-white/80 hover:bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        className="ml-0.5 p-0.5 hover:bg-gray-200 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Remove"
                     >
-                        <X className="w-3 h-3 text-gray-600" />
+                        <X className="w-3 h-3 text-gray-500" />
                     </button>
                 )}
-
-                <div className="flex items-center gap-3 p-2">
-                    {/* Image - small square */}
-                    {image ? (
-                        <div className="w-12 h-12 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
-                            <img
-                                src={image}
-                                alt={title || 'Link preview'}
-                                className="w-full h-full object-cover"
-                                onError={(e) => { e.target.style.display = 'none' }}
-                            />
-                        </div>
-                    ) : favicon && (
-                        <div className="w-10 h-10 flex-shrink-0 bg-white rounded flex items-center justify-center">
-                            <img
-                                src={favicon}
-                                alt=""
-                                className="w-6 h-6"
-                                onError={(e) => { e.target.style.display = 'none' }}
-                            />
-                        </div>
-                    )}
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                        {/* Title */}
-                        <h3 className="font-medium text-gray-900 text-sm truncate">
-                            {title}
-                        </h3>
-                        {/* Site name */}
-                        <span className="text-xs text-gray-500 truncate block">
-                            {siteName || new URL(url).hostname}
-                        </span>
-                    </div>
-                </div>
-            </div>
+            </span>
         </NodeViewWrapper>
     )
 }
