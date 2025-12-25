@@ -21,11 +21,6 @@ export async function generateMetadata() {
 
 const features = [
     {
-        title: 'No Account Required',
-        description: 'Start writing immediately. Sign in only when you want.',
-        href: '/features/no-account',
-    },
-    {
         title: 'Digital Legacy',
         description: 'Write now, publish on your 99th birthday. Your words live on.',
         href: '/features/digital-testament',
@@ -54,12 +49,6 @@ const features = [
         title: 'Images & Drawings',
         description: 'Add images, resize them, draw directly in your docs.',
         href: '/features/images-and-drawings',
-    },
-    {
-        title: 'Collaborative Editing',
-        description: 'Work together in real-time. Coming soon.',
-        href: '/features/collaborative-editing',
-        badge: 'Coming Soon',
     },
 ]
 
