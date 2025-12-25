@@ -3,8 +3,8 @@ import { auth } from '@/auth'
 import { sql } from '@vercel/postgres'
 import { createFilebaseClient } from '@/lib/ipfs/filebase-client'
 
-// Helper to get user's IPFS client
-async function getIpfsClient(userId) {
+// Helper to get user's IPFS provider by ID
+async function getProvider(userId, providerId) {
     const result = await sql`
         SELECT ipfs_config FROM users WHERE id = ${userId}
     `
@@ -13,12 +13,26 @@ async function getIpfsClient(userId) {
         return null
     }
 
-    const config = result.rows[0].ipfs_config
+    let config = result.rows[0].ipfs_config
 
-    if (config.provider === 'filebase') {
-        return createFilebaseClient(config)
+    // Handle legacy single-provider config
+    if (config && !Array.isArray(config)) {
+        config = [{ id: 'legacy', ...config }]
     }
 
+    // If no providerId specified, use first Filebase provider
+    if (!providerId) {
+        return config.find(p => p.provider === 'filebase') || null
+    }
+
+    return config.find(p => p.id === providerId) || null
+}
+
+// Helper to create client for provider
+function createClientForProvider(provider) {
+    if (provider.provider === 'filebase') {
+        return createFilebaseClient(provider)
+    }
     return null
 }
 
@@ -31,12 +45,26 @@ export async function GET(request) {
         }
 
         const { searchParams } = new URL(request.url)
+        const providerId = searchParams.get('providerId')
         const prefix = searchParams.get('prefix') || ''
         const maxKeys = parseInt(searchParams.get('maxKeys') || '100')
 
-        const client = await getIpfsClient(session.user.id)
-        if (!client) {
+        const provider = await getProvider(session.user.id, providerId)
+        if (!provider) {
             return NextResponse.json({ error: 'IPFS not configured' }, { status: 400 })
+        }
+
+        // For gateway providers, redirect to gateway-files API
+        if (provider.provider === 'storacha_gateway') {
+            return NextResponse.json({
+                error: 'Use /api/ipfs/gateway-files for gateway providers',
+                redirect: `/api/ipfs/gateway-files?cid=${provider.rootCid}&gateway=${provider.gateway}`
+            }, { status: 400 })
+        }
+
+        const client = createClientForProvider(provider)
+        if (!client) {
+            return NextResponse.json({ error: 'Unsupported provider' }, { status: 400 })
         }
 
         const files = await client.listFiles(prefix, maxKeys)
@@ -53,53 +81,10 @@ export async function GET(request) {
             })
         )
 
-        return NextResponse.json({ files: filesWithCids })
+        return NextResponse.json({ files: filesWithCids, providerId: provider.id })
     } catch (error) {
         console.error('Error listing IPFS files:', error)
         return NextResponse.json({ error: 'Failed to list files' }, { status: 500 })
-    }
-}
-
-// POST: Upload file to IPFS
-export async function POST(request) {
-    try {
-        const session = await auth()
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-        }
-
-        const formData = await request.formData()
-        const file = formData.get('file')
-        const path = formData.get('path') || ''
-
-        if (!file) {
-            return NextResponse.json({ error: 'No file provided' }, { status: 400 })
-        }
-
-        const client = await getIpfsClient(session.user.id)
-        if (!client) {
-            return NextResponse.json({ error: 'IPFS not configured' }, { status: 400 })
-        }
-
-        // Create file key with optional path prefix
-        const key = path ? `${path}/${file.name}` : file.name
-        const buffer = Buffer.from(await file.arrayBuffer())
-
-        const result = await client.uploadFile(key, buffer, file.type)
-
-        return NextResponse.json({
-            success: true,
-            file: {
-                key: result.key,
-                cid: result.cid,
-                gatewayUrl: result.gatewayUrl,
-                size: file.size,
-                type: file.type,
-            },
-        })
-    } catch (error) {
-        console.error('Error uploading to IPFS:', error)
-        return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 })
     }
 }
 
@@ -113,14 +98,20 @@ export async function DELETE(request) {
 
         const { searchParams } = new URL(request.url)
         const key = searchParams.get('key')
+        const providerId = searchParams.get('providerId')
 
         if (!key) {
             return NextResponse.json({ error: 'No file key provided' }, { status: 400 })
         }
 
-        const client = await getIpfsClient(session.user.id)
-        if (!client) {
+        const provider = await getProvider(session.user.id, providerId)
+        if (!provider) {
             return NextResponse.json({ error: 'IPFS not configured' }, { status: 400 })
+        }
+
+        const client = createClientForProvider(provider)
+        if (!client) {
+            return NextResponse.json({ error: 'Unsupported provider or read-only' }, { status: 400 })
         }
 
         await client.deleteFile(key)

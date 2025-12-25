@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { sql } from '@vercel/postgres'
+import { v4 as uuidv4 } from 'uuid'
 
-// GET: Retrieve user's IPFS config (with masked secrets)
+// GET: Retrieve user's IPFS providers (with masked secrets)
 export async function GET() {
     try {
         const session = await auth()
@@ -15,30 +16,35 @@ export async function GET() {
         `
 
         if (result.rows.length === 0) {
-            return NextResponse.json({ config: null })
+            return NextResponse.json({ providers: [] })
         }
 
-        const config = result.rows[0].ipfs_config
+        let config = result.rows[0].ipfs_config
+
+        // Handle legacy single-provider config (migrate to array)
+        if (config && !Array.isArray(config)) {
+            config = [{ id: uuidv4(), ...config }]
+        }
 
         if (!config) {
-            return NextResponse.json({ config: null })
+            return NextResponse.json({ providers: [] })
         }
 
         // Mask sensitive data
-        const maskedConfig = {
-            ...config,
-            accessKey: config.accessKey ? `${config.accessKey.slice(0, 4)}...${config.accessKey.slice(-4)}` : null,
-            secretKey: config.secretKey ? '••••••••••••' : null,
-        }
+        const maskedProviders = config.map(provider => ({
+            ...provider,
+            accessKey: provider.accessKey ? `${provider.accessKey.slice(0, 4)}...${provider.accessKey.slice(-4)}` : undefined,
+            secretKey: provider.secretKey ? '••••••••••••' : undefined,
+        }))
 
-        return NextResponse.json({ config: maskedConfig })
+        return NextResponse.json({ providers: maskedProviders })
     } catch (error) {
         console.error('Error fetching IPFS config:', error)
         return NextResponse.json({ error: 'Failed to fetch config' }, { status: 500 })
     }
 }
 
-// POST: Save/update IPFS config
+// POST: Add new IPFS provider
 export async function POST(request) {
     try {
         const session = await auth()
@@ -47,43 +53,98 @@ export async function POST(request) {
         }
 
         const body = await request.json()
-        const { provider, accessKey, secretKey, bucket } = body
+        const { name, provider, accessKey, secretKey, bucket, rootCid, gateway } = body
 
-        if (!provider || !accessKey || !secretKey || !bucket) {
+        if (!name || !provider) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
         }
 
-        const config = {
+        // Get current config
+        const result = await sql`
+            SELECT ipfs_config FROM users WHERE id = ${session.user.id}
+        `
+
+        let currentConfig = result.rows[0]?.ipfs_config || []
+
+        // Handle legacy single-provider config
+        if (currentConfig && !Array.isArray(currentConfig)) {
+            currentConfig = [{ id: uuidv4(), ...currentConfig }]
+        }
+
+        // Create new provider entry
+        const newProvider = {
+            id: uuidv4(),
+            name,
             provider,
-            accessKey,
-            secretKey,
-            bucket,
             createdAt: new Date().toISOString(),
         }
 
+        // Add provider-specific fields
+        if (provider === 'filebase') {
+            if (!accessKey || !secretKey || !bucket) {
+                return NextResponse.json({ error: 'Filebase requires accessKey, secretKey, and bucket' }, { status: 400 })
+            }
+            newProvider.accessKey = accessKey
+            newProvider.secretKey = secretKey
+            newProvider.bucket = bucket
+        } else if (provider === 'storacha_gateway') {
+            if (!rootCid) {
+                return NextResponse.json({ error: 'Storacha gateway requires rootCid' }, { status: 400 })
+            }
+            newProvider.rootCid = rootCid
+            newProvider.gateway = gateway || 'w3s.link'
+        }
+
+        // Add to array
+        currentConfig.push(newProvider)
+
         await sql`
             UPDATE users 
-            SET ipfs_config = ${JSON.stringify(config)}::jsonb
+            SET ipfs_config = ${JSON.stringify(currentConfig)}::jsonb
             WHERE id = ${session.user.id}
         `
 
-        return NextResponse.json({ success: true })
+        return NextResponse.json({ success: true, provider: { ...newProvider, secretKey: undefined } })
     } catch (error) {
         console.error('Error saving IPFS config:', error)
         return NextResponse.json({ error: 'Failed to save config' }, { status: 500 })
     }
 }
 
-// DELETE: Remove IPFS config
-export async function DELETE() {
+// DELETE: Remove specific IPFS provider by ID
+export async function DELETE(request) {
     try {
         const session = await auth()
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
+        const { searchParams } = new URL(request.url)
+        const providerId = searchParams.get('id')
+
+        if (!providerId) {
+            return NextResponse.json({ error: 'Provider ID required' }, { status: 400 })
+        }
+
+        // Get current config
+        const result = await sql`
+            SELECT ipfs_config FROM users WHERE id = ${session.user.id}
+        `
+
+        let currentConfig = result.rows[0]?.ipfs_config || []
+
+        // Handle legacy single-provider config
+        if (currentConfig && !Array.isArray(currentConfig)) {
+            currentConfig = [{ id: uuidv4(), ...currentConfig }]
+        }
+
+        // Remove provider
+        const newConfig = currentConfig.filter(p => p.id !== providerId)
+
         await sql`
-            UPDATE users SET ipfs_config = NULL WHERE id = ${session.user.id}
+            UPDATE users 
+            SET ipfs_config = ${JSON.stringify(newConfig)}::jsonb
+            WHERE id = ${session.user.id}
         `
 
         return NextResponse.json({ success: true })
