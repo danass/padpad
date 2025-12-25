@@ -25,6 +25,8 @@ import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
 import { LinkPreview } from '@/lib/editor/link-preview-extension'
 import { ChatConversation } from '@/lib/editor/chat-extension'
+import { Video } from '@/lib/editor/video-extension'
+import { Audio } from '@/lib/editor/audio-extension'
 import Emoji from '@tiptap/extension-emoji'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 
@@ -96,6 +98,8 @@ export default function PublicDocumentClient({ serverData }) {
             Drawing,
             LinkPreview,
             ChatConversation,
+            Video,
+            Audio,
             Emoji.configure({
                 enableEmoticons: true,
             }),
