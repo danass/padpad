@@ -42,7 +42,8 @@ export default function IpfsBrowser({ isOpen, onClose, onSelectFile }) {
         }
     }, [isOpen, loadFiles])
 
-    // Handle file upload
+    // Handle file upload - uses pre-signed URL for direct browser-to-Filebase upload
+    // This bypasses Vercel and doesn't consume Vercel bandwidth
     const handleUpload = async (uploadFiles) => {
         if (!uploadFiles?.length) return
 
@@ -51,15 +52,35 @@ export default function IpfsBrowser({ isOpen, onClose, onSelectFile }) {
 
         try {
             for (const file of uploadFiles) {
-                const formData = new FormData()
-                formData.append('file', file)
-
-                const response = await fetch('/api/ipfs/files', {
+                // Step 1: Get pre-signed upload URL from our API
+                const urlResponse = await fetch('/api/ipfs/upload-url', {
                     method: 'POST',
-                    body: formData,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: file.name,
+                        contentType: file.type || 'application/octet-stream',
+                    }),
                 })
 
-                if (!response.ok) throw new Error('Failed to upload file')
+                if (!urlResponse.ok) {
+                    const err = await urlResponse.json()
+                    throw new Error(err.error || 'Failed to get upload URL')
+                }
+
+                const { uploadUrl, key } = await urlResponse.json()
+
+                // Step 2: Upload directly to Filebase (bypasses Vercel entirely)
+                const uploadResponse = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    body: file,
+                    headers: {
+                        'Content-Type': file.type || 'application/octet-stream',
+                    },
+                })
+
+                if (!uploadResponse.ok) {
+                    throw new Error(`Failed to upload ${file.name}`)
+                }
             }
 
             // Reload files after upload
