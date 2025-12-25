@@ -27,6 +27,8 @@ import Emoji from '@tiptap/extension-emoji'
 import { Youtube } from '@/lib/editor/youtube-extension'
 import { LinkPreview } from '@/lib/editor/link-preview-extension'
 import { ChatConversation } from '@/lib/editor/chat-extension'
+import { Video } from '@/lib/editor/video-extension'
+import { Audio } from '@/lib/editor/audio-extension'
 import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 // Collaboration requires Y.js and WebSocket provider - commented out for now
 // import Collaboration from '@tiptap/extension-collaboration'
@@ -361,6 +363,8 @@ export default function DocumentPage() {
       Drawing,
       LinkPreview,
       ChatConversation,
+      Video,
+      Audio,
     ],
     content: null,
     editable: true,
@@ -1504,13 +1508,15 @@ export default function DocumentPage() {
               attrs: { src: file.gatewayUrl, alt: file.key },
             }).run()
           } else if (videoExts.includes(ext)) {
-            editor.chain().focus().insertContent(
-              `<p><video src="${file.gatewayUrl}" controls style="max-width: 100%; border-radius: 8px;">Your browser does not support video.</video></p>`
-            ).run()
+            editor.chain().focus().insertContent({
+              type: 'video',
+              attrs: { src: file.gatewayUrl, controls: true },
+            }).run()
           } else if (audioExts.includes(ext)) {
-            editor.chain().focus().insertContent(
-              `<p><audio src="${file.gatewayUrl}" controls style="width: 100%;">Your browser does not support audio.</audio></p>`
-            ).run()
+            editor.chain().focus().insertContent({
+              type: 'audio',
+              attrs: { src: file.gatewayUrl, controls: true },
+            }).run()
           } else {
             editor.chain().focus().insertContent({
               type: 'text',

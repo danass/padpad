@@ -33,6 +33,8 @@ import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-ex
 import { FontSize } from '@/lib/editor/font-size-extension'
 import { LineHeight } from '@/lib/editor/line-height-extension'
 import { LinkPreview } from '@/lib/editor/link-preview-extension'
+import { Video } from '@/lib/editor/video-extension'
+import { Audio } from '@/lib/editor/audio-extension'
 import FileHandler from '@tiptap/extension-file-handler'
 import Dropcursor from '@tiptap/extension-dropcursor'
 
@@ -109,6 +111,8 @@ export default function HomeClient({ featuredArticles = [] }) {
       DetailsSummary,
       DetailsContent,
       LinkPreview,
+      Video,
+      Audio,
       Dropcursor.configure({
         color: '#3b82f6',
         width: 2,
@@ -549,15 +553,17 @@ export default function HomeClient({ featuredArticles = [] }) {
               attrs: { src: file.gatewayUrl, alt: file.key },
             }).run()
           } else if (videoExts.includes(ext)) {
-            // Insert as video with HTML
-            editor.chain().focus().insertContent(
-              `<p><video src="${file.gatewayUrl}" controls style="max-width: 100%; border-radius: 8px;">Your browser does not support video.</video></p>`
-            ).run()
+            // Insert as video node
+            editor.chain().focus().insertContent({
+              type: 'video',
+              attrs: { src: file.gatewayUrl, controls: true },
+            }).run()
           } else if (audioExts.includes(ext)) {
-            // Insert as audio with HTML
-            editor.chain().focus().insertContent(
-              `<p><audio src="${file.gatewayUrl}" controls style="width: 100%;">Your browser does not support audio.</audio></p>`
-            ).run()
+            // Insert as audio node
+            editor.chain().focus().insertContent({
+              type: 'audio',
+              attrs: { src: file.gatewayUrl, controls: true },
+            }).run()
           } else {
             // Insert as link for other files
             editor.chain().focus().insertContent({
