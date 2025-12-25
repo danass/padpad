@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { 
-  Bold, 
-  Italic, 
-  Underline, 
+import {
+  Bold,
+  Italic,
+  Underline,
   Strikethrough,
   AlignLeft,
   AlignCenter,
@@ -92,7 +92,7 @@ export default function GoogleDocsToolbar({ editor }) {
   const textColorRef = useRef(null)
   const highlightColorRef = useRef(null)
   const alignRef = useRef(null)
-  
+
   // Active style state - stores the current active formatting
   const [activeStyle, setActiveStyle] = useState({
     fontFamily: 'Arial',
@@ -105,39 +105,39 @@ export default function GoogleDocsToolbar({ editor }) {
     lineHeight: null,
     align: 'left'
   })
-  
+
   // Paint mode state
   const PAINT_MODE_KEY = 'textpad_paint_mode'
   const PAINT_MODE_TOOLTIP_KEY = 'textpad_paint_mode_tooltip_shown'
   const [paintMode, setPaintMode] = useState(false)
   const [showPaintTooltip, setShowPaintTooltip] = useState(false)
-  
+
   // Load paint mode from localStorage on mount
   useEffect(() => {
     const savedPaintMode = localStorage.getItem(PAINT_MODE_KEY)
     if (savedPaintMode === 'true') {
       setPaintMode(true)
     }
-    
+
     const tooltipShown = localStorage.getItem(PAINT_MODE_TOOLTIP_KEY)
     if (tooltipShown !== 'true') {
       setShowPaintTooltip(true)
     }
   }, [])
-  
+
   // Save paint mode to localStorage
   const togglePaintMode = () => {
     const newPaintMode = !paintMode
     setPaintMode(newPaintMode)
     localStorage.setItem(PAINT_MODE_KEY, newPaintMode.toString())
-    
+
     // Show tooltip on first activation
     if (newPaintMode && !localStorage.getItem(PAINT_MODE_TOOLTIP_KEY)) {
       setShowPaintTooltip(true)
       localStorage.setItem(PAINT_MODE_TOOLTIP_KEY, 'true')
     }
   }
-  
+
   const dismissPaintTooltip = () => {
     setShowPaintTooltip(false)
     localStorage.setItem(PAINT_MODE_TOOLTIP_KEY, 'true')
@@ -153,24 +153,24 @@ export default function GoogleDocsToolbar({ editor }) {
   const currentFontSizeNum = currentFontSizeAttr ? parseInt(currentFontSizeAttr.replace('px', '')) : null
   const [fontSize, setFontSize] = useState(currentFontSizeNum || 16)
   const [fontSizeDisplay, setFontSizeDisplay] = useState(currentFontSizeNum ? currentFontSizeNum.toString() : 'inherited')
-  
+
   // Get current colors - prefer activeStyle (which includes user selections) over editor attributes
   // This ensures the preview updates when color is selected even if not yet applied to text
   const currentTextColor = activeStyle.color || editor.getAttributes('textStyle')?.color || '#000000'
   const currentHighlightColor = activeStyle.highlightColor || editor.getAttributes('highlight')?.color || null
-  
+
   // Get current align - check for image first, then text using isActive for accuracy
   const getCurrentAlign = () => {
     // Use editor.isActive for accurate alignment detection
     if (editor.isActive({ textAlign: 'center' })) return 'center'
     if (editor.isActive({ textAlign: 'right' })) return 'right'
     if (editor.isActive({ textAlign: 'justify' })) return 'justify'
-    
+
     // Check for image alignment
     const { selection } = editor.state
     const { $from } = selection
     let imageNode = null
-    
+
     // Check if selection is on an image
     editor.state.doc.nodesBetween($from.start(), $from.end(), (node) => {
       if (node.type && node.type.name === 'image') {
@@ -178,16 +178,16 @@ export default function GoogleDocsToolbar({ editor }) {
         return false
       }
     })
-    
+
     if (imageNode) {
       return imageNode.attrs.align || 'center'
     }
-    
+
     return editor.getAttributes('textAlign')?.textAlign || 'left'
   }
-  
+
   const currentAlign = getCurrentAlign()
-  
+
   // Get current line height from the selected node
   const getCurrentLineHeight = () => {
     const { selection } = editor.state
@@ -217,16 +217,16 @@ export default function GoogleDocsToolbar({ editor }) {
         setFontSize(16) // Default for editing (matches browser default)
       }
     }
-    
+
     const updateLineHeight = () => {
       const lineHeight = getCurrentLineHeight()
       setCurrentLineHeight(lineHeight)
     }
-    
+
     // Initial update
     updateFontSize()
     updateLineHeight()
-    
+
     editor.on('selectionUpdate', () => {
       updateFontSize()
       updateLineHeight()
@@ -278,7 +278,7 @@ export default function GoogleDocsToolbar({ editor }) {
 
     // Only add listener if at least one dropdown is open
     const hasOpenDropdown = showFontFamily || showFontSize || showLineHeight || showTextColor || showHighlightColor || showAlign
-    
+
     if (hasOpenDropdown) {
       // Use setTimeout to avoid immediate execution during render
       const timeoutId = setTimeout(() => {
@@ -286,7 +286,7 @@ export default function GoogleDocsToolbar({ editor }) {
           document.addEventListener('mousedown', handleClickOutside)
         }
       }, 0)
-      
+
       return () => {
         clearTimeout(timeoutId)
         if (typeof document !== 'undefined') {
@@ -295,7 +295,7 @@ export default function GoogleDocsToolbar({ editor }) {
       }
     }
   }, [showFontFamily, showFontSize, showLineHeight, showTextColor, showHighlightColor, showAlign])
-  
+
   const handleFontFamilyChange = (font) => {
     if (!editor) return
     editor.chain().focus().setFontFamily(font).run()
@@ -303,11 +303,11 @@ export default function GoogleDocsToolbar({ editor }) {
     shouldApplyActiveStyleRef.current = true
     setShowFontFamily(false)
   }
-  
+
   // Keyboard shortcuts for font family
   useEffect(() => {
     if (!editor) return
-    
+
     const handleKeyDown = (e) => {
       // Command+Shift+[ to go to previous font
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === '[') {
@@ -326,15 +326,15 @@ export default function GoogleDocsToolbar({ editor }) {
         handleFontFamilyChange(nextFont)
       }
     }
-    
+
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [editor, currentFontFamily, handleFontFamilyChange])
-  
+
   // Keyboard shortcuts for font size (Command+Shift+> to increase, Command+Shift+< to decrease)
   useEffect(() => {
     if (!editor) return
-    
+
     const handleKeyDown = (e) => {
       // Command+Shift+> or Command+Shift+. to increase font size
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === '>' || e.key === '.')) {
@@ -383,7 +383,7 @@ export default function GoogleDocsToolbar({ editor }) {
         }
       }
     }
-    
+
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [editor, fontSize, fontSizeDisplay])
@@ -423,18 +423,18 @@ export default function GoogleDocsToolbar({ editor }) {
     setActiveStyle(prev => ({ ...prev, fontSize: newSize }))
     shouldApplyActiveStyleRef.current = true
   }
-  
+
   // Auto-repeat refs for font size buttons
   const fontSizeIntervalRef = useRef(null)
   const fontSizeTimeoutRef = useRef(null)
-  
+
   const startFontSizeRepeat = (action) => {
     action() // Immediate action
     fontSizeTimeoutRef.current = setTimeout(() => {
       fontSizeIntervalRef.current = setInterval(action, 80)
     }, 400) // Start repeating after 400ms
   }
-  
+
   const stopFontSizeRepeat = () => {
     if (fontSizeTimeoutRef.current) clearTimeout(fontSizeTimeoutRef.current)
     if (fontSizeIntervalRef.current) clearInterval(fontSizeIntervalRef.current)
@@ -444,17 +444,17 @@ export default function GoogleDocsToolbar({ editor }) {
     // Always apply color to editor (even if selection is empty, for future text)
     // This ensures color is applied when typing on a new line
     editor.chain().focus().setColor(color).run()
-    
+
     // Always update active style and dispatch event (for future text and drawing)
     setActiveStyle(prev => ({ ...prev, color }))
     shouldApplyActiveStyleRef.current = true
-    
+
     // Store color globally for drawing component to read
     window.__drawingPenColor = color
-    
+
     // Dispatch custom event for drawing component to update color
     window.dispatchEvent(new CustomEvent('textColorChanged', { detail: { color } }))
-    
+
     // Don't close the color picker automatically - let user close it manually or by clicking outside
     // setShowTextColor(false)
   }
@@ -471,11 +471,11 @@ export default function GoogleDocsToolbar({ editor }) {
       // Use setMark to prepare the highlight for the next typed text
       editor.chain().focus().setHighlight({ color }).run()
     }
-    
+
     // Always update active style
     setActiveStyle(prev => ({ ...prev, highlightColor: color }))
     shouldApplyActiveStyleRef.current = true
-    
+
     // Don't close the color picker automatically - let user close it manually or by clicking outside
     // setShowHighlightColor(false)
   }
@@ -486,7 +486,7 @@ export default function GoogleDocsToolbar({ editor }) {
     const { $from } = selection
     let imageNode = null
     let imagePos = null
-    
+
     // Check if selection is on an image
     editor.state.doc.nodesBetween($from.start(), $from.end(), (node, pos) => {
       if (node.type && node.type.name === 'image') {
@@ -495,7 +495,7 @@ export default function GoogleDocsToolbar({ editor }) {
         return false
       }
     })
-    
+
     if (imageNode && editor.can().setImageAlign) {
       // Use image align command
       editor.chain().focus().setImageAlign(align).run()
@@ -503,7 +503,7 @@ export default function GoogleDocsToolbar({ editor }) {
       // Use text align command
       editor.chain().focus().setTextAlign(align).run()
     }
-    
+
     setActiveStyle(prev => ({ ...prev, align }))
     shouldApplyActiveStyleRef.current = true
     // Don't close dropdown - let user click outside when done
@@ -519,89 +519,89 @@ export default function GoogleDocsToolbar({ editor }) {
     shouldApplyActiveStyleRef.current = true
     setShowLineHeight(false)
   }
-  
+
   // Apply active style to selected text
   const applyActiveStyle = () => {
     if (!editor) return
-    
+
     const chain = editor.chain().focus()
-    
+
     // Apply font family
     chain.setFontFamily(activeStyle.fontFamily)
-    
+
     // Apply font size
     chain.setFontSize(`${activeStyle.fontSize}px`)
-    
+
     // Apply text color
     chain.setColor(activeStyle.color)
-    
+
     // Apply line height
     if (activeStyle.lineHeight) {
       chain.setLineHeight(activeStyle.lineHeight)
     } else {
       chain.unsetLineHeight()
     }
-    
+
     // Apply alignment
     chain.setTextAlign(activeStyle.align)
-    
+
     // Apply bold, italic, underline
     if (activeStyle.bold) {
       chain.setBold()
     } else {
       chain.unsetBold()
     }
-    
+
     if (activeStyle.italic) {
       chain.setItalic()
     } else {
       chain.unsetItalic()
     }
-    
+
     if (activeStyle.underline) {
       chain.setUnderline()
     } else {
       chain.unsetUnderline()
     }
-    
+
     // Apply highlight
     if (activeStyle.highlightColor) {
       chain.setHighlight({ color: activeStyle.highlightColor })
     } else {
       chain.unsetHighlight()
     }
-    
+
     chain.run()
   }
-  
+
   // Track if we should apply active style (set to true when style is changed via toolbar)
   const shouldApplyActiveStyleRef = useRef(false)
-  
+
   // Listen for selection changes and apply active style
   // In paint mode, always apply active style to selections and when typing
   useEffect(() => {
     if (!editor) return
-    
+
     let lastSelection = null
-    
+
     const handleSelectionUpdate = () => {
       const { selection } = editor.state
-      
+
       // Only apply if there's a selection (not just a cursor)
       if (selection.empty) {
         lastSelection = null
         shouldApplyActiveStyleRef.current = false
         return
       }
-      
+
       // Check if this is a new selection (different from last)
       const selectionKey = `${selection.from}-${selection.to}`
       if (lastSelection === selectionKey) {
         return // Same selection, don't reapply
       }
-      
+
       lastSelection = selectionKey
-      
+
       // In paint mode, always apply active style to new selections
       if (paintMode) {
         setTimeout(() => {
@@ -621,7 +621,7 @@ export default function GoogleDocsToolbar({ editor }) {
         }
       }
     }
-    
+
     // In paint mode, also apply style when typing (on transaction)
     const handleTransaction = () => {
       if (paintMode && editor.state.selection.empty) {
@@ -631,12 +631,12 @@ export default function GoogleDocsToolbar({ editor }) {
         }, 10)
       }
     }
-    
+
     editor.on('selectionUpdate', handleSelectionUpdate)
     if (paintMode) {
       editor.on('transaction', handleTransaction)
     }
-    
+
     return () => {
       editor.off('selectionUpdate', handleSelectionUpdate)
       if (paintMode) {
@@ -644,44 +644,44 @@ export default function GoogleDocsToolbar({ editor }) {
       }
     }
   }, [editor, activeStyle, paintMode])
-  
+
   // Update active style from editor when selection changes (but don't apply it back)
   // In paint mode, we don't update the active style from selection
   useEffect(() => {
     if (!editor) return
-    
+
     const updateActiveStyleFromEditor = () => {
       // In paint mode, don't update active style from selection
       if (paintMode) return
-      
+
       // Only update if we're not in the middle of applying active style
       if (shouldApplyActiveStyleRef.current) return
-      
+
       // Check if an image is selected
       const { selection } = editor.state
       const { $from } = selection
       let imageNode = null
-      
+
       editor.state.doc.nodesBetween($from.start(), $from.end(), (node) => {
         if (node.type && node.type.name === 'image') {
           imageNode = node
           return false
         }
       })
-      
+
       let align = 'left'
       if (imageNode) {
         align = imageNode.attrs.align || 'center'
       } else {
         align = editor.getAttributes('textAlign')?.textAlign || 'left'
       }
-      
+
       const attrs = editor.getAttributes('textStyle')
       const isBold = editor.isActive('bold')
       const isItalic = editor.isActive('italic')
       const isUnderline = editor.isActive('underline')
       const highlight = editor.getAttributes('highlight')
-      
+
       setActiveStyle(prev => ({
         ...prev,
         fontFamily: attrs.fontFamily || prev.fontFamily,
@@ -694,9 +694,9 @@ export default function GoogleDocsToolbar({ editor }) {
         align: align
       }))
     }
-    
+
     editor.on('selectionUpdate', updateActiveStyleFromEditor)
-    
+
     return () => {
       editor.off('selectionUpdate', updateActiveStyleFromEditor)
     }
@@ -777,71 +777,70 @@ export default function GoogleDocsToolbar({ editor }) {
             <span style={{ fontFamily: currentFontFamily }} className="truncate flex-1">{currentFontFamily}</span>
             <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />
           </button>
-        {showFontFamily && (
-          <>
-            <div 
-              className="fixed inset-0" 
-              onClick={() => {
-                setShowFontFamily(false)
-                setSelectedFontIndex(-1)
-              }}
-              style={{ zIndex: 60 }}
-            />
-            <div 
-              className="fixed bg-white border border-gray-300 rounded shadow-lg max-h-64 overflow-y-auto w-48" 
-              style={{ 
-                zIndex: 70,
-                position: 'fixed',
-                top: `${fontFamilyPosition.top}px`,
-                left: `${fontFamilyPosition.left}px`
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'ArrowDown') {
-                  e.preventDefault()
-                  setSelectedFontIndex(prev => Math.min(prev + 1, FONT_FAMILIES.length - 1))
-                } else if (e.key === 'ArrowUp') {
-                  e.preventDefault()
-                  setSelectedFontIndex(prev => Math.max(prev - 1, 0))
-                } else if (e.key === 'Enter') {
-                  e.preventDefault()
-                  if (selectedFontIndex >= 0 && selectedFontIndex < FONT_FAMILIES.length) {
-                    handleFontFamilyChange(FONT_FAMILIES[selectedFontIndex])
-                    setShowFontFamily(false)
-                    setSelectedFontIndex(-1)
-                  }
-                } else if (e.key === 'Escape') {
-                  e.preventDefault()
-                  setShowFontFamily(false)
-                  setSelectedFontIndex(-1)
-                }
-              }}
-              tabIndex={0}
-            >
-            {FONT_FAMILIES.map((font, index) => (
-              <button
-                key={font}
+          {showFontFamily && (
+            <>
+              <div
+                className="fixed inset-0"
                 onClick={() => {
-                  handleFontFamilyChange(font)
                   setShowFontFamily(false)
                   setSelectedFontIndex(-1)
                 }}
-                className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between ${
-                  index === selectedFontIndex ? 'bg-blue-50' : ''
-                } ${currentFontFamily === font ? 'font-semibold' : ''}`}
-                style={{ fontFamily: font }}
-                aria-label={`Select font ${font}`}
+                style={{ zIndex: 60 }}
+              />
+              <div
+                className="fixed bg-white border border-gray-300 rounded shadow-lg max-h-64 overflow-y-auto w-48"
+                style={{
+                  zIndex: 70,
+                  position: 'fixed',
+                  top: `${fontFamilyPosition.top}px`,
+                  left: `${fontFamilyPosition.left}px`
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault()
+                    setSelectedFontIndex(prev => Math.min(prev + 1, FONT_FAMILIES.length - 1))
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault()
+                    setSelectedFontIndex(prev => Math.max(prev - 1, 0))
+                  } else if (e.key === 'Enter') {
+                    e.preventDefault()
+                    if (selectedFontIndex >= 0 && selectedFontIndex < FONT_FAMILIES.length) {
+                      handleFontFamilyChange(FONT_FAMILIES[selectedFontIndex])
+                      setShowFontFamily(false)
+                      setSelectedFontIndex(-1)
+                    }
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault()
+                    setShowFontFamily(false)
+                    setSelectedFontIndex(-1)
+                  }
+                }}
+                tabIndex={0}
               >
-                <span>{font}</span>
-                {currentFontFamily === font && (
-                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-            ))}
-            </div>
-          </>
-        )}
+                {FONT_FAMILIES.map((font, index) => (
+                  <button
+                    key={font}
+                    onClick={() => {
+                      handleFontFamilyChange(font)
+                      setShowFontFamily(false)
+                      setSelectedFontIndex(-1)
+                    }}
+                    className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between ${index === selectedFontIndex ? 'bg-blue-50' : ''
+                      } ${currentFontFamily === font ? 'font-semibold' : ''}`}
+                    style={{ fontFamily: font }}
+                    aria-label={`Select font ${font}`}
+                  >
+                    <span>{font}</span>
+                    {currentFontFamily === font && (
+                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
         <button
           onClick={() => {
@@ -887,14 +886,14 @@ export default function GoogleDocsToolbar({ editor }) {
                 setFontSizeDisplay('inherited')
                 editor.chain().focus().unsetFontSize().run()
               } else {
-                  const numValue = parseInt(value)
-                  if (!isNaN(numValue) && numValue > 0) {
-                    setFontSize(numValue)
-                    setFontSizeDisplay(numValue.toString())
-                    editor.chain().focus().setFontSize(`${numValue}px`).run()
-                    setActiveStyle(prev => ({ ...prev, fontSize: numValue }))
-                    shouldApplyActiveStyleRef.current = true
-                  }
+                const numValue = parseInt(value)
+                if (!isNaN(numValue) && numValue > 0) {
+                  setFontSize(numValue)
+                  setFontSizeDisplay(numValue.toString())
+                  editor.chain().focus().setFontSize(`${numValue}px`).run()
+                  setActiveStyle(prev => ({ ...prev, fontSize: numValue }))
+                  shouldApplyActiveStyleRef.current = true
+                }
               }
             }}
             onKeyDown={(e) => {
@@ -976,9 +975,8 @@ export default function GoogleDocsToolbar({ editor }) {
         <Tooltip label={t?.brushMode || 'Brush mode'}>
           <button
             onClick={togglePaintMode}
-            className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-              paintMode ? 'bg-blue-100 text-blue-600' : ''
-            }`}
+            className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${paintMode ? 'bg-blue-100 text-blue-600' : ''
+              }`}
             aria-label={t?.brushMode || 'Brush mode'}
           >
             {/* Paint bucket icon */}
@@ -989,15 +987,15 @@ export default function GoogleDocsToolbar({ editor }) {
             </svg>
           </button>
         </Tooltip>
-        
+
         {/* Tooltip on first activation */}
         {showPaintTooltip && paintMode && (
           <>
-            <div 
-              className="fixed inset-0 z-[10002] bg-black bg-opacity-50" 
+            <div
+              className="fixed inset-0 z-[10002] bg-black bg-opacity-50"
               onClick={dismissPaintTooltip}
             />
-            <div 
+            <div
               className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 bg-gray-900 text-white text-sm rounded-lg p-4 shadow-xl z-[10003]"
             >
               <div className="font-semibold mb-2 text-lg">Paint Mode</div>
@@ -1026,15 +1024,14 @@ export default function GoogleDocsToolbar({ editor }) {
             setActiveStyle(prev => ({ ...prev, bold: newBold }))
             shouldApplyActiveStyleRef.current = true
           }}
-          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-            editor.isActive('bold') ? 'bg-gray-200' : ''
-          }`}
+          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('bold') ? 'bg-gray-200' : ''
+            }`}
           aria-label={t?.bold || 'Bold'}
         >
           <Bold className="w-5 h-5 md:w-4 md:h-4" />
         </button>
       </Tooltip>
-      
+
       <Tooltip label={t?.italic || 'Italic'} shortcut={['⌘', 'I']}>
         <button
           onClick={() => {
@@ -1043,24 +1040,22 @@ export default function GoogleDocsToolbar({ editor }) {
             setActiveStyle(prev => ({ ...prev, italic: newItalic }))
             shouldApplyActiveStyleRef.current = true
           }}
-          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-            editor.isActive('italic') ? 'bg-gray-200' : ''
-          }`}
+          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('italic') ? 'bg-gray-200' : ''
+            }`}
           aria-label={t?.italic || 'Italic'}
         >
           <Italic className="w-5 h-5 md:w-4 md:h-4" />
         </button>
       </Tooltip>
-      
+
       <Tooltip label={t?.underline || 'Underline'} shortcut={['⌘', 'U']}>
         <button
           onClick={() => {
             const newUnderline = !editor.isActive('underline')
             editor.chain().focus().toggleUnderline().run()
           }}
-          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-            editor.isActive('underline') ? 'bg-gray-200' : ''
-          }`}
+          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('underline') ? 'bg-gray-200' : ''
+            }`}
           aria-label={t?.underline || 'Underline'}
         >
           <Underline className="w-5 h-5 md:w-4 md:h-4" />
@@ -1103,14 +1098,13 @@ export default function GoogleDocsToolbar({ editor }) {
               }
               setShowTextColor(!showTextColor)
             }}
-            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-              showTextColor ? 'bg-gray-200' : ''
-            }`}
+            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${showTextColor ? 'bg-gray-200' : ''
+              }`}
             aria-label={t?.textColor || 'Text color'}
           >
             <div className="flex flex-col items-center justify-center">
               <span className="text-sm font-bold leading-none" style={{ color: currentTextColor }}>A</span>
-              <div 
+              <div
                 className="w-4 h-1 rounded-sm mt-0.5"
                 style={{ backgroundColor: currentTextColor }}
               />
@@ -1119,8 +1113,8 @@ export default function GoogleDocsToolbar({ editor }) {
         </Tooltip>
         {showTextColor && (
           <>
-            <div 
-              className="fixed inset-0" 
+            <div
+              className="fixed inset-0"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setShowTextColor(false)
@@ -1128,9 +1122,9 @@ export default function GoogleDocsToolbar({ editor }) {
               }}
               style={{ zIndex: 60 }}
             />
-            <div 
-              className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]" 
-              style={{ 
+            <div
+              className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]"
+              style={{
                 zIndex: 70,
                 top: `${textColorPosition.top}px`,
                 left: `${textColorPosition.left}px`
@@ -1151,11 +1145,10 @@ export default function GoogleDocsToolbar({ editor }) {
                         e.stopPropagation()
                         handleTextColorChange(color)
                       }}
-                      className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${
-                        currentTextColor === color 
-                          ? 'border-blue-500 ring-2 ring-blue-300' 
+                      className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${currentTextColor === color
+                          ? 'border-blue-500 ring-2 ring-blue-300'
                           : 'border-gray-300 hover:border-gray-400'
-                      }`}
+                        }`}
                       style={{ backgroundColor: color }}
                       title={color}
                       aria-label={`Select text color ${color}`}
@@ -1219,14 +1212,13 @@ export default function GoogleDocsToolbar({ editor }) {
               }
               setShowHighlightColor(!showHighlightColor)
             }}
-            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-              showHighlightColor ? 'bg-gray-200' : ''
-            }`}
+            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${showHighlightColor ? 'bg-gray-200' : ''
+              }`}
             aria-label={t?.highlighter || 'Highlighter'}
           >
             <div className="flex flex-col items-center justify-center">
               <Highlighter className="w-4 h-4" />
-              <div 
+              <div
                 className="w-4 h-1 rounded-sm mt-0.5"
                 style={{ backgroundColor: currentHighlightColor || '#FFFF00' }}
               />
@@ -1235,8 +1227,8 @@ export default function GoogleDocsToolbar({ editor }) {
         </Tooltip>
         {showHighlightColor && (
           <>
-            <div 
-              className="fixed inset-0" 
+            <div
+              className="fixed inset-0"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setShowHighlightColor(false)
@@ -1244,9 +1236,9 @@ export default function GoogleDocsToolbar({ editor }) {
               }}
               style={{ zIndex: 60 }}
             />
-            <div 
-              className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]" 
-              style={{ 
+            <div
+              className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]"
+              style={{
                 zIndex: 70,
                 top: `${highlightColorPosition.top}px`,
                 left: `${highlightColorPosition.left}px`
@@ -1267,11 +1259,10 @@ export default function GoogleDocsToolbar({ editor }) {
                         e.stopPropagation()
                         handleHighlightColorChange(color)
                       }}
-                      className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${
-                        currentHighlightColor === color 
-                          ? 'border-blue-500 ring-2 ring-blue-300' 
+                      className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${currentHighlightColor === color
+                          ? 'border-blue-500 ring-2 ring-blue-300'
                           : 'border-gray-300 hover:border-gray-400'
-                      }`}
+                        }`}
                       style={{ backgroundColor: color }}
                       title={color}
                       aria-label={`Select highlight color ${color}`}
@@ -1337,9 +1328,8 @@ export default function GoogleDocsToolbar({ editor }) {
               }
               setShowAlign(!showAlign)
             }}
-            className={`p-2 md:p-1.5 h-10 md:h-8 rounded hover:bg-gray-100 flex items-center justify-center gap-1 ${
-              showAlign ? 'bg-gray-200' : ''
-            }`}
+            className={`p-2 md:p-1.5 h-10 md:h-8 rounded hover:bg-gray-100 flex items-center justify-center gap-1 ${showAlign ? 'bg-gray-200' : ''
+              }`}
             aria-label={t?.alignment || 'Alignment'}
           >
             {currentAlign === 'left' && <AlignLeft className="w-5 h-5 md:w-4 md:h-4" />}
@@ -1351,14 +1341,14 @@ export default function GoogleDocsToolbar({ editor }) {
         </Tooltip>
         {showAlign && (
           <>
-            <div 
-              className="fixed inset-0" 
+            <div
+              className="fixed inset-0"
               onClick={() => setShowAlign(false)}
               style={{ zIndex: 60 }}
             />
-            <div 
-              className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-1 flex gap-0.5" 
-              style={{ 
+            <div
+              className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-1 flex gap-0.5"
+              style={{
                 zIndex: 70,
                 position: 'fixed',
                 top: `${alignPosition.top}px`,
@@ -1367,9 +1357,8 @@ export default function GoogleDocsToolbar({ editor }) {
             >
               <button
                 onClick={() => handleAlignChange('left')}
-                className={`p-2 rounded hover:bg-gray-100 ${
-                  currentAlign === 'left' ? 'bg-gray-200' : ''
-                }`}
+                className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'left' ? 'bg-gray-200' : ''
+                  }`}
                 title={t?.left || 'Left'}
                 aria-label={t?.left || 'Left'}
               >
@@ -1377,9 +1366,8 @@ export default function GoogleDocsToolbar({ editor }) {
               </button>
               <button
                 onClick={() => handleAlignChange('center')}
-                className={`p-2 rounded hover:bg-gray-100 ${
-                  currentAlign === 'center' ? 'bg-gray-200' : ''
-                }`}
+                className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'center' ? 'bg-gray-200' : ''
+                  }`}
                 title={t?.center || 'Center'}
                 aria-label={t?.center || 'Center'}
               >
@@ -1387,9 +1375,8 @@ export default function GoogleDocsToolbar({ editor }) {
               </button>
               <button
                 onClick={() => handleAlignChange('right')}
-                className={`p-2 rounded hover:bg-gray-100 ${
-                  currentAlign === 'right' ? 'bg-gray-200' : ''
-                }`}
+                className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'right' ? 'bg-gray-200' : ''
+                  }`}
                 title={t?.right || 'Right'}
                 aria-label={t?.right || 'Right'}
               >
@@ -1397,9 +1384,8 @@ export default function GoogleDocsToolbar({ editor }) {
               </button>
               <button
                 onClick={() => handleAlignChange('justify')}
-                className={`p-2 rounded hover:bg-gray-100 ${
-                  currentAlign === 'justify' ? 'bg-gray-200' : ''
-                }`}
+                className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'justify' ? 'bg-gray-200' : ''
+                  }`}
                 title={t?.justified || 'Justified'}
                 aria-label={t?.justified || 'Justified'}
               >
@@ -1416,21 +1402,19 @@ export default function GoogleDocsToolbar({ editor }) {
       <Tooltip label={t?.bulletList || 'Bullet list'} shortcut={['⌘', '⇧', '8']}>
         <button
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-            editor.isActive('bulletList') ? 'bg-gray-200' : ''
-          }`}
+          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('bulletList') ? 'bg-gray-200' : ''
+            }`}
           aria-label={t?.bulletList || 'Bullet list'}
         >
           <List className="w-5 h-5 md:w-4 md:h-4" />
         </button>
       </Tooltip>
-      
+
       <Tooltip label={t?.numberedList || 'Numbered list'} shortcut={['⌘', '⇧', '7']}>
         <button
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-            editor.isActive('orderedList') ? 'bg-gray-200' : ''
-          }`}
+          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('orderedList') ? 'bg-gray-200' : ''
+            }`}
           aria-label={t?.numberedList || 'Numbered list'}
         >
           <ListOrdered className="w-5 h-5 md:w-4 md:h-4" />
@@ -1453,7 +1437,7 @@ export default function GoogleDocsToolbar({ editor }) {
             // Append to body to prevent garbage collection on some mobile browsers
             input.style.cssText = 'position:absolute;top:-9999px;left:-9999px;opacity:0;'
             document.body.appendChild(input)
-            
+
             const handleChange = (e) => {
               const file = e.target.files?.[0]
               if (file) {
@@ -1463,7 +1447,7 @@ export default function GoogleDocsToolbar({ editor }) {
                   cleanup()
                   return
                 }
-                
+
                 const reader = new FileReader()
                 reader.onload = () => {
                   if (reader.result) {
@@ -1485,16 +1469,16 @@ export default function GoogleDocsToolbar({ editor }) {
                 cleanup()
               }
             }
-            
+
             const cleanup = () => {
               input.removeEventListener('change', handleChange)
               if (input.parentNode) {
                 input.parentNode.removeChild(input)
               }
             }
-            
+
             input.addEventListener('change', handleChange)
-            
+
             // Use setTimeout to ensure the input is in the DOM before clicking
             // This helps with iOS Safari
             setTimeout(() => {
@@ -1533,6 +1517,54 @@ export default function GoogleDocsToolbar({ editor }) {
         </button>
       </Tooltip>
 
+      {/* Import Instagram Chat */}
+      <Tooltip label={t?.importInstagramChat || 'Import Instagram Chat'}>
+        <button
+          aria-label={t?.importInstagramChat || 'Import Instagram Chat'}
+          onClick={() => {
+            const input = document.createElement('input')
+            input.type = 'file'
+            input.accept = '.json'
+            input.onchange = async (e) => {
+              const file = e.target.files?.[0]
+              if (!file) return
+
+              try {
+                const text = await file.text()
+                const data = JSON.parse(text)
+
+                // Decode Instagram's encoding
+                const { decodeInstagramObject } = await import('@/lib/utils/instagram-decoder')
+                const decoded = decodeInstagramObject(data)
+
+                if (editor && editor.can().setChatConversation) {
+                  editor.chain().focus().setChatConversation({
+                    messages: decoded.messages || [],
+                    participants: decoded.participants || [],
+                    title: decoded.title || null,
+                    currentUser: 'Daniel',
+                  }).run()
+                } else {
+                  console.warn('ChatConversation extension not available')
+                }
+              } catch (err) {
+                console.error('Error importing Instagram chat:', err)
+                alert('Failed to import chat: ' + err.message)
+              }
+            }
+            setTimeout(() => {
+              input.click()
+            }, 100)
+          }}
+          className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
+        >
+          {/* Instagram-style chat icon */}
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </Tooltip>
+
       {/* Link */}
       <Tooltip label={t?.insertLink || 'Insert link'} shortcut={['⌘', 'K']}>
         <button
@@ -1541,17 +1573,17 @@ export default function GoogleDocsToolbar({ editor }) {
             // Get selection position to show LinkEditor
             const { selection } = editor.state
             const { $from, $to } = selection
-            
+
             // If no text is selected, insert a link at cursor position
             if ($from.pos === $to.pos) {
               // No selection - create empty link
               editor.chain().focus().setLink({ href: '' }).run()
             }
-            
+
             const coords = editor.view.coordsAtPos($from.pos)
             const editorContainer = editor.view.dom.closest('.prose') || editor.view.dom.parentElement
             const containerRect = editorContainer?.getBoundingClientRect()
-            
+
             let position
             if (containerRect) {
               position = {
@@ -1564,15 +1596,14 @@ export default function GoogleDocsToolbar({ editor }) {
                 left: coords.left,
               }
             }
-            
+
             // Dispatch custom event to show LinkEditor
             window.dispatchEvent(new CustomEvent('showLinkEditor', {
               detail: { position }
             }))
           }}
-          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${
-            editor.isActive('link') ? 'bg-gray-200' : ''
-          }`}
+          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('link') ? 'bg-gray-200' : ''
+            }`}
         >
           <Link className="w-5 h-5 md:w-4 md:h-4" />
         </button>
@@ -1593,7 +1624,7 @@ export default function GoogleDocsToolbar({ editor }) {
             <Undo className="w-5 h-5 md:w-4 md:h-4" />
           </button>
         </Tooltip>
-        
+
         <Tooltip label={t?.redo || 'Redo'} shortcut={['⌘', '⇧', 'Z']}>
           <button
             onClick={() => editor.chain().focus().redo().run()}

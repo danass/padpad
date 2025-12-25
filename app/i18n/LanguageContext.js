@@ -5,27 +5,35 @@ import { translations, defaultLocale, locales, getBrowserLocale, localeNames } f
 
 const LanguageContext = createContext()
 
-export function LanguageProvider({ children }) {
-  // Initialize with default, will be updated on client
-  const [locale, setLocale] = useState(defaultLocale)
-  const [t, setT] = useState(translations[defaultLocale])
+export function LanguageProvider({ children, initialLocale }) {
+  // Initialize with server-provided locale or default
+  const [locale, setLocale] = useState(initialLocale || defaultLocale)
+  const [t, setT] = useState(translations[initialLocale] || translations[defaultLocale])
   const [isReady, setIsReady] = useState(false)
 
-  // Load locale from localStorage on mount
+  // Sync with localStorage/cookie on mount
   useEffect(() => {
+    // Check for textpad_locale cookie (set by /fr and /en pages)
+    const cookieMatch = document.cookie.match(/textpad_locale=([^;]+)/)
+    const cookieLocale = cookieMatch ? cookieMatch[1] : null
+
     const savedLocale = localStorage.getItem('locale')
     const browserLocale = getBrowserLocale()
-    const effectiveLocale = savedLocale || browserLocale
-    
-    console.log('🌐 LanguageProvider init:', { savedLocale, browserLocale, effectiveLocale })
-    
+
+    // Priority: cookie > localStorage > browser > server-provided
+    const effectiveLocale = cookieLocale || savedLocale || initialLocale || browserLocale
+
+    console.log('🌐 LanguageProvider init:', { cookieLocale, savedLocale, browserLocale, initialLocale, effectiveLocale })
+
     if (locales.includes(effectiveLocale)) {
       setLocale(effectiveLocale)
       setT(translations[effectiveLocale])
       document.documentElement.setAttribute('lang', effectiveLocale)
+      // Sync localStorage
+      localStorage.setItem('locale', effectiveLocale)
     }
     setIsReady(true)
-  }, [])
+  }, [initialLocale])
 
   const changeLocale = (newLocale) => {
     console.log('🌐 changeLocale called:', newLocale, '| valid:', locales.includes(newLocale))

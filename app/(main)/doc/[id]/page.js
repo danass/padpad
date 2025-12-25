@@ -26,6 +26,7 @@ import UniqueID from '@tiptap/extension-unique-id'
 import Emoji from '@tiptap/extension-emoji'
 import { Youtube } from '@/lib/editor/youtube-extension'
 import { LinkPreview } from '@/lib/editor/link-preview-extension'
+import { ChatConversation } from '@/lib/editor/chat-extension'
 import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 // Collaboration requires Y.js and WebSocket provider - commented out for now
 // import Collaboration from '@tiptap/extension-collaboration'
@@ -357,6 +358,7 @@ export default function DocumentPage() {
       TaskItem,
       Drawing,
       LinkPreview,
+      ChatConversation,
     ],
     content: null,
     editable: true,

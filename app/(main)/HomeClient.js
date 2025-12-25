@@ -32,6 +32,9 @@ import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
 import { FontSize } from '@/lib/editor/font-size-extension'
 import { LineHeight } from '@/lib/editor/line-height-extension'
+import { LinkPreview } from '@/lib/editor/link-preview-extension'
+import FileHandler from '@tiptap/extension-file-handler'
+import Dropcursor from '@tiptap/extension-dropcursor'
 
 const STORAGE_KEY = 'textpad_cloud_unsaved_pad'
 const STORAGE_TIMESTAMP_KEY = 'textpad_cloud_unsaved_pad_timestamp'
@@ -104,6 +107,40 @@ export default function HomeClient({ featuredArticles = [] }) {
       Details,
       DetailsSummary,
       DetailsContent,
+      LinkPreview,
+      Dropcursor.configure({
+        color: '#3b82f6',
+        width: 2,
+      }),
+      FileHandler.configure({
+        allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
+        onDrop: (currentEditor, files, pos) => {
+          files.forEach(file => {
+            const fileReader = new FileReader()
+            fileReader.readAsDataURL(file)
+            fileReader.onload = () => {
+              currentEditor.chain().insertContentAt(pos, {
+                type: 'image',
+                attrs: { src: fileReader.result, alt: file.name },
+              }).focus().run()
+            }
+          })
+        },
+        onPaste: (currentEditor, files, htmlContent) => {
+          files.forEach(file => {
+            if (file.type.startsWith('image/')) {
+              const fileReader = new FileReader()
+              fileReader.readAsDataURL(file)
+              fileReader.onload = () => {
+                currentEditor.chain().insertContent({
+                  type: 'image',
+                  attrs: { src: fileReader.result, alt: file.name },
+                }).focus().run()
+              }
+            }
+          })
+        },
+      }),
     ],
     content: null,
     editable: true,

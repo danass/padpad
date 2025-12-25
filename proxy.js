@@ -107,7 +107,8 @@ export async function proxy(request) {
     const publicPaths = [
         '/', '/auth', '/api/auth', '/api/migrate', '/public',
         '/api/public', '/online-text-editor', '/features',
-        '/featured', '/robots.txt', '/sitemap.xml', '/privacy', '/terms'
+        '/featured', '/robots.txt', '/sitemap.xml', '/privacy', '/terms', '/credits',
+        '/fr', '/en'
     ]
 
     if (publicPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {

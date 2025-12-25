@@ -21,6 +21,11 @@ export async function generateMetadata() {
 
 const features = [
     {
+        title: 'No Account Required',
+        description: 'Start writing immediately. Sign in only when you want.',
+        href: '/features/no-account',
+    },
+    {
         title: 'Digital Legacy',
         description: 'Write now, publish on your 99th birthday. Your words live on.',
         href: '/features/digital-testament',
@@ -49,6 +54,12 @@ const features = [
         title: 'Images & Drawings',
         description: 'Add images, resize them, draw directly in your docs.',
         href: '/features/images-and-drawings',
+    },
+    {
+        title: 'Collaborative Editing',
+        description: 'Work together in real-time. Coming soon.',
+        href: '/features/collaborative-editing',
+        badge: 'Coming Soon',
     },
 ]
 
@@ -83,7 +94,14 @@ export default function FeaturesPage() {
                             href={feature.href}
                             className="block p-5 border border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors"
                         >
-                            <h2 className="text-lg font-medium text-gray-900 mb-1">{feature.title}</h2>
+                            <div className="flex items-center gap-2 mb-1">
+                                <h2 className="text-lg font-medium text-gray-900">{feature.title}</h2>
+                                {feature.badge && (
+                                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                                        {feature.badge}
+                                    </span>
+                                )}
+                            </div>
                             <p className="text-gray-600">{feature.description}</p>
                         </Link>
                     ))}

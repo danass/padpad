@@ -23,28 +23,48 @@ function getIsSubdomain() {
   return match && match[1].toLowerCase() !== 'www'
 }
 
+// Custom session provider that doesn't fetch on subdomains
+function NoopSessionProvider({ children }) {
+  return (
+    <MockSessionContext.Provider value={{ data: null, status: 'unauthenticated', update: async () => null }}>
+      {children}
+    </MockSessionContext.Provider>
+  )
+}
+
 export default function SessionProvider({ children }) {
-  const [isSubdomain, setIsSubdomain] = useState(false)
-  const [hydrated, setHydrated] = useState(false)
+  // Start with null to avoid hydration mismatch - we'll determine on client
+  const [isSubdomain, setIsSubdomain] = useState(null)
 
   useEffect(() => {
     setIsSubdomain(getIsSubdomain())
-    setHydrated(true)
   }, [])
 
-  // Always wrap in NextAuthSessionProvider to avoid "useSession must be wrapped in <SessionProvider />" errors.
-  // We use basePath to ensure it correctly hits our proxy if needed.
+  // During SSR and initial hydration, render nothing special - 
+  // just a simple wrapper that doesn't fetch
+  if (isSubdomain === null) {
+    // Return children wrapped in mock context to satisfy any useSession calls
+    // without triggering actual fetch
+    return (
+      <MockSessionContext.Provider value={{ data: null, status: 'loading', update: async () => null }}>
+        {children}
+      </MockSessionContext.Provider>
+    )
+  }
+
+  // On subdomains, don't use NextAuthSessionProvider at all to avoid decoding errors
+  if (isSubdomain) {
+    return <NoopSessionProvider>{children}</NoopSessionProvider>
+  }
+
+  // On www domain, use the real provider
   return (
     <NextAuthSessionProvider
       basePath="/api/auth"
-      refetchInterval={isSubdomain ? 0 : 5 * 60}
+      refetchInterval={5 * 60}
       refetchOnWindowFocus={false}
     >
-      {isSubdomain ? (
-        <MockSessionContext.Provider value={{ data: null, status: 'unauthenticated', update: async () => null }}>
-          {children}
-        </MockSessionContext.Provider>
-      ) : children}
+      {children}
     </NextAuthSessionProvider>
   )
 }
