@@ -46,7 +46,7 @@ function ArticleContent({ content }) {
 
 export default function FeaturedArticles() {
     const [articles, setArticles] = useState([])
-    const [loading, setLoading] = useState(true)
+    const [loaded, setLoaded] = useState(false)
 
     useEffect(() => {
         fetchFeatured()
@@ -62,28 +62,16 @@ export default function FeaturedArticles() {
         } catch (error) {
             console.error('Error fetching featured:', error)
         } finally {
-            setLoading(false)
+            setLoaded(true)
         }
     }
 
-    if (loading) {
-        return (
-            <div className="py-16 text-center">
-                <div className="animate-spin inline-block rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
-            </div>
-        )
-    }
-
-    if (articles.length === 0) return null
+    // No loader - just render nothing until loaded, then fade in
+    if (!loaded || articles.length === 0) return null
 
     return (
-        <section className="mt-16 border-t border-gray-200 pt-12">
-            <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">Featured Articles</h2>
-                <Link href="/featured" className="text-blue-600 hover:underline text-sm">
-                    View all →
-                </Link>
-            </div>
+        <section className="mt-16 border-t border-gray-200 pt-12 animate-fadeIn">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">Featured</h2>
 
             <div className="space-y-12">
                 {articles.map((article) => (
@@ -116,18 +104,6 @@ export default function FeaturedArticles() {
                         {/* Full content */}
                         <div className="prose max-w-none text-gray-700">
                             {article.content && <ArticleContent content={article.content} />}
-                        </div>
-
-                        <div className="mt-4">
-                            <Link
-                                href={`/public/doc/${article.id}`}
-                                className="text-blue-600 hover:underline text-sm inline-flex items-center gap-1"
-                            >
-                                Read more
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </Link>
                         </div>
                     </article>
                 ))}
