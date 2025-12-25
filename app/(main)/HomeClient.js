@@ -39,7 +39,7 @@ const STORAGE_PENDING_SAVE_KEY = 'textpad_cloud_pending_save'
 const EXPIRY_HOURS = 48
 
 export default function HomeClient({ featuredArticles = [] }) {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession() || {}
   const router = useRouter()
   const { t } = useLanguage()
   const [saving, setSaving] = useState(false)

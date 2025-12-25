@@ -10,7 +10,7 @@ export default function ArchiveHeader({
     hasCustomUsername,
     ownerId
 }) {
-    const { data: session } = useSession()
+    const { data: session } = useSession() || {}
     const [isEditing, setIsEditing] = useState(false)
     const [newUsername, setNewUsername] = useState('')
     const [error, setError] = useState('')

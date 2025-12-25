@@ -8,7 +8,7 @@ import { useLanguage } from '@/app/i18n/LanguageContext'
 function SignInContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession() || {}
   const { t } = useLanguage()
   const callbackUrl = searchParams.get('callbackUrl') || '/drive'
 

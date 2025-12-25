@@ -7,25 +7,27 @@ import { format } from 'date-fns'
 import Link from 'next/link'
 
 export default function TestamentPreviewPage() {
-  const { data: session, status } = useSession()
+  const sessionData = useSession()
+  const session = sessionData?.data
+  const status = sessionData?.status
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [birthDate, setBirthDate] = useState(null)
   const [documents, setDocuments] = useState([])
   const [age99Date, setAge99Date] = useState(null)
   const [testamentSlug, setTestamentSlug] = useState(null)
-  
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/signin')
       return
     }
-    
+
     if (status === 'authenticated') {
       loadData()
     }
   }, [status, router])
-  
+
   const loadData = async () => {
     try {
       // Load testament slug/username
@@ -34,7 +36,7 @@ export default function TestamentPreviewPage() {
         const slugData = await slugResponse.json()
         setTestamentSlug(slugData.testament_slug)
       }
-      
+
       // Load birth date
       const birthResponse = await fetch('/api/users/birth-date')
       if (birthResponse.ok) {
@@ -47,7 +49,7 @@ export default function TestamentPreviewPage() {
           setAge99Date(age99)
         }
       }
-      
+
       // Load ALL documents recursively (including those in subfolders)
       // Use a recursive query to get all documents
       const docsResponse = await fetch('/api/documents/all')
@@ -75,7 +77,7 @@ export default function TestamentPreviewPage() {
       setLoading(false)
     }
   }
-  
+
   if (loading || status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -83,7 +85,7 @@ export default function TestamentPreviewPage() {
       </div>
     )
   }
-  
+
   if (!birthDate) {
     return (
       <div className="min-h-screen bg-white">
@@ -104,7 +106,7 @@ export default function TestamentPreviewPage() {
       </div>
     )
   }
-  
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-6 py-12">
@@ -159,7 +161,7 @@ export default function TestamentPreviewPage() {
             </div>
           )}
         </div>
-        
+
         {/* Documents List */}
         {documents.length === 0 ? (
           <div className="text-center py-12">
@@ -178,7 +180,7 @@ export default function TestamentPreviewPage() {
                 All your documents will be made public on your 99th birthday
               </p>
             </div>
-            
+
             <div className="space-y-4">
               {documents.map((doc) => (
                 <Link
@@ -212,7 +214,7 @@ export default function TestamentPreviewPage() {
             </div>
           </div>
         )}
-        
+
         {/* Footer Note */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           <p className="text-xs text-gray-500 text-center">

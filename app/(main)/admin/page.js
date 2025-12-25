@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function AdminPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession() || {}
   const router = useRouter()
   const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
@@ -149,31 +149,28 @@ export default function AdminPage() {
           <nav className="flex space-x-8">
             <button
               onClick={() => setActiveTab('stats')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'stats'
-                  ? 'border-gray-900 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'stats'
+                ? 'border-gray-900 text-gray-900'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               {t?.statistics || 'Statistics'}
             </button>
             <button
               onClick={() => setActiveTab('documents')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'documents'
-                  ? 'border-gray-900 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'documents'
+                ? 'border-gray-900 text-gray-900'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               {t?.documents || 'Documents'}
             </button>
             <button
               onClick={() => setActiveTab('users')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'users'
-                  ? 'border-gray-900 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'users'
+                ? 'border-gray-900 text-gray-900'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               {t?.usersAndAdmins || 'Users & Admins'}
             </button>
@@ -355,17 +352,16 @@ export default function AdminPage() {
                         <button
                           onClick={() => handleSetAdmin(user.email, !user.isAdmin)}
                           disabled={settingAdmin === user.email}
-                          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                            user.isAdmin
-                              ? 'bg-red-50 text-red-700 hover:bg-red-100'
-                              : 'bg-green-50 text-green-700 hover:bg-green-100'
-                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${user.isAdmin
+                            ? 'bg-red-50 text-red-700 hover:bg-red-100'
+                            : 'bg-green-50 text-green-700 hover:bg-green-100'
+                            } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                           {settingAdmin === user.email
                             ? '...'
                             : user.isAdmin
-                            ? 'Remove Admin'
-                            : 'Make Admin'}
+                              ? 'Remove Admin'
+                              : 'Make Admin'}
                         </button>
                       </td>
                     </tr>

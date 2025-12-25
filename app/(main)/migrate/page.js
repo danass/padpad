@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 
 export default function MigratePage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession() || {}
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [adminEmail, setAdminEmail] = useState('')

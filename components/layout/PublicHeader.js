@@ -14,7 +14,7 @@ function checkIsSubdomain() {
 
 // Header for public pages - shows different content based on domain
 export default function PublicHeader() {
-    const { data: session, status } = useSession()
+    const { data: session, status } = useSession() || {}
     const [isSubdomain, setIsSubdomain] = useState(false)
     const [checked, setChecked] = useState(false)
 

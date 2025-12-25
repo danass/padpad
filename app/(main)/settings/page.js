@@ -8,7 +8,7 @@ import { useToast } from '@/components/ui/toast'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function SettingsPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession() || {}
   const router = useRouter()
   const { showToast } = useToast()
   const { t } = useLanguage()
@@ -35,12 +35,14 @@ export default function SettingsPage() {
   const birthDateChanged = birthDate !== originalBirthDate
 
   useEffect(() => {
-    if (!session) {
-      router.push('/auth/signin')
+    if (status === 'loading') return
+
+    if (status === 'unauthenticated' || !session) {
+      router.push(`/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`)
       return
     }
     loadData()
-  }, [session, router])
+  }, [session, status, router])
 
   const loadData = async () => {
     try {

@@ -8,9 +8,9 @@ import { X } from 'lucide-react'
 export default function Tabs() {
   const router = useRouter()
   const pathname = usePathname()
-  const { data: session } = useSession()
+  const { data: session } = useSession() || {}
   const [tabs, setTabs] = useState([])
-  
+
   // Clear tabs when user signs out
   useEffect(() => {
     if (!session) {
@@ -18,14 +18,14 @@ export default function Tabs() {
       localStorage.removeItem('openTabs')
     }
   }, [session])
-  
+
   useEffect(() => {
     // Only load tabs if user is authenticated
     if (!session) {
       setTabs([])
       return
     }
-    
+
     // Load tabs from localStorage
     const savedTabs = localStorage.getItem('openTabs')
     if (savedTabs) {
@@ -37,13 +37,13 @@ export default function Tabs() {
       }
     }
   }, [session])
-  
+
   useEffect(() => {
     // Don't add tabs if user is not authenticated
     if (!session) {
       return
     }
-    
+
     // Add current document to tabs if it's a document page
     if (pathname?.startsWith('/doc/')) {
       const docId = pathname.split('/doc/')[1]
@@ -54,14 +54,14 @@ export default function Tabs() {
           if (exists) {
             return prev.map(t => t.id === docId ? { ...t, active: true } : { ...t, active: false })
           }
-          
+
           // Add new tab
           const newTab = {
             id: docId,
             title: 'Untitled',
             active: true,
           }
-          
+
           // Fetch document title asynchronously
           fetch(`/api/documents/${docId}`)
             .then(res => {
@@ -77,8 +77,8 @@ export default function Tabs() {
             })
             .then(data => {
               if (data && data.document) {
-                setTabs(prevTabs => 
-                  prevTabs.map(t => 
+                setTabs(prevTabs =>
+                  prevTabs.map(t =>
                     t.id === docId ? { ...t, title: data.document.title || 'Untitled' } : t
                   )
                 )
@@ -91,7 +91,7 @@ export default function Tabs() {
                 console.error('Error fetching document title:', err)
               }
             })
-          
+
           return prev.map(t => ({ ...t, active: false })).concat(newTab)
         })
       }
@@ -101,13 +101,13 @@ export default function Tabs() {
       setTabs(prev => prev.map(t => ({ ...t, active: false })))
     }
   }, [pathname, session])
-  
+
   useEffect(() => {
     // Save tabs to localStorage whenever tabs change
     // This ensures tabs persist across page reloads and navigation
     localStorage.setItem('openTabs', JSON.stringify(tabs))
   }, [tabs])
-  
+
   const closeTab = (e, tabId) => {
     e.stopPropagation()
     setTabs(prev => {
@@ -127,22 +127,22 @@ export default function Tabs() {
       return newTabs
     })
   }
-  
+
   const switchTab = (tabId) => {
     router.push(`/doc/${tabId}`)
   }
-  
+
   // Listen for document title updates
   useEffect(() => {
     const handleTitleUpdate = (event) => {
       const { documentId, title } = event.detail
-      setTabs(prev => 
-        prev.map(t => 
+      setTabs(prev =>
+        prev.map(t =>
           t.id === documentId ? { ...t, title: title || 'Untitled' } : t
         )
       )
     }
-    
+
     // Listen for document deletion
     const handleDocumentDeleted = (event) => {
       const { documentId } = event.detail
@@ -163,7 +163,7 @@ export default function Tabs() {
         return newTabs
       })
     }
-    
+
     window.addEventListener('documentTitleUpdated', handleTitleUpdate)
     window.addEventListener('documentDeleted', handleDocumentDeleted)
     return () => {
@@ -171,21 +171,20 @@ export default function Tabs() {
       window.removeEventListener('documentDeleted', handleDocumentDeleted)
     }
   }, [router])
-  
+
   // Don't render if no tabs
   if (tabs.length === 0) return null
-  
+
   return (
     <>
       {tabs.map((tab) => (
         <div
           key={tab.id}
           onClick={() => switchTab(tab.id)}
-          className={`flex items-center gap-2 px-3 py-2 text-sm font-medium cursor-pointer transition-colors border-b-2 ${
-            tab.active
-              ? 'border-gray-900 text-gray-900 bg-gray-50'
-              : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-          }`}
+          className={`flex items-center gap-2 px-3 py-2 text-sm font-medium cursor-pointer transition-colors border-b-2 ${tab.active
+            ? 'border-gray-900 text-gray-900 bg-gray-50'
+            : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
         >
           <span className="whitespace-nowrap">{tab.title || 'Untitled'}</span>
           <button
