@@ -50,7 +50,9 @@ export default function HomeClient({ featuredArticles = [] }) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        codeBlock: false,
+      }),
       Placeholder.configure({
         placeholder: 'Start typing... Create your document here',
       }),

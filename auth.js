@@ -63,6 +63,18 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       return token
     },
   },
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        domain: '.textpad.cloud' // Use the root domain for cookies
+      }
+    }
+  },
   pages: {
     signIn: '/auth/signin',
   },

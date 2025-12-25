@@ -245,7 +245,7 @@ export default function DocumentPage() {
         bulletList: false, // We use DraggableBulletList instead
         orderedList: false, // We use DraggableOrderedList instead
         blockquote: false, // We use DraggableBlockquote instead
-        codeBlock: false, // We configure it separately
+        codeBlock: false,
         taskList: false, // We configure it separately with TaskList extension
         dropcursor: false, // We configure it separately
         gapcursor: false, // We configure it separately
