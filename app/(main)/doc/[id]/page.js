@@ -431,15 +431,16 @@ export default function DocumentPage() {
 
       const text = clipboardData.getData('text/plain').trim()
 
-      // Check if it's a URL
-      const urlPattern = /^https?:\/\/[^\s]+$/
+      // Check if it's a standalone URL (not just contains a URL)
+      const urlPattern = /^https?:\/\/\S+$/
       if (!urlPattern.test(text)) return
 
       // Don't create preview for YouTube URLs (already handled by Youtube extension)
       if (text.includes('youtube.com') || text.includes('youtu.be')) return
 
-      // Prevent default paste
+      // Prevent default paste behavior
       event.preventDefault()
+      event.stopPropagation()
 
       // Insert link preview node
       editor.chain().focus().insertContent({
@@ -451,11 +452,11 @@ export default function DocumentPage() {
       }).run()
     }
 
-    const editorElement = editor.view.dom
-    editorElement.addEventListener('paste', handlePaste)
+    // Use capture phase to intercept before TipTap's default handler
+    document.addEventListener('paste', handlePaste, true)
 
     return () => {
-      editorElement.removeEventListener('paste', handlePaste)
+      document.removeEventListener('paste', handlePaste, true)
     }
   }, [editor])
 
