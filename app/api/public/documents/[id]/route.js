@@ -17,8 +17,12 @@ export async function GET(request, { params }) {
 
     const document = docResult.rows[0]
 
+    // Debug log to understand 403 issue
+    console.log(`[PUBLIC DOC] ID: ${id}, is_public: ${document.is_public}, type: ${typeof document.is_public}`)
+
     // Check if document is public
     if (!document.is_public) {
+      console.log(`[PUBLIC DOC] 403 - is_public falsy: ${document.is_public}`)
       return Response.json({ error: 'Document is not public' }, { status: 403 })
     }
 
