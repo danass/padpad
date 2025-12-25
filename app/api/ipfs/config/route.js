@@ -23,7 +23,8 @@ export async function GET() {
 
         // Handle legacy single-provider config (migrate to array)
         if (config && !Array.isArray(config)) {
-            config = [{ id: uuidv4(), ...config }]
+            const legacyName = config.bucket ? `Filebase (${config.bucket})` : 'Legacy Storage'
+            config = [{ id: uuidv4(), name: legacyName, ...config }]
         }
 
         if (!config) {
@@ -68,7 +69,8 @@ export async function POST(request) {
 
         // Handle legacy single-provider config
         if (currentConfig && !Array.isArray(currentConfig)) {
-            currentConfig = [{ id: uuidv4(), ...currentConfig }]
+            const legacyName = currentConfig.bucket ? `Filebase (${currentConfig.bucket})` : 'Legacy Storage'
+            currentConfig = [{ id: uuidv4(), name: legacyName, ...currentConfig }]
         }
 
         // Create new provider entry
@@ -135,7 +137,8 @@ export async function DELETE(request) {
 
         // Handle legacy single-provider config
         if (currentConfig && !Array.isArray(currentConfig)) {
-            currentConfig = [{ id: uuidv4(), ...currentConfig }]
+            const legacyName = currentConfig.bucket ? `Filebase (${currentConfig.bucket})` : 'Legacy Storage'
+            currentConfig = [{ id: uuidv4(), name: legacyName, ...currentConfig }]
         }
 
         // Remove provider
