@@ -43,6 +43,31 @@ export default function ShareableLinksPage() {
                     />
                 </div>
 
+                {/* Twitter Share Preview */}
+                <section className="mb-16">
+                    <div className="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+                                Beautiful Link Previews
+                            </h2>
+                            <p className="text-gray-700 mb-4">
+                                When you share your document on Twitter, Facebook, or any platform,
+                                they'll show a rich preview with your document's title and content.
+                            </p>
+                            <p className="text-gray-600 text-sm">
+                                Makes your shared content look professional and inviting.
+                            </p>
+                        </div>
+                        <div className="rounded-lg overflow-hidden shadow-lg border border-gray-200">
+                            <img
+                                src="/features/screens/pad_share_twitter.png"
+                                alt="Twitter share preview"
+                                className="w-full"
+                            />
+                        </div>
+                    </div>
+                </section>
+
                 {/* How it works */}
                 <section className="mb-16 bg-gray-50 rounded-2xl p-8">
                     <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">
