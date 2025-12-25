@@ -140,7 +140,10 @@ async function runMigrations() {
 
       // Add archive_id column to users - unique ID for each user's archive page
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS archive_id TEXT UNIQUE`,
-      `CREATE INDEX IF NOT EXISTS idx_users_archive_id ON users(archive_id) WHERE archive_id IS NOT NULL`
+      `CREATE INDEX IF NOT EXISTS idx_users_archive_id ON users(archive_id) WHERE archive_id IS NOT NULL`,
+
+      // Add ipfs_config column to users - IPFS storage configuration
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS ipfs_config JSONB`
     ]
 
     // Run all migrations
