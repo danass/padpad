@@ -8,29 +8,30 @@ export async function GET() {
     if (!userId) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
+
     const result = await sql.query(
       'SELECT testament_username, testament_slug FROM users WHERE id = $1',
       [userId]
     )
-    
+
     if (result.rows.length === 0) {
-      // User doesn't exist, create one with a slug
+      // User doesn't exist, create one with a slug and archive_id
       const slug = generateSlug(userId)
+      const archiveId = userId.replace(/-/g, '').substring(0, 8)
       await sql.query(
-        `INSERT INTO users (id, testament_slug, updated_at)
-         VALUES ($1, $2, NOW())
+        `INSERT INTO users (id, testament_slug, archive_id, updated_at)
+         VALUES ($1, $2, $3, NOW())
          ON CONFLICT (id) 
          DO UPDATE SET testament_slug = COALESCE(users.testament_slug, $2), updated_at = NOW()
          RETURNING testament_username, testament_slug`,
-        [userId, slug]
+        [userId, slug, archiveId]
       )
       return Response.json({ testament_slug: slug, testament_username: null })
     }
-    
+
     const user = result.rows[0]
     let slug = user.testament_slug
-    
+
     // Generate slug if it doesn't exist
     if (!slug) {
       slug = generateSlug(userId)
@@ -39,9 +40,9 @@ export async function GET() {
         [slug, userId]
       )
     }
-    
+
     // Return username if exists, otherwise slug
-    return Response.json({ 
+    return Response.json({
       testament_slug: user.testament_username || slug,
       testament_username: user.testament_username || null
     })

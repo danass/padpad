@@ -112,19 +112,27 @@ export default function PublicDocumentClient({ serverData }) {
     }, [editor, content, mounted])
 
     if (error) {
+        const isServerError = error === 'server_error'
         return (
             <div className="min-h-screen bg-white">
                 <div className="max-w-4xl mx-auto px-6 py-12">
                     <div className="text-center">
+                        <div className="text-6xl mb-4">{isServerError ? '🔧' : '🔒'}</div>
                         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                            {error === 'not_found' ? (t?.documentNotFound || 'Document Not Found') : (t?.accessDenied || 'Access Denied')}
+                            {error === 'not_found'
+                                ? (t?.documentNotFound || 'Document Not Found')
+                                : isServerError
+                                    ? 'Service temporarily unavailable'
+                                    : (t?.accessDenied || 'Access Denied')}
                         </h1>
                         <p className="text-gray-600 mb-6">
                             {error === 'not_found'
                                 ? (t?.documentNotFoundDesc || 'The document you are looking for does not exist or has been deleted.')
                                 : error === 'not_public'
                                     ? (t?.documentPrivate || 'This document is private and cannot be accessed publicly.')
-                                    : 'An error occurred while loading the document.'}
+                                    : isServerError
+                                        ? "We've reached our database limit for this month. The service will be restored soon."
+                                        : 'An error occurred while loading the document.'}
                         </p>
                         <a
                             href="/"

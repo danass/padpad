@@ -1,6 +1,7 @@
 import { sql } from '@vercel/postgres'
 import { replayHistory } from '@/lib/editor/history-replay'
 import HomeClient from './HomeClient'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,19 +43,48 @@ async function getFeaturedArticles() {
                 author: {
                     username: doc.testament_username,
                     avatarUrl: doc.avatar_url,
-                    archiveId: doc.archive_id,
+                    archiveId: doc.archive_id || (doc.user_id ? doc.user_id.replace(/-/g, '').substring(0, 8) : null),
                 },
             }
         }))
 
-        return articles
+        return { articles, dbError: false }
     } catch (error) {
         console.error('Error fetching featured:', error)
-        return []
+        return { articles: [], dbError: true }
     }
 }
 
+// DB Error component
+function DBErrorPage() {
+    return (
+        <div className="min-h-screen bg-white flex items-center justify-center">
+            <div className="max-w-md text-center p-8">
+                <img src="/padpad.png" alt="Textpad" className="w-24 h-24 mx-auto mb-6 opacity-50" />
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">Service temporarily unavailable</h1>
+                <p className="text-gray-600 mb-6">
+                    We&apos;ve reached our database limit for this month. The service will be restored soon.
+                </p>
+                <p className="text-sm text-gray-400 mb-6">
+                    Thank you for your patience. Limits reset on the 1st of each month.
+                </p>
+                <Link
+                    href="/"
+                    className="inline-block px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                    Try Again
+                </Link>
+            </div>
+        </div>
+    )
+}
+
 export default async function HomePage() {
-    const featuredArticles = await getFeaturedArticles()
-    return <HomeClient featuredArticles={featuredArticles} />
+    const { articles, dbError } = await getFeaturedArticles()
+
+    if (dbError) {
+        return <DBErrorPage />
+    }
+
+    return <HomeClient featuredArticles={articles} />
 }

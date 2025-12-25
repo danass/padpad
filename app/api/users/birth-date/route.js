@@ -7,16 +7,16 @@ export async function GET() {
     if (!userId) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
+
     const result = await sql.query(
       'SELECT birth_date FROM users WHERE id = $1',
       [userId]
     )
-    
+
     if (result.rows.length === 0) {
       return Response.json({ birth_date: null })
     }
-    
+
     return Response.json({ birth_date: result.rows[0].birth_date })
   } catch (error) {
     console.error('Error fetching birth date:', error)
@@ -30,10 +30,10 @@ export async function PATCH(request) {
     if (!userId) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
+
     const body = await request.json()
     const { birth_date } = body
-    
+
     // Allow null to clear birth date (disable Digital Legacy)
     if (birth_date !== null && birth_date !== undefined) {
       // Validate date format if provided
@@ -42,17 +42,18 @@ export async function PATCH(request) {
         return Response.json({ error: 'Invalid date format' }, { status: 400 })
       }
     }
-    
-    // Insert or update user
+
+    // Insert or update user - auto-generate archive_id
+    const archiveId = userId.replace(/-/g, '').substring(0, 8)
     const result = await sql.query(
-      `INSERT INTO users (id, birth_date, updated_at)
-       VALUES ($1, $2, NOW())
+      `INSERT INTO users (id, birth_date, archive_id, updated_at)
+       VALUES ($1, $2, $3, NOW())
        ON CONFLICT (id) 
        DO UPDATE SET birth_date = $2, updated_at = NOW()
        RETURNING birth_date`,
-      [userId, birth_date]
+      [userId, birth_date, archiveId]
     )
-    
+
     return Response.json({ birth_date: result.rows[0].birth_date })
   } catch (error) {
     console.error('Error updating birth date:', error)

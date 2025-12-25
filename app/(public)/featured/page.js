@@ -85,7 +85,8 @@ async function getFeaturedArticles(page = 1, limit = 20) {
                 author: {
                     username: doc.testament_username,
                     avatarUrl: doc.avatar_url,
-                    archiveId: doc.archive_id,
+                    // Use archive_id or first 8 chars of user_id (without dashes) as fallback
+                    archiveId: doc.archive_id || (doc.user_id ? doc.user_id.replace(/-/g, '').substring(0, 8) : null),
                 },
             }
         }))
@@ -93,18 +94,37 @@ async function getFeaturedArticles(page = 1, limit = 20) {
         return {
             articles,
             total,
-            totalPages: Math.ceil(total / limit)
+            totalPages: Math.ceil(total / limit),
+            dbError: false
         }
     } catch (error) {
         console.error('Error fetching featured:', error)
-        return { articles: [], total: 0, totalPages: 0 }
+        return { articles: [], total: 0, totalPages: 0, dbError: true }
     }
 }
 
 export default async function FeaturedPage({ searchParams }) {
     const params = await searchParams
     const page = parseInt(params?.page || '1')
-    const { articles, totalPages } = await getFeaturedArticles(page)
+    const { articles, totalPages, dbError } = await getFeaturedArticles(page)
+
+    // Show error message if database is unavailable
+    if (dbError) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="max-w-md text-center p-8">
+                    <div className="text-6xl mb-4">🔧</div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-4">Service temporarily unavailable</h1>
+                    <p className="text-gray-600 mb-6">
+                        We&apos;ve reached our database limit for this month. The service will be restored soon.
+                    </p>
+                    <a href="/" className="inline-block px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
+                        Go to Home
+                    </a>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">

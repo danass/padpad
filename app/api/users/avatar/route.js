@@ -7,16 +7,16 @@ export async function GET() {
     if (!userId) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
+
     const result = await sql.query(
       'SELECT avatar_url FROM users WHERE id = $1',
       [userId]
     )
-    
+
     if (result.rows.length === 0) {
       return Response.json({ avatar_url: null })
     }
-    
+
     return Response.json({ avatar_url: result.rows[0].avatar_url })
   } catch (error) {
     console.error('Error fetching avatar:', error)
@@ -30,24 +30,25 @@ export async function PATCH(request) {
     if (!userId) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
+
     const body = await request.json()
     const { avatar_url } = body
-    
+
     if (avatar_url && typeof avatar_url !== 'string') {
       return Response.json({ error: 'avatar_url must be a string' }, { status: 400 })
     }
-    
-    // Insert or update user
+
+    // Insert or update user - auto-generate archive_id from first 8 chars of userId
+    const archiveId = userId.replace(/-/g, '').substring(0, 8)
     const result = await sql.query(
-      `INSERT INTO users (id, avatar_url, updated_at)
-       VALUES ($1, $2, NOW())
+      `INSERT INTO users (id, avatar_url, archive_id, updated_at)
+       VALUES ($1, $2, $3, NOW())
        ON CONFLICT (id) 
        DO UPDATE SET avatar_url = $2, updated_at = NOW()
        RETURNING avatar_url`,
-      [userId, avatar_url || null]
+      [userId, avatar_url || null, archiveId]
     )
-    
+
     return Response.json({ avatar_url: result.rows[0].avatar_url })
   } catch (error) {
     console.error('Error updating avatar:', error)

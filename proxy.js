@@ -50,6 +50,7 @@ export async function proxy(request) {
     pathname.startsWith('/api/public') ||
     pathname.startsWith('/online-text-editor') ||
     pathname.startsWith('/features') ||
+    pathname === '/featured' ||
     pathname === '/robots.txt' ||
     pathname === '/sitemap.xml' ||
     pathname === '/privacy' ||
