@@ -113,11 +113,11 @@ export default function LinkPreviewComponent({ node, updateAttributes, deleteNod
         )
     }
 
-    // Rich preview - compact horizontal layout
+    // Rich preview - compact horizontal layout with max width
     return (
         <NodeViewWrapper className="link-preview-wrapper my-2" data-drag-handle>
             <div
-                className="border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer group relative bg-gray-50"
+                className="border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer group relative bg-gray-50 max-w-sm inline-block"
                 onClick={handleClick}
             >
                 {/* Delete button */}

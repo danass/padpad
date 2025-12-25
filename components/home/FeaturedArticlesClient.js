@@ -53,16 +53,20 @@ export default function FeaturedArticlesClient({ articles = [] }) {
                 {articles.map((article) => (
                     <article key={article.id} className="border-b border-gray-100 pb-10 last:border-none">
                         <div className="mb-4">
-                            {article.author?.username && (
+                            {(article.author?.username || article.author?.archiveId) && (
                                 <div className="flex items-center gap-2 mb-3">
                                     {article.author.avatarUrl ? (
                                         <img src={article.author.avatarUrl} alt="" className="w-8 h-8 rounded-full" />
                                     ) : (
                                         <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                                            <span className="text-sm text-gray-500">{article.author.username.charAt(0).toUpperCase()}</span>
+                                            <span className="text-sm text-gray-500">
+                                                {(article.author.username || article.author.archiveId || '?').charAt(0).toUpperCase()}
+                                            </span>
                                         </div>
                                     )}
-                                    <span className="text-sm text-gray-600">@{article.author.username}</span>
+                                    <span className="text-sm text-gray-600">
+                                        @{article.author.username || article.author.archiveId}
+                                    </span>
                                     <span className="text-gray-300">·</span>
                                     <span className="text-sm text-gray-400">
                                         {new Date(article.featuredAt || article.updatedAt).toLocaleDateString()}
