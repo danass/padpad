@@ -25,9 +25,12 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
   const clickStartRef = useRef(null)
   const hasMovedRef = useRef(false)
   const [maxWidth, setMaxWidth] = useState(null)
+  const [showContextMenu, setShowContextMenu] = useState(false)
+  const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 })
+  const [moveMode, setMoveMode] = useState(false) // Toggle for move mode
 
   const { paths, width, height, x, y, align = 'center' } = node.attrs
-  
+
   // Calculate responsive width for mobile
   useEffect(() => {
     const updateMaxWidth = () => {
@@ -41,16 +44,16 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
     window.addEventListener('resize', updateMaxWidth)
     return () => window.removeEventListener('resize', updateMaxWidth)
   }, [])
-  
+
   // Calculate actual display dimensions (constrained by maxWidth on mobile)
   const displayWidth = maxWidth && width > maxWidth ? maxWidth : (width || 400)
-  const displayHeight = maxWidth && width > maxWidth 
+  const displayHeight = maxWidth && width > maxWidth
     ? Math.round((height || 300) * (maxWidth / (width || 400)))
     : (height || 300)
-  
+
   // Ensure paths is always an array
   const savedPaths = Array.isArray(paths) ? paths : []
-  
+
   // Keep node ref in sync
   useEffect(() => {
     nodeRef.current = node
@@ -58,7 +61,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
 
   // Check if drawing is currently selected
   const isSelected = editor.isActive('drawing')
-  
+
   // Check if drawing is in absolute position
   const isAbsolute = x !== null && x !== undefined && y !== null && y !== undefined
 
@@ -82,21 +85,21 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
   useEffect(() => {
     const handleColorChange = (e) => {
       const newColor = e?.detail?.color
-      
+
       // ALWAYS update the drawing color when a color is selected from toolbar
       if (newColor) {
         currentColorRef.current = newColor
         lastSelectedColorRef.current = newColor // Remember this color!
-        
+
         // Update canvas border color to show active pen color (only if selected)
         if (isSelected && canvasRef.current) {
           canvasRef.current.style.borderColor = newColor
         }
       }
     }
-    
+
     window.addEventListener('textColorChanged', handleColorChange)
-    
+
     return () => {
       window.removeEventListener('textColorChanged', handleColorChange)
     }
@@ -184,7 +187,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
     // 3. Default black
     const globalColor = typeof window !== 'undefined' ? window.__drawingPenColor : null
     const editorColor = getCurrentTextColor()
-    
+
     // Use global color if available, otherwise use editor color
     currentColorRef.current = globalColor || editorColor || '#000000'
 
@@ -218,15 +221,15 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
         points: [...pathPoints],
         color: currentColorRef.current,
       }
-      
+
       // Get latest paths from node ref to ensure we have the most current state
       const currentPaths = Array.isArray(nodeRef.current.attrs.paths) ? nodeRef.current.attrs.paths : []
-      
+
       // Save immediately to make drawing permanent
       const newPaths = [...currentPaths, pathToSave]
       updateAttributes({ paths: newPaths })
     }
-    
+
     setIsDrawing(false)
     isDrawingRef.current = false
     // Clear currentPath after a brief delay to allow rendering
@@ -270,10 +273,10 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
 
     const clientX = e.touches ? e.touches[0].clientX : e.clientX
     const clientY = e.touches ? e.touches[0].clientY : e.clientY
-    
+
     clickStartRef.current = { x: clientX, y: clientY, time: Date.now() }
     hasMovedRef.current = false
-    
+
     setIsDragging(true)
     setDragStart({
       x: clientX - (x || 0),
@@ -330,21 +333,21 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
   // Enable absolute positioning - keep current position
   const enableAbsolutePosition = () => {
     if (!editor.isEditable) return
-    
+
     const editorElement = editor.view.dom.closest('.prose') || editor.view.dom.parentElement
     if (!editorElement || !containerRef.current) return
 
     const editorRect = editorElement.getBoundingClientRect()
     const containerRect = containerRef.current.getBoundingClientRect()
-    
+
     // Calculate current position relative to editor (keep it in place)
     const currentX = containerRect.left - editorRect.left + editorElement.scrollLeft
     const currentY = containerRect.top - editorRect.top + editorElement.scrollTop
-    
+
     // Enable absolute positioning with current position
-    updateAttributes({ 
+    updateAttributes({
       x: currentX,
-      y: currentY 
+      y: currentY
     })
   }
 
@@ -490,7 +493,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
       default: return '0 auto' // center
     }
   }
-  
+
   const containerStyle = {
     position: (x !== null && x !== undefined && y !== null && y !== undefined) ? 'absolute' : 'relative',
     left: (x !== null && x !== undefined) ? `${x}px` : undefined,
@@ -500,14 +503,14 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
     margin: getAlignMargin(),
     zIndex: 5, // Low z-index for drawing canvas, below header/toolbar
   }
-  
+
   const handleAlign = (newAlign) => {
     updateAttributes({ align: newAlign })
   }
 
   return (
     <NodeViewWrapper className="drawing-wrapper block" data-drag-handle={editor.isEditable ? '' : undefined}>
-      <div 
+      <div
         ref={containerRef}
         className="group relative block"
         style={containerStyle}
@@ -523,24 +526,39 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
               width: `${displayWidth}px`,
               height: `${displayHeight}px`,
               maxWidth: '100%',
-              border: editor.isEditable 
+              border: editor.isEditable
                 ? (isSelected ? `2px solid ${currentColorRef.current}` : '1px solid #e5e7eb')
                 : 'none',
               borderRadius: '0.5rem',
               backgroundColor: 'transparent',
-              cursor: editor.isEditable ? (isDragging ? 'grabbing' : (isResizing ? 'nwse-resize' : 'crosshair')) : 'default',
-              // Note: Hold Alt/Option to drag when in absolute position
+              cursor: editor.isEditable
+                ? (isDragging || moveMode ? 'grab' : (isResizing ? 'nwse-resize' : 'crosshair'))
+                : 'default',
               touchAction: 'none',
               display: 'block',
             }}
+            onContextMenu={(e) => {
+              if (!editor.isEditable) return
+              e.preventDefault()
+              e.stopPropagation()
+              // Show custom context menu for drawing
+              const rect = containerRef.current?.getBoundingClientRect()
+              if (rect) {
+                setContextMenuPos({
+                  x: e.clientX - rect.left,
+                  y: e.clientY - rect.top
+                })
+                setShowContextMenu(true)
+              }
+            }}
             onMouseDown={(e) => {
-              // Check if clicking on resize handle
+              // Check if clicking on resize handle - now for ALL drawings
               const rect = canvasRef.current?.getBoundingClientRect()
-              if (rect && !isAbsolute) {
+              if (rect) {
                 const clickX = e.clientX - rect.left
                 const clickY = e.clientY - rect.top
-                const handleSize = 8
-                
+                const handleSize = 12 // Slightly larger hit area
+
                 // Check corners
                 if (clickX <= handleSize && clickY <= handleSize) {
                   startResize(e, 'tl')
@@ -559,16 +577,15 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                   return
                 }
               }
-              
+
               // If absolute position:
-              // - Hold Alt/Option to drag
+              // - If move mode is ON, drag on click
+              // - Hold Alt/Option to drag (fallback)
               // - Normal click to draw
               if (isAbsolute) {
-                if (e.altKey) {
-                  // Alt+click = drag
+                if (moveMode || e.altKey) {
                   startDragging(e)
                 } else {
-                  // Normal click = draw
                   startDrawing(e)
                 }
               } else {
@@ -584,7 +601,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                 const clickX = touch.clientX - rect.left
                 const clickY = touch.clientY - rect.top
                 const handleSize = 8
-                
+
                 if (clickX <= handleSize && clickY <= handleSize) {
                   startResize(e, 'tl')
                   return
@@ -602,7 +619,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
                   return
                 }
               }
-              
+
               // For touch on absolute: two finger touch = drag, one finger = draw
               if (isAbsolute) {
                 if (e.touches.length >= 2) {
@@ -618,9 +635,9 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
             }}
             className={`transition-all ${editor.isEditable ? 'group-hover:ring-2 group-hover:ring-blue-400' : ''}`}
           />
-          
-          {/* Resize handles */}
-          {editor.isEditable && !isAbsolute && (
+
+          {/* Resize handles - show for both absolute and normal */}
+          {editor.isEditable && (
             <>
               <div
                 className="absolute top-0 left-0 w-2 h-2 bg-blue-500 border border-white rounded-full cursor-nwse-resize z-10"
@@ -656,99 +673,200 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
               />
             </>
           )}
-          
+
           {/* Hover menu - positioned relative to canvas container */}
           {editor.isEditable && showHoverMenu && (
             <div className="absolute bottom-2 right-2 bg-white border border-gray-200 rounded-lg shadow-lg p-1 flex gap-1 z-20">
-            {/* Alignment buttons - only show when not absolute */}
-            {!isAbsolute && (
-              <>
+              {/* Alignment buttons - only show when not absolute */}
+              {!isAbsolute && (
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleAlign('left') }}
+                    className={`p-2 rounded transition-colors ${align === 'left' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                    title={t?.alignLeft || 'Align left'}
+                    aria-label={t?.alignLeft || 'Align left'}
+                  >
+                    <AlignLeft className="w-4 h-4 text-gray-600" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleAlign('center') }}
+                    className={`p-2 rounded transition-colors ${align === 'center' || !align ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                    title={t?.alignCenter || 'Align center'}
+                    aria-label={t?.alignCenter || 'Align center'}
+                  >
+                    <AlignCenter className="w-4 h-4 text-gray-600" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleAlign('right') }}
+                    className={`p-2 rounded transition-colors ${align === 'right' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                    title={t?.alignRight || 'Align right'}
+                    aria-label={t?.alignRight || 'Align right'}
+                  >
+                    <AlignRight className="w-4 h-4 text-gray-600" />
+                  </button>
+                  <div className="w-px h-6 bg-gray-200 mx-0.5" />
+                </>
+              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleUndo()
+                }}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                title={t?.undoLastStroke || 'Undo last stroke'}
+                aria-label={t?.undoLastStroke || 'Undo last stroke'}
+              >
+                <Undo2 className="w-4 h-4 text-gray-600" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleExportPNG()
+                }}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                title={t?.exportAsPng || 'Export as PNG'}
+                aria-label={t?.exportAsPng || 'Export as PNG'}
+              >
+                <Download className="w-4 h-4 text-gray-600" />
+              </button>
+              {isAbsolute ? (
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleAlign('left') }}
-                  className={`p-2 rounded transition-colors ${align === 'left' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-                  title={t?.alignLeft || 'Align left'}
-                  aria-label={t?.alignLeft || 'Align left'}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    disableAbsolutePosition()
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded transition-colors"
+                  title={t?.returnToFlow || 'Return to text flow'}
+                  aria-label={t?.returnToFlow || 'Return to text flow'}
                 >
                   <AlignLeft className="w-4 h-4 text-gray-600" />
                 </button>
+              ) : (
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleAlign('center') }}
-                  className={`p-2 rounded transition-colors ${align === 'center' || !align ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-                  title={t?.alignCenter || 'Align center'}
-                  aria-label={t?.alignCenter || 'Align center'}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    enableAbsolutePosition()
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded transition-colors"
+                  title={t?.makeAbsolute || 'Make absolute'}
+                  aria-label={t?.makeAbsolute || 'Make absolute'}
                 >
-                  <AlignCenter className="w-4 h-4 text-gray-600" />
+                  <Move className="w-4 h-4 text-gray-600" />
                 </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleAlign('right') }}
-                  className={`p-2 rounded transition-colors ${align === 'right' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-                  title={t?.alignRight || 'Align right'}
-                  aria-label={t?.alignRight || 'Align right'}
-                >
-                  <AlignRight className="w-4 h-4 text-gray-600" />
-                </button>
-                <div className="w-px h-6 bg-gray-200 mx-0.5" />
-              </>
-            )}
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                handleUndo()
-              }}
-              className="p-2 hover:bg-gray-100 rounded transition-colors"
-              title={t?.undoLastStroke || 'Undo last stroke'}
-              aria-label={t?.undoLastStroke || 'Undo last stroke'}
-            >
-              <Undo2 className="w-4 h-4 text-gray-600" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                handleExportPNG()
-              }}
-              className="p-2 hover:bg-gray-100 rounded transition-colors"
-              title={t?.exportAsPng || 'Export as PNG'}
-              aria-label={t?.exportAsPng || 'Export as PNG'}
-            >
-              <Download className="w-4 h-4 text-gray-600" />
-            </button>
-            {isAbsolute ? (
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  disableAbsolutePosition()
+                  deleteNode()
                 }}
                 className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title={t?.returnToFlow || 'Return to text flow'}
-                aria-label={t?.returnToFlow || 'Return to text flow'}
+                title={t?.delete || 'Delete'}
+                aria-label={t?.delete || 'Delete'}
               >
-                <AlignLeft className="w-4 h-4 text-gray-600" />
+                <Trash2 className="w-4 h-4 text-red-600" />
               </button>
-            ) : (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  enableAbsolutePosition()
+            </div>
+          )}
+
+          {/* Custom Context Menu for Drawing */}
+          {showContextMenu && editor.isEditable && (
+            <>
+              {/* Backdrop to close menu */}
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowContextMenu(false)}
+              />
+              <div
+                className="absolute bg-white border border-gray-200 rounded-lg shadow-xl p-2 z-50 min-w-[160px]"
+                style={{
+                  left: contextMenuPos.x,
+                  top: contextMenuPos.y,
+                  maxWidth: '200px'
                 }}
-                className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title={t?.makeAbsolute || 'Make absolute'}
-                aria-label={t?.makeAbsolute || 'Make absolute'}
+                onClick={(e) => e.stopPropagation()}
               >
-                <Move className="w-4 h-4 text-gray-600" />
-              </button>
-            )}
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                deleteNode()
-              }}
-              className="p-2 hover:bg-gray-100 rounded transition-colors"
-              title={t?.delete || 'Delete'}
-              aria-label={t?.delete || 'Delete'}
-            >
-              <Trash2 className="w-4 h-4 text-red-600" />
-            </button>
-          </div>
+                {/* Move mode toggle - only for absolute drawings */}
+                {isAbsolute && (
+                  <button
+                    onClick={() => {
+                      setMoveMode(!moveMode)
+                      setShowContextMenu(false)
+                    }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-gray-100 ${moveMode ? 'bg-blue-50 text-blue-700' : 'text-gray-700'}`}
+                  >
+                    <Move className="w-4 h-4" />
+                    <span>{moveMode ? 'Drawing Mode' : 'Move Mode'}</span>
+                  </button>
+                )}
+
+                {/* Color picker for pen */}
+                <div className="px-3 py-2">
+                  <label className="text-xs text-gray-500 block mb-1">Pen Color</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={currentColorRef.current}
+                      onChange={(e) => {
+                        currentColorRef.current = e.target.value
+                        lastSelectedColorRef.current = e.target.value
+                        // Update global pen color
+                        if (typeof window !== 'undefined') {
+                          window.__drawingPenColor = e.target.value
+                        }
+                        // Dispatch event for other components
+                        window.dispatchEvent(new CustomEvent('textColorChanged', {
+                          detail: { color: e.target.value }
+                        }))
+                        setShowContextMenu(false)
+                      }}
+                      className="w-8 h-8 rounded cursor-pointer border border-gray-200"
+                    />
+                    <div
+                      className="w-6 h-6 rounded border border-gray-300"
+                      style={{ backgroundColor: currentColorRef.current }}
+                    />
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-100 my-1" />
+
+                {/* Quick actions */}
+                <button
+                  onClick={() => {
+                    handleUndo()
+                    setShowContextMenu(false)
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded hover:bg-gray-100"
+                >
+                  <Undo2 className="w-4 h-4" />
+                  <span>Undo Stroke</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    handleExportPNG()
+                    setShowContextMenu(false)
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded hover:bg-gray-100"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Export PNG</span>
+                </button>
+
+                <div className="border-t border-gray-100 my-1" />
+
+                <button
+                  onClick={() => {
+                    deleteNode()
+                    setShowContextMenu(false)
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 rounded hover:bg-red-50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete Drawing</span>
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>
