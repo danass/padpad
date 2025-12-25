@@ -113,67 +113,56 @@ export default function LinkPreviewComponent({ node, updateAttributes, deleteNod
         )
     }
 
-    // Rich preview
+    // Rich preview - compact horizontal layout
     return (
-        <NodeViewWrapper className="link-preview-wrapper my-4" data-drag-handle>
+        <NodeViewWrapper className="link-preview-wrapper my-2" data-drag-handle>
             <div
-                className="border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 hover:shadow-md transition-all cursor-pointer group relative"
+                className="border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer group relative bg-gray-50"
                 onClick={handleClick}
             >
                 {/* Delete button */}
                 {editor.isEditable && (
                     <button
                         onClick={(e) => { e.stopPropagation(); deleteNode() }}
-                        className="absolute top-2 right-2 p-1.5 bg-white/80 hover:bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        className="absolute top-1 right-1 p-1 bg-white/80 hover:bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity z-10"
                         title="Remove"
                     >
-                        <X className="w-4 h-4 text-gray-600" />
+                        <X className="w-3 h-3 text-gray-600" />
                     </button>
                 )}
 
-                <div className="flex flex-col sm:flex-row">
-                    {/* Image */}
-                    {image && (
-                        <div className="sm:w-48 sm:flex-shrink-0 h-32 sm:h-auto bg-gray-100 overflow-hidden">
+                <div className="flex items-center gap-3 p-2">
+                    {/* Image - small square */}
+                    {image ? (
+                        <div className="w-12 h-12 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
                             <img
                                 src={image}
                                 alt={title || 'Link preview'}
                                 className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    e.target.style.display = 'none'
-                                }}
+                                onError={(e) => { e.target.style.display = 'none' }}
+                            />
+                        </div>
+                    ) : favicon && (
+                        <div className="w-10 h-10 flex-shrink-0 bg-white rounded flex items-center justify-center">
+                            <img
+                                src={favicon}
+                                alt=""
+                                className="w-6 h-6"
+                                onError={(e) => { e.target.style.display = 'none' }}
                             />
                         </div>
                     )}
 
                     {/* Content */}
-                    <div className="p-4 flex-1 min-w-0">
-                        {/* Site info */}
-                        <div className="flex items-center gap-2 mb-2">
-                            {favicon && (
-                                <img
-                                    src={favicon}
-                                    alt=""
-                                    className="w-4 h-4"
-                                    onError={(e) => { e.target.style.display = 'none' }}
-                                />
-                            )}
-                            <span className="text-xs text-gray-500 uppercase tracking-wide truncate">
-                                {siteName || new URL(url).hostname}
-                            </span>
-                        </div>
-
+                    <div className="flex-1 min-w-0">
                         {/* Title */}
-                        <h3 className="font-medium text-gray-900 mb-1 line-clamp-2">
+                        <h3 className="font-medium text-gray-900 text-sm truncate">
                             {title}
                         </h3>
-
-                        {/* Description */}
-                        {description && (
-                            <p className="text-sm text-gray-600 line-clamp-2">
-                                {description}
-                            </p>
-                        )}
+                        {/* Site name */}
+                        <span className="text-xs text-gray-500 truncate block">
+                            {siteName || new URL(url).hostname}
+                        </span>
                     </div>
                 </div>
             </div>
