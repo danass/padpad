@@ -97,24 +97,29 @@ export async function GET(request, { params }) {
       }
     }
 
-    // Get user's testament_username for archive link
+    // Get user's archive link identifier
     let archiveId = null
     let authorName = null
     if (document.user_id) {
-      const userResult = await sql.query(
-        'SELECT id, testament_username FROM users WHERE id = $1',
+      // First try by UUID
+      let userResult = await sql.query(
+        'SELECT id, testament_username, archive_id FROM users WHERE id = $1',
         [document.user_id]
       )
+
+      // If not found and user_id looks like email, search by email
+      if (userResult.rows.length === 0 && document.user_id.includes('@')) {
+        userResult = await sql.query(
+          'SELECT id, testament_username, archive_id FROM users WHERE email = $1',
+          [document.user_id]
+        )
+      }
+
       if (userResult.rows.length > 0) {
-        if (userResult.rows[0].testament_username) {
-          archiveId = userResult.rows[0].testament_username
-          authorName = userResult.rows[0].testament_username
-        } else {
-          // Generate short hash from user UUID - NEVER use email
-          // Use first 8 chars of UUID (e.g., "a1b2c3d4")
-          const userId = userResult.rows[0].id
-          archiveId = userId.replace(/-/g, '').substring(0, 8)
-        }
+        const user = userResult.rows[0]
+        // Use testament_username if available, otherwise archive_id
+        archiveId = user.testament_username || user.archive_id
+        authorName = user.testament_username || null
       }
     }
 

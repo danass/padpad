@@ -18,38 +18,16 @@ async function getDocuments(userId) {
     let actualUserId = null
     let username = null
 
-    // First try testament_username
-    const usernameResult = await sql.query(
-      'SELECT id, testament_username FROM users WHERE testament_username = $1',
+    // Search by testament_username or archive_id
+    const userResult = await sql.query(
+      'SELECT id, testament_username, archive_id FROM users WHERE testament_username = $1 OR archive_id = $1',
       [userId]
     )
-    if (usernameResult.rows.length > 0) {
-      actualUserId = usernameResult.rows[0].id
-      username = usernameResult.rows[0].testament_username
-    }
 
-    // If not found, try matching by short UUID hash (first 8 chars without dashes)
-    if (!actualUserId && userId.length === 8 && /^[0-9a-f]+$/i.test(userId)) {
-      const hashResult = await sql.query(
-        "SELECT id, testament_username FROM users WHERE REPLACE(id::text, '-', '') LIKE $1",
-        [`${userId}%`]
-      )
-      if (hashResult.rows.length > 0) {
-        actualUserId = hashResult.rows[0].id
-        username = hashResult.rows[0].testament_username || userId
-      }
-    }
-
-    // Also try full UUID if it looks like one
-    if (!actualUserId && userId.includes('-')) {
-      const uuidResult = await sql.query(
-        'SELECT id, testament_username FROM users WHERE id = $1',
-        [userId]
-      )
-      if (uuidResult.rows.length > 0) {
-        actualUserId = uuidResult.rows[0].id
-        username = uuidResult.rows[0].testament_username || userId.replace(/-/g, '').substring(0, 8)
-      }
+    if (userResult.rows.length > 0) {
+      const user = userResult.rows[0]
+      actualUserId = user.id
+      username = user.testament_username || user.archive_id
     }
 
     if (!actualUserId) {
