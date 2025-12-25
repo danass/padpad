@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
 import NextLink from 'next/link'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -28,21 +27,24 @@ import { LinkPreview } from '@/lib/editor/link-preview-extension'
 import Emoji from '@tiptap/extension-emoji'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 
-export default function PublicDocumentClient() {
-    const params = useParams()
-    const documentId = params.id
+export default function PublicDocumentClient({ serverData }) {
     const { t } = useLanguage()
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
-    const [title, setTitle] = useState('')
-    const [isFullWidth, setIsFullWidth] = useState(false)
-    const [navigation, setNavigation] = useState({ prev: null, next: null })
     const [mounted, setMounted] = useState(false)
-    const [archiveId, setArchiveId] = useState(null)
-    const [authorName, setAuthorName] = useState(null)
+
+    // Extract data from serverData (passed from server component)
+    const error = serverData?.error
+    const document = serverData?.document
+    const content = serverData?.content
+    const navigation = serverData?.navigation || { prev: null, next: null }
+
+    const title = document?.title || ''
+    const isFullWidth = document?.is_full_width || false
+    const archiveId = document?.archive_id
+    const authorName = document?.author_name
 
     const editor = useEditor({
         editable: false,
+        immediatelyRender: false,
         extensions: [
             StarterKit.configure({
                 heading: {
@@ -64,7 +66,7 @@ export default function PublicDocumentClient() {
             DetailsSummary,
             DetailsContent,
             Link.configure({
-                openOnClick: false,
+                openOnClick: true,
                 HTMLAttributes: {
                     class: 'text-blue-500 underline cursor-pointer',
                 },
@@ -95,81 +97,19 @@ export default function PublicDocumentClient() {
                 enableEmoticons: true,
             }),
         ],
+        content: content || { type: 'doc', content: [] },
     })
 
     useEffect(() => {
         setMounted(true)
     }, [])
 
+    // Update editor content when it's ready
     useEffect(() => {
-        async function loadDocument() {
-            if (!documentId) return
-
-            setLoading(true)
-            setError(null)
-
-            try {
-                const response = await fetch(`/api/public/documents/${documentId}`)
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        setError('Document not found')
-                        setLoading(false)
-                        return
-                    }
-                    if (response.status === 403) {
-                        setError('This document is not public')
-                        setLoading(false)
-                        return
-                    }
-                    setError('Failed to load document')
-                    setLoading(false)
-                    return
-                }
-
-                const data = await response.json()
-                const { document, content, navigation: nav } = data
-
-                setTitle(document.title || '')
-                setIsFullWidth(document.is_full_width || false)
-                setNavigation(nav || { prev: null, next: null })
-                setArchiveId(document.archive_id || null)
-                setAuthorName(document.author_name || null)
-
-                if (editor && content) {
-                    queueMicrotask(() => {
-                        requestAnimationFrame(() => {
-                            try {
-                                editor.commands.setContent(content)
-                            } catch (error) {
-                                console.error('Error setting editor content:', error)
-                                try {
-                                    editor.commands.setContent({ type: 'doc', content: [] })
-                                } catch (fallbackError) {
-                                    console.error('Error setting fallback content:', fallbackError)
-                                }
-                            }
-                        })
-                    })
-                }
-
-                setLoading(false)
-            } catch (err) {
-                console.error('Error loading document:', err)
-                setError(err.message)
-                setLoading(false)
-            }
+        if (editor && content && mounted) {
+            editor.commands.setContent(content)
         }
-
-        loadDocument()
-    }, [documentId, editor])
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-white">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-            </div>
-        )
-    }
+    }, [editor, content, mounted])
 
     if (error) {
         return (
@@ -177,14 +117,14 @@ export default function PublicDocumentClient() {
                 <div className="max-w-4xl mx-auto px-6 py-12">
                     <div className="text-center">
                         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                            {error === 'Document not found' ? (t?.documentNotFound || 'Document Not Found') : (t?.accessDenied || 'Access Denied')}
+                            {error === 'not_found' ? (t?.documentNotFound || 'Document Not Found') : (t?.accessDenied || 'Access Denied')}
                         </h1>
                         <p className="text-gray-600 mb-6">
-                            {error === 'Document not found'
+                            {error === 'not_found'
                                 ? (t?.documentNotFoundDesc || 'The document you are looking for does not exist or has been deleted.')
-                                : error === 'This document is not public'
+                                : error === 'not_public'
                                     ? (t?.documentPrivate || 'This document is private and cannot be accessed publicly.')
-                                    : error}
+                                    : 'An error occurred while loading the document.'}
                         </p>
                         <a
                             href="/"
