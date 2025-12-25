@@ -71,11 +71,11 @@ export default function FeaturedPage() {
                                 >
                                     {/* Image */}
                                     {article.firstImage && (
-                                        <div className="h-32 bg-gray-50 overflow-hidden flex items-center justify-center p-2">
+                                        <div className="aspect-video bg-gray-50 overflow-hidden">
                                             <img
                                                 src={article.firstImage}
                                                 alt={article.title}
-                                                className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                             />
                                         </div>
                                     )}

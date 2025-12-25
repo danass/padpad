@@ -4,24 +4,24 @@ import { replayHistory } from '@/lib/editor/history-replay'
 export async function GET(request, { params }) {
   try {
     const { id } = await params
-    
+
     // Get document - public access, no authentication required
     let docResult = await sql.query(
       'SELECT * FROM documents WHERE id = $1',
       [id]
     )
-    
+
     if (docResult.rows.length === 0) {
       return Response.json({ error: 'Document not found' }, { status: 404 })
     }
-    
+
     const document = docResult.rows[0]
-    
+
     // Check if document is public
     if (!document.is_public) {
       return Response.json({ error: 'Document is not public' }, { status: 403 })
     }
-    
+
     // Get latest snapshot if exists
     let snapshot = null
     if (document.current_snapshot_id) {
@@ -41,7 +41,7 @@ export async function GET(request, { params }) {
         }
       }
     }
-    
+
     // Get events after snapshot
     let events = []
     if (snapshot) {
@@ -64,14 +64,14 @@ export async function GET(request, { params }) {
         payload: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload
       }))
     }
-    
+
     // Reconstruct content
     const content = replayHistory(snapshot, events)
-    
+
     // Get previous and next public documents (same user, ordered by updated_at)
     let prevDoc = null
     let nextDoc = null
-    
+
     if (document.user_id) {
       // Get previous document (older) - exclude current document
       const prevResult = await sql.query(
@@ -83,7 +83,7 @@ export async function GET(request, { params }) {
       if (prevResult.rows.length > 0) {
         prevDoc = prevResult.rows[0]
       }
-      
+
       // Get next document (newer) - exclude current document
       const nextResult = await sql.query(
         `SELECT id, title FROM documents 
@@ -96,7 +96,7 @@ export async function GET(request, { params }) {
         nextDoc = nextResult.rows[0]
       }
     }
-    
+
     // Get user's testament_username for archive link
     let archiveId = null
     let authorName = null
@@ -109,11 +109,11 @@ export async function GET(request, { params }) {
         archiveId = userResult.rows[0].testament_username
         authorName = userResult.rows[0].testament_username
       } else {
-        // Use a short hash of user_id (first 8 chars) instead of full UUID
-        archiveId = document.user_id.substring(0, 8)
+        // Use user_id as fallback (not email)
+        archiveId = document.user_id
       }
     }
-    
+
     return Response.json({
       document: {
         id: document.id,
