@@ -102,15 +102,19 @@ export async function GET(request, { params }) {
     let authorName = null
     if (document.user_id) {
       const userResult = await sql.query(
-        'SELECT testament_username FROM users WHERE id = $1',
+        'SELECT id, testament_username FROM users WHERE id = $1',
         [document.user_id]
       )
-      if (userResult.rows.length > 0 && userResult.rows[0].testament_username) {
-        archiveId = userResult.rows[0].testament_username
-        authorName = userResult.rows[0].testament_username
-      } else {
-        // Use user_id as fallback (not email)
-        archiveId = document.user_id
+      if (userResult.rows.length > 0) {
+        if (userResult.rows[0].testament_username) {
+          archiveId = userResult.rows[0].testament_username
+          authorName = userResult.rows[0].testament_username
+        } else {
+          // Generate short hash from user UUID - NEVER use email
+          // Use first 8 chars of UUID (e.g., "a1b2c3d4")
+          const userId = userResult.rows[0].id
+          archiveId = userId.replace(/-/g, '').substring(0, 8)
+        }
       }
     }
 
