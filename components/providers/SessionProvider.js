@@ -33,21 +33,32 @@ export default function SessionProvider({ children }) {
     setHydrated(true)
   }, [])
 
-  // On subdomains after hydration: use mock context to avoid NextAuth fetches
-  // But we still wrap with NextAuthSessionProvider as outer to provide context
-  const content = (hydrated && isSubdomain) ? (
-    <MockSessionContext.Provider value={{ data: null, status: 'unauthenticated', update: async () => null }}>
-      {children}
-    </MockSessionContext.Provider>
-  ) : children
+  // If we haven't hydrated yet, we don't know if we're on a subdomain.
+  // To avoid hydration mismatch, we must render a consistent initial state.
+  // We'll render the NextAuthSessionProvider by default, but it might trigger a fetch.
+  // Actually, a better way is to check synchronously if possible (which we do in getIsSubdomain but that's for window).
 
+  if (!hydrated) {
+    return <div style={{ visibility: 'hidden' }}>{children}</div>
+  }
+
+  // On subdomains: use mock context ONLY, no NextAuth provider
+  if (isSubdomain) {
+    return (
+      <MockSessionContext.Provider value={{ data: null, status: 'unauthenticated', update: async () => null }}>
+        {children}
+      </MockSessionContext.Provider>
+    )
+  }
+
+  // On main domain: use NextAuth provider
   return (
     <NextAuthSessionProvider
       basePath="/api/auth"
-      refetchInterval={isSubdomain ? 0 : 5 * 60}
+      refetchInterval={5 * 60}
       refetchOnWindowFocus={false}
     >
-      {content}
+      {children}
     </NextAuthSessionProvider>
   )
 }

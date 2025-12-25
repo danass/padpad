@@ -34,12 +34,16 @@ export default function Header() {
   // On subdomains, don't use session at all
   const onSubdomain = isSubdomain()
   let session = null
-  try {
-    const sessionData = useSession()
-    session = onSubdomain ? null : sessionData?.data
-  } catch (e) {
-    // If useSession fails (no provider), treat as no session
-    session = null
+
+  // Conditionally use session only if NOT on a subdomain
+  if (!onSubdomain) {
+    try {
+      const sessionData = useSession()
+      session = sessionData?.data
+    } catch (e) {
+      // If useSession fails (no provider), treat as no session
+      session = null
+    }
   }
 
   const [isAdmin, setIsAdmin] = useState(false)
