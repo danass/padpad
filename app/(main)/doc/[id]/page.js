@@ -69,6 +69,7 @@ export default function DocumentPage() {
   const [birthDate, setBirthDate] = useState(null)
   const [showAutoPublicModal, setShowAutoPublicModal] = useState(false)
   const [linkEditorPosition, setLinkEditorPosition] = useState(null)
+  const [isOwner, setIsOwner] = useState(true) // Default to true, will be set from API
   const [mounted, setMounted] = useState(false)
   const autosaveTimeoutRef = useRef(null)
   const snapshotIntervalRef = useRef(null)
@@ -77,7 +78,7 @@ export default function DocumentPage() {
   const pendingContentRef = useRef(null) // Store content to load when editor is ready
   const isDocumentDeletedRef = useRef(false) // Track if document was deleted
   const { showToast } = useToast()
-  
+
   const {
     currentDocument,
     setCurrentDocument,
@@ -85,22 +86,22 @@ export default function DocumentPage() {
     markSaved,
     currentVersion
   } = useEditorStore()
-  
+
   // Debounced autosave - increased debounce time and prevent multiple saves
   const handleAutosave = useCallback(async (content) => {
-    if (!documentId || saving || isDocumentDeletedRef.current) return
-    
+    if (!documentId || saving || isDocumentDeletedRef.current || !isOwner) return
+
     // Check if content actually changed
     const contentStr = JSON.stringify(content)
     if (lastSavedContentRef.current === contentStr) {
       return // No changes, skip save
     }
-    
+
     // Clear existing timeout
     if (autosaveTimeoutRef.current) {
       clearTimeout(autosaveTimeoutRef.current)
     }
-    
+
     // Set new timeout - increased to 2 seconds to batch changes
     autosaveTimeoutRef.current = setTimeout(async () => {
       // Double check content hasn't changed during timeout
@@ -108,15 +109,15 @@ export default function DocumentPage() {
       if (lastSavedContentRef.current === currentContentStr) {
         return // Content was already saved
       }
-      
+
       setSaving(true)
       try {
         // Calculate diff (simplified - in production, use proper ProseMirror steps)
         const diff = calculateDiff(null, content)
-        
+
         // Get current version
         const version = useEditorStore.getState().currentVersion
-        
+
         // Send event
         const eventResponse = await fetch(`/api/documents/${documentId}/events`, {
           method: 'POST',
@@ -127,7 +128,7 @@ export default function DocumentPage() {
             version
           })
         })
-        
+
         if (!eventResponse.ok) {
           // If 404 or 401, user doesn't have access or document was deleted
           if (eventResponse.status === 404 || eventResponse.status === 401) {
@@ -150,11 +151,11 @@ export default function DocumentPage() {
           setSaving(false)
           return
         }
-        
+
         // Mark as saved and update last saved content
         lastSavedContentRef.current = currentContentStr
         markSaved()
-        
+
         // Also create a snapshot immediately after saving event (to ensure content is persisted)
         // This ensures content is available even if user refreshes before the 1-minute interval
         // But only if content is not empty
@@ -178,7 +179,7 @@ export default function DocumentPage() {
           })
           return !hasNonEmptyContent
         }
-        
+
         // Only create snapshot if content is not empty
         if (!isContentEmpty(content)) {
           try {
@@ -187,7 +188,7 @@ export default function DocumentPage() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ content_json: content })
             })
-            
+
             if (snapshotResponse.ok) {
               const snapshotResult = await snapshotResponse.json()
               if (!snapshotResult.skipped) {
@@ -230,8 +231,8 @@ export default function DocumentPage() {
         setSaving(false)
       }
     }, 2000) // Increased from 500ms to 2 seconds
-  }, [documentId, saving, markSaved, showToast, router])
-  
+  }, [documentId, saving, markSaved, showToast, router, isOwner])
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -361,7 +362,7 @@ export default function DocumentPage() {
         const { state } = view
         const { selection } = state
         const { $from } = selection
-        
+
         // Check if clicking on a link
         const linkMark = state.schema.marks.link
         if (linkMark) {
@@ -417,10 +418,10 @@ export default function DocumentPage() {
       window.removeEventListener('showLinkEditor', handleShowLinkEditor)
     }
   }, [])
-  
+
   // Detect slash commands - improved detection
 
-  
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -432,7 +433,7 @@ export default function DocumentPage() {
           handleAutosave(content)
         }
       }
-      
+
       // Cmd/Ctrl + K to insert link
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
@@ -469,54 +470,54 @@ export default function DocumentPage() {
           }
         }
       }
-      
+
       // Cmd/Ctrl + E to export
       if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
         e.preventDefault()
         handleExport('md')
       }
-      
+
       // Cmd/Ctrl + H to open history
       if ((e.metaKey || e.ctrlKey) && e.key === 'h') {
         e.preventDefault()
         setShowHistory(true)
       }
     }
-    
+
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [editor, showHistory, handleAutosave])
-  
+
   // Track if content has changed since last snapshot
   const hasChangesRef = useRef(false)
-  
+
   // Update hasChanges when content changes
   useEffect(() => {
     if (!editor) return
-    
+
     const handleUpdate = () => {
       hasChangesRef.current = true
     }
-    
+
     editor.on('update', handleUpdate)
     return () => {
       editor.off('update', handleUpdate)
     }
   }, [editor])
-  
-  // Snapshot every minute ONLY if content has changed
+
+  // Snapshot every minute ONLY if content has changed AND user is owner
   useEffect(() => {
-    if (!documentId || !editor) return
-    
+    if (!documentId || !editor || !isOwner) return
+
     snapshotIntervalRef.current = setInterval(async () => {
       // Only create snapshot if there were actual changes
       if (!hasChangesRef.current) {
         return // No changes, skip snapshot
       }
-      
+
       try {
         const currentContent = editor.getJSON()
-        
+
         // Normalize JSON for comparison (same as API)
         const normalizeJSON = (obj) => {
           if (obj === null || typeof obj !== 'object') {
@@ -535,10 +536,10 @@ export default function DocumentPage() {
           })
           return sorted
         }
-        
+
         const normalizedCurrent = normalizeJSON(currentContent)
         const currentContentStr = JSON.stringify(normalizedCurrent)
-        
+
         // Check if content is empty before creating snapshot
         const isContentEmpty = (content) => {
           if (!content || !content.content || !Array.isArray(content.content)) {
@@ -560,7 +561,7 @@ export default function DocumentPage() {
           })
           return !hasNonEmptyContent
         }
-        
+
         // Double-check content actually changed and is not empty
         if (lastSnapshotContentRef.current !== currentContentStr && !isContentEmpty(currentContent)) {
           const snapshotResponse = await fetch(`/api/documents/${documentId}/snapshot`, {
@@ -568,7 +569,7 @@ export default function DocumentPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ content_json: currentContent })
           })
-          
+
           if (snapshotResponse.ok) {
             const result = await snapshotResponse.json()
             // Only update if snapshot was actually created (not skipped)
@@ -596,18 +597,18 @@ export default function DocumentPage() {
         console.error('Error creating snapshot:', err)
       }
     }, 60000) // Every minute
-    
+
     return () => {
       if (snapshotIntervalRef.current) {
         clearInterval(snapshotIntervalRef.current)
       }
     }
-  }, [documentId, editor, showToast, router])
-  
+  }, [documentId, editor, showToast, router, isOwner])
+
   // Manual save function
   const handleManualSave = async () => {
     if (!documentId || !editor) return
-    
+
     try {
       const currentContent = editor.getJSON()
       const snapshotResponse = await fetch(`/api/documents/${documentId}/snapshot`, {
@@ -615,7 +616,7 @@ export default function DocumentPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content_json: currentContent })
       })
-      
+
       if (snapshotResponse.ok) {
         const result = await snapshotResponse.json()
         if (!result.skipped) {
@@ -649,24 +650,24 @@ export default function DocumentPage() {
       } else {
         throw new Error('Failed to save')
       }
-      } catch (err) {
-        // Don't show error if document was deleted
-        if (isDocumentDeletedRef.current) {
-          return
-        }
-        console.error('Error saving document:', err)
-        showToast('Failed to save: ' + err.message, 'error')
+    } catch (err) {
+      // Don't show error if document was deleted
+      if (isDocumentDeletedRef.current) {
+        return
       }
+      console.error('Error saving document:', err)
+      showToast('Failed to save: ' + err.message, 'error')
+    }
   }
-  
+
   // Load document
   useEffect(() => {
     async function loadDocument() {
       if (!documentId) return
-      
+
       setLoading(true)
       setError(null)
-      
+
       try {
         const response = await fetch(`/api/documents/${documentId}`)
         if (!response.ok) {
@@ -682,18 +683,19 @@ export default function DocumentPage() {
           }
           throw new Error('Failed to load document')
         }
-        
+
         const data = await response.json()
-        const { document, snapshot, events } = data
-        
+        const { document, snapshot, events, isOwner: ownerFlag } = data
+
         setCurrentDocument(document)
         setTitle(document.title)
         setIsPublic(document.is_public || false)
         setIsFullWidth(document.is_full_width || false)
-        
+        setIsOwner(ownerFlag !== false) // Default to true if not specified
+
         // Reconstruct content using replayHistory
         let content = replayHistory(snapshot, events)
-        
+
         // If content is empty, try to get latest snapshot with actual content
         if (!content || content.type !== 'doc' || !content.content || content.content.length === 0) {
           // Try to fetch all snapshots and find one with content
@@ -702,7 +704,7 @@ export default function DocumentPage() {
             if (snapshotResponse.ok) {
               const historyData = await snapshotResponse.json()
               const snapshots = historyData.snapshots || []
-              
+
               // Try to find a snapshot with actual content (not just empty paragraph)
               for (const snap of snapshots) {
                 if (snap.content_json) {
@@ -715,21 +717,21 @@ export default function DocumentPage() {
                       continue
                     }
                   }
-                  
+
                   // Check if this snapshot has real content (not just empty paragraph)
-                  if (snapContent && snapContent.type === 'doc' && 
-                      snapContent.content && Array.isArray(snapContent.content)) {
+                  if (snapContent && snapContent.type === 'doc' &&
+                    snapContent.content && Array.isArray(snapContent.content)) {
                     // Check if content has actual text or nodes with content
                     const hasRealContent = snapContent.content.some(node => {
                       // Check if node has text content
                       if (node.type === 'paragraph' || node.type === 'heading') {
-                        return node.content && Array.isArray(node.content) && 
-                               node.content.some(child => child.type === 'text' && child.text && child.text.trim().length > 0)
+                        return node.content && Array.isArray(node.content) &&
+                          node.content.some(child => child.type === 'text' && child.text && child.text.trim().length > 0)
                       }
                       // For other node types, just check if they exist
                       return true
                     })
-                    
+
                     if (hasRealContent || snapContent.content.length > 1) {
                       content = snapContent
                       break
@@ -737,10 +739,10 @@ export default function DocumentPage() {
                   }
                 }
               }
-              
+
               // If still no content, use the most recent snapshot anyway
-              if ((!content || content.type !== 'doc' || !content.content || content.content.length === 0) && 
-                  snapshots.length > 0) {
+              if ((!content || content.type !== 'doc' || !content.content || content.content.length === 0) &&
+                snapshots.length > 0) {
                 const latestSnapshot = snapshots[0]
                 if (latestSnapshot.content_json) {
                   let latestContent = latestSnapshot.content_json
@@ -761,12 +763,12 @@ export default function DocumentPage() {
             console.error('Error fetching history for fallback:', err)
           }
         }
-        
+
         // Ensure content is valid
         if (!content || typeof content !== 'object') {
           content = { type: 'doc', content: [] }
         }
-        
+
         // Ensure it has the correct structure
         if (!content.type || !content.content || !Array.isArray(content.content)) {
           content = {
@@ -774,11 +776,11 @@ export default function DocumentPage() {
             content: Array.isArray(content) ? content : (content.content || [])
           }
         }
-        
+
         // Always store content to load when editor is ready
         pendingContentRef.current = content
         setPendingContentReady(true) // Trigger useEffect
-        
+
         // Normalize JSON for comparison
         const normalizeJSON = (obj) => {
           if (obj === null || typeof obj !== 'object') {
@@ -797,11 +799,11 @@ export default function DocumentPage() {
           })
           return sorted
         }
-        
+
         // Initialize lastSnapshotContentRef with normalized content
         const normalizedContent = normalizeJSON(content)
         lastSnapshotContentRef.current = JSON.stringify(normalizedContent)
-        
+
         // Try to set content immediately if editor is ready (same as handleRestore)
         if (editor && content && editor.state && editor.state.doc) {
           try {
@@ -809,13 +811,13 @@ export default function DocumentPage() {
             const normalizedCurrent = normalizeJSON(currentEditorContent)
             const currentEditorContentStr = JSON.stringify(normalizedCurrent)
             const contentStr = JSON.stringify(normalizedContent)
-            
+
             // Only set if editor is empty or content is different
-            const isEmpty = !currentEditorContent || 
-                           (currentEditorContent.type === 'doc' && 
-                            (!currentEditorContent.content || currentEditorContent.content.length === 0))
+            const isEmpty = !currentEditorContent ||
+              (currentEditorContent.type === 'doc' &&
+                (!currentEditorContent.content || currentEditorContent.content.length === 0))
             const isDifferent = currentEditorContentStr !== contentStr
-            
+
             if (isEmpty || isDifferent) {
               // Use same method as handleRestore
               // Wrap in queueMicrotask to avoid flushSync error
@@ -837,7 +839,7 @@ export default function DocumentPage() {
             // Content will be loaded by the useEffect retry logic
           }
         }
-        
+
         setLoading(false)
       } catch (err) {
         console.error('Error loading document:', err)
@@ -845,10 +847,10 @@ export default function DocumentPage() {
         setLoading(false)
       }
     }
-    
+
     loadDocument()
   }, [documentId, router])
-  
+
   // Listen for document deletion to stop autosave
   useEffect(() => {
     const handleDocumentDeleted = (event) => {
@@ -868,27 +870,27 @@ export default function DocumentPage() {
         }
       }
     }
-    
+
     window.addEventListener('documentDeleted', handleDocumentDeleted)
     return () => {
       window.removeEventListener('documentDeleted', handleDocumentDeleted)
     }
   }, [documentId])
-  
+
   // Reset deleted flag when documentId changes
   useEffect(() => {
     isDocumentDeletedRef.current = false
   }, [documentId])
-  
+
   // State to trigger useEffect when pendingContentRef changes
   const [pendingContentReady, setPendingContentReady] = useState(false)
-  
+
   // Load pending content when editor becomes ready AND content is available
   useEffect(() => {
     if (!editor || !pendingContentRef.current) {
       return
     }
-    
+
     // Use the same approach as handleRestore - direct setContent call
     const trySetContent = (attempt = 0) => {
       if (attempt > 20) {
@@ -900,13 +902,13 @@ export default function DocumentPage() {
         pendingContentRef.current = null
         return
       }
-      
+
       try {
         const content = pendingContentRef.current
         if (!content) {
           return
         }
-        
+
         // Check if editor has a valid state (same check as handleRestore)
         if (editor.state && editor.state.doc) {
           // Normalize JSON for comparison
@@ -927,13 +929,13 @@ export default function DocumentPage() {
             })
             return sorted
           }
-          
+
           const normalizedContent = normalizeJSON(content)
           const contentStr = JSON.stringify(normalizedContent)
           const currentEditorContent = editor.getJSON()
           const normalizedCurrent = normalizeJSON(currentEditorContent)
           const currentEditorContentStr = JSON.stringify(normalizedCurrent)
-          
+
           // Only set if different
           if (contentStr !== currentEditorContentStr) {
             // Use the exact same method as handleRestore
@@ -945,7 +947,7 @@ export default function DocumentPage() {
                 lastSnapshotContentRef.current = contentStr
               })
             })
-            
+
             pendingContentRef.current = null
             setPendingContentReady(false)
           } else {
@@ -966,10 +968,10 @@ export default function DocumentPage() {
         }
       }
     }
-    
+
     // Start trying immediately, then retry if needed
     trySetContent(0)
-    
+
     // Also set up an interval to check periodically (in case editor becomes ready later)
     const intervalId = setInterval(() => {
       if (editor && pendingContentRef.current && editor.state && editor.state.doc) {
@@ -977,32 +979,32 @@ export default function DocumentPage() {
         clearInterval(intervalId)
       }
     }, 200)
-    
+
     return () => {
       clearInterval(intervalId)
     }
   }, [editor, pendingContentReady])
-  
+
   // Save title
   const handleTitleSave = async () => {
     if (!documentId) return
-    
+
     try {
       const response = await fetch(`/api/documents/${documentId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title })
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to update title')
       }
-      
+
       // Dispatch event to update tabs
       window.dispatchEvent(new CustomEvent('documentTitleUpdated', {
         detail: { documentId, title }
       }))
-      
+
       showToast('Title updated', 'success')
     } catch (err) {
       console.error('Error updating title:', err)
@@ -1010,11 +1012,11 @@ export default function DocumentPage() {
       showToast('Failed to update title', 'error')
     }
   }
-  
+
   // Export document
   const handleExport = async (format) => {
     if (!documentId) return
-    
+
     const url = `/api/documents/${documentId}/export?format=${format}`
     window.open(url, '_blank')
   }
@@ -1022,16 +1024,16 @@ export default function DocumentPage() {
   // Delete document
   const handleDelete = async () => {
     if (!documentId) return
-    
+
     if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
       return
     }
-    
+
     try {
       const response = await fetch(`/api/documents/${documentId}`, {
         method: 'DELETE'
       })
-      
+
       if (response.ok) {
         // Dispatch event to close tab
         window.dispatchEvent(new CustomEvent('documentDeleted', {
@@ -1049,7 +1051,7 @@ export default function DocumentPage() {
       showToast('Failed to delete document', 'error')
     }
   }
-  
+
   // Restore from history
   const handleRestore = (content) => {
     if (editor && content) {
@@ -1065,14 +1067,14 @@ export default function DocumentPage() {
             return
           }
         }
-        
+
         // Validate content structure
         if (!parsedContent || typeof parsedContent !== 'object') {
           console.error('Invalid content structure:', parsedContent)
           showToast('Failed to restore: invalid content', 'error')
           return
         }
-        
+
         // Ensure it has the correct structure
         if (!parsedContent.type && !parsedContent.content) {
           // Wrap in doc if needed
@@ -1081,7 +1083,7 @@ export default function DocumentPage() {
             content: Array.isArray(parsedContent) ? parsedContent : [parsedContent]
           }
         }
-        
+
         // Use queueMicrotask to avoid flushSync error
         queueMicrotask(() => {
           requestAnimationFrame(() => {
@@ -1097,7 +1099,7 @@ export default function DocumentPage() {
       }
     }
   }
-  
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -1108,7 +1110,7 @@ export default function DocumentPage() {
       </div>
     )
   }
-  
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -1124,7 +1126,7 @@ export default function DocumentPage() {
       </div>
     )
   }
-  
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 sm:py-8">
@@ -1142,7 +1144,7 @@ export default function DocumentPage() {
                 placeholder="Untitled"
               />
             </div>
-            
+
             {/* Action buttons - right side */}
             <div className="flex flex-col items-end gap-2">
               <div className="flex flex-wrap items-center gap-1.5">
@@ -1156,7 +1158,21 @@ export default function DocumentPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                   </svg>
                 </button>
-                
+
+                {/* Admin mode: Manual save button */}
+                {!isOwner && (
+                  <button
+                    onClick={handleManualSave}
+                    className="px-3 py-1.5 bg-amber-500 text-white rounded-md hover:bg-amber-600 text-xs font-medium transition-colors flex items-center gap-1.5"
+                    title="Save (Admin mode - auto-save disabled)"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    Save
+                  </button>
+                )}
+
                 {/* Preview public */}
                 {isPublic && (
                   <button
@@ -1170,7 +1186,7 @@ export default function DocumentPage() {
                     </svg>
                   </button>
                 )}
-                
+
                 {/* History */}
                 <button
                   onClick={() => setShowHistory(true)}
@@ -1181,7 +1197,7 @@ export default function DocumentPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </button>
-                
+
                 {/* Copy URL - only show if public */}
                 {isPublic && (
                   <button
@@ -1210,7 +1226,7 @@ export default function DocumentPage() {
                     </svg>
                   </button>
                 )}
-                
+
                 {/* Public/Private toggle */}
                 <button
                   onClick={async () => {
@@ -1228,11 +1244,10 @@ export default function DocumentPage() {
                       showToast('Failed to update', 'error')
                     }
                   }}
-                  className={`p-1.5 border rounded-md transition-colors ${
-                    isPublic 
-                      ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100' 
-                      : 'border-gray-200 text-gray-700 hover:bg-gray-50'
-                  }`}
+                  className={`p-1.5 border rounded-md transition-colors ${isPublic
+                    ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                    }`}
                   title={isPublic ? 'Public - Click to make private' : 'Private - Click to make public'}
                 >
                   {isPublic ? (
@@ -1246,7 +1261,7 @@ export default function DocumentPage() {
                     </svg>
                   )}
                 </button>
-                
+
                 {/* Full-width mode toggle - only show if public */}
                 {isPublic && (
                   <button
@@ -1265,11 +1280,10 @@ export default function DocumentPage() {
                         showToast('Failed to update', 'error')
                       }
                     }}
-                    className={`p-1.5 border rounded-md transition-colors ${
-                      isFullWidth 
-                        ? 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100' 
-                        : 'border-gray-200 text-gray-700 hover:bg-gray-50'
-                    }`}
+                    className={`p-1.5 border rounded-md transition-colors ${isFullWidth
+                      ? 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100'
+                      : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                      }`}
                     title={isFullWidth ? 'Full width - Click for normal' : 'Normal width - Click for full width'}
                   >
                     {isFullWidth ? (
@@ -1283,10 +1297,10 @@ export default function DocumentPage() {
                     )}
                   </button>
                 )}
-                
+
                 {/* Export */}
                 <div className="relative">
-                  <button 
+                  <button
                     onClick={(e) => {
                       e.stopPropagation()
                       setShowExportMenu(!showExportMenu)
@@ -1300,8 +1314,8 @@ export default function DocumentPage() {
                   </button>
                   {showExportMenu && (
                     <>
-                      <div 
-                        className="fixed inset-0 z-[500]" 
+                      <div
+                        className="fixed inset-0 z-[500]"
                         onClick={() => setShowExportMenu(false)}
                       />
                       <div className="fixed mt-2 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-[501]" style={{ top: '120px', right: '24px' }}>
@@ -1333,7 +1347,7 @@ export default function DocumentPage() {
                     </>
                   )}
                 </div>
-                
+
                 {/* Delete */}
                 <button
                   onClick={handleDelete}
@@ -1345,7 +1359,7 @@ export default function DocumentPage() {
                   </svg>
                 </button>
               </div>
-              
+
               {/* Save status and character count */}
               <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                 {saving && <span className="text-gray-600">Saving...</span>}
@@ -1365,7 +1379,7 @@ export default function DocumentPage() {
             </div>
           </div>
         </div>
-        
+
         {/* Editor */}
         {editor && (
           <>
@@ -1386,7 +1400,7 @@ export default function DocumentPage() {
           </>
         )}
       </div>
-      
+
       {showHistory && (
         <HistoryPanel
           documentId={documentId}
