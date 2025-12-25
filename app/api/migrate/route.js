@@ -160,16 +160,52 @@ async function runMigrations() {
       }
     }
 
-    // Generate archive_id for users who don't have one (using MD5 hash of their id)
+    // Generate archive_id for users who don't have one (using random 8-char string for privacy)
     try {
-      const updateResult = await sql.query(`
-        UPDATE users 
-        SET archive_id = LEFT(MD5(id), 8)
-        WHERE archive_id IS NULL
+      // Get users without archive_id
+      const usersWithoutArchiveId = await sql.query(`
+        SELECT id FROM users WHERE archive_id IS NULL
       `)
-      results.push({ success: true, message: `Generated archive_id for ${updateResult.rowCount || 0} users` })
+
+      let archiveIdCount = 0
+      for (const user of usersWithoutArchiveId.rows) {
+        // Generate random 8-char alphanumeric string
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+        let archiveId = ''
+        for (let i = 0; i < 8; i++) {
+          archiveId += chars.charAt(Math.floor(Math.random() * chars.length))
+        }
+        await sql.query(
+          'UPDATE users SET archive_id = $1 WHERE id = $2',
+          [archiveId, user.id]
+        )
+        archiveIdCount++
+      }
+      results.push({ success: true, message: `Generated random archive_id for ${archiveIdCount} users` })
     } catch (error) {
       results.push({ success: false, error: `archive_id generation: ${error.message}` })
+    }
+
+    // Generate Dicebear avatars for users who don't have an avatar
+    try {
+      // Get users without avatar
+      const usersWithoutAvatar = await sql.query(`
+        SELECT id FROM users WHERE avatar_url IS NULL
+      `)
+
+      let avatarCount = 0
+      for (const user of usersWithoutAvatar.rows) {
+        const seed = user.id.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10)
+        const avatarUrl = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${seed}`
+        await sql.query(
+          'UPDATE users SET avatar_url = $1, updated_at = NOW() WHERE id = $2',
+          [avatarUrl, user.id]
+        )
+        avatarCount++
+      }
+      results.push({ success: true, message: `Generated Dicebear avatars for ${avatarCount} users` })
+    } catch (error) {
+      results.push({ success: false, error: `avatar generation: ${error.message}` })
     }
 
     return Response.json({ success: true, results })

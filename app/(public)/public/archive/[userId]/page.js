@@ -2,6 +2,7 @@ import { sql } from '@vercel/postgres'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import Link from 'next/link'
+import ArchiveHeader from '@/components/archive/ArchiveHeader'
 
 export async function generateMetadata({ params }) {
   const { userId } = await params
@@ -12,11 +13,13 @@ export async function generateMetadata({ params }) {
 }
 
 async function getDocuments(userId) {
-  if (!userId) return { documents: [], username: null, error: 'No user ID' }
+  if (!userId) return { documents: [], username: null, archiveId: null, ownerId: null, hasCustomUsername: false, error: 'No user ID' }
 
   try {
     let actualUserId = null
     let username = null
+    let archiveId = null
+    let hasCustomUsername = false
 
     // Search by testament_username or archive_id
     const userResult = await sql.query(
@@ -27,15 +30,18 @@ async function getDocuments(userId) {
     if (userResult.rows.length > 0) {
       const user = userResult.rows[0]
       actualUserId = user.id
+      archiveId = user.archive_id
+      hasCustomUsername = !!user.testament_username
       username = user.testament_username || user.archive_id
     }
 
     if (!actualUserId) {
-      return { documents: [], username: null, error: 'User not found' }
+      return { documents: [], username: null, archiveId: null, ownerId: null, hasCustomUsername: false, error: 'User not found' }
     }
 
+    // Also fetch content_text for fallback title
     const result = await sql.query(
-      `SELECT d.id, d.title, d.created_at, d.updated_at
+      `SELECT d.id, d.title, d.content_text, d.created_at, d.updated_at
        FROM documents d
        WHERE d.user_id = $1 AND d.is_public = true
        ORDER BY d.updated_at DESC`,
@@ -43,22 +49,40 @@ async function getDocuments(userId) {
     )
 
     return {
-      documents: result.rows.map(doc => ({
-        ...doc,
-        title: (doc.title === 'Untitled' || !doc.title) ? '' : doc.title
-      })),
+      documents: result.rows.map(doc => {
+        // Determine display title
+        let displayTitle = null
+        const hasRealTitle = doc.title && doc.title !== 'Untitled' && doc.title.trim() !== ''
+
+        if (hasRealTitle) {
+          displayTitle = doc.title
+        } else if (doc.content_text && doc.content_text.trim()) {
+          // Use first 50 chars of content as title
+          const text = doc.content_text.trim()
+          displayTitle = text.length > 50 ? text.substring(0, 50) + '...' : text
+        }
+
+        return {
+          id: doc.id,
+          title: displayTitle,
+          updated_at: doc.updated_at
+        }
+      }),
       username: username || userId,
+      archiveId,
+      ownerId: actualUserId,
+      hasCustomUsername,
       error: null
     }
   } catch (error) {
     console.error('Error fetching documents:', error)
-    return { documents: [], username: null, error: 'Database error' }
+    return { documents: [], username: null, archiveId: null, ownerId: null, hasCustomUsername: false, error: 'Database error' }
   }
 }
 
 export default async function PublicArchivePage({ params }) {
   const { userId } = await params
-  const { documents, username, error } = await getDocuments(userId)
+  const { documents, username, archiveId, ownerId, hasCustomUsername, error } = await getDocuments(userId)
 
   if (error === 'User not found') {
     return (
@@ -88,15 +112,14 @@ export default async function PublicArchivePage({ params }) {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-2xl mx-auto px-6 py-12">
-        {/* Header */}
-        <div className="mb-12 text-center">
-          <h1 className="text-3xl font-light text-gray-900 mb-2">
-            @{username}
-          </h1>
-          <p className="text-sm text-gray-500">
-            {documents.length} document{documents.length > 1 ? 's' : ''} public{documents.length > 1 ? 's' : ''}
-          </p>
-        </div>
+        {/* Header with editable handle */}
+        <ArchiveHeader
+          username={username}
+          archiveId={archiveId}
+          documentCount={documents.length}
+          hasCustomUsername={hasCustomUsername}
+          ownerId={ownerId}
+        />
 
         {/* Document list */}
         <div className="space-y-1">

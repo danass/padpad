@@ -1,6 +1,7 @@
 import { sql } from '@vercel/postgres'
 import { getUserId } from '@/lib/auth/getSession'
 import crypto from 'crypto'
+import { generateArchiveId } from '@/lib/utils/archive-id'
 
 export async function GET() {
   try {
@@ -17,7 +18,7 @@ export async function GET() {
     if (result.rows.length === 0) {
       // User doesn't exist, create one with a slug and archive_id
       const slug = generateSlug(userId)
-      const archiveId = userId.replace(/-/g, '').substring(0, 8)
+      const archiveId = generateArchiveId()
       await sql.query(
         `INSERT INTO users (id, testament_slug, archive_id, updated_at)
          VALUES ($1, $2, $3, NOW())

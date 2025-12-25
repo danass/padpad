@@ -1272,7 +1272,7 @@ export default function DocumentPage() {
                   </button>
                 )}
 
-                {/* Public/Private toggle */}
+                {/* Public/Private toggle - Black when private to encourage publishing */}
                 <button
                   onClick={async () => {
                     try {
@@ -1289,11 +1289,11 @@ export default function DocumentPage() {
                       showToast('Failed to update', 'error')
                     }
                   }}
-                  className={`p-1.5 border rounded-md transition-colors ${isPublic
-                    ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
-                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                  className={`p-1.5 rounded-md transition-colors ${isPublic
+                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                    : 'bg-black text-white hover:bg-gray-800'
                     }`}
-                  title={isPublic ? 'Public - Click to make private' : 'Private - Click to make public'}
+                  title={isPublic ? 'Public - Click to make private' : 'Click to publish'}
                 >
                   {isPublic ? (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1412,8 +1412,8 @@ export default function DocumentPage() {
                       }
                     }}
                     className={`p-1.5 border rounded-md transition-colors ${isFeatured
-                        ? 'border-yellow-400 bg-yellow-50 text-yellow-600 hover:bg-yellow-100'
-                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      ? 'border-yellow-400 bg-yellow-50 text-yellow-600 hover:bg-yellow-100'
+                      : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                       }`}
                     title={isFeatured ? 'Unfeature' : 'Feature on homepage'}
                   >

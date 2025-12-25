@@ -200,10 +200,18 @@ export default function SettingsPage() {
                     {session?.user?.image && (
                       <button
                         onClick={() => setAvatarUrl(session.user.image)}
-                        className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all hover:scale-110 ${avatarUrl === session.user.image ? 'border-black ring-2 ring-black ring-offset-2' : 'border-gray-300'}`}
+                        className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all hover:scale-110 flex items-center justify-center bg-white ${avatarUrl === session.user.image ? 'border-black ring-2 ring-black ring-offset-2' : 'border-gray-300'}`}
                         title="Use Google avatar"
                       >
-                        <img src={session.user.image} alt="Google" className="w-full h-full object-cover" />
+                        <img
+                          src={session.user.image}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.style.display = 'none'
+                            e.target.parentElement.innerHTML = '<span class="text-xs font-bold text-red-500">G</span>'
+                          }}
+                        />
                       </button>
                     )}
 
@@ -238,8 +246,8 @@ export default function SettingsPage() {
                       onClick={handleSaveAvatar}
                       disabled={savingAvatar || !avatarChanged}
                       className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${!avatarChanged
-                          ? 'border-gray-200 bg-gray-100 cursor-default'
-                          : 'border-black bg-black hover:bg-gray-800'
+                        ? 'border-gray-200 bg-gray-100 cursor-default'
+                        : 'border-black bg-black hover:bg-gray-800'
                         }`}
                       title={avatarChanged ? 'Save' : 'No changes'}
                     >
@@ -316,8 +324,8 @@ export default function SettingsPage() {
                 onClick={handleSaveUsername}
                 disabled={savingUsername || !usernameChanged}
                 className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${!usernameChanged
-                    ? 'bg-gray-100 text-gray-400 cursor-default'
-                    : 'bg-black text-white hover:bg-gray-800'
+                  ? 'bg-gray-100 text-gray-400 cursor-default'
+                  : 'bg-black text-white hover:bg-gray-800'
                   }`}
               >
                 {savingUsername ? (
@@ -415,8 +423,8 @@ export default function SettingsPage() {
                 onClick={handleSaveBirthDate}
                 disabled={savingBirthDate || !birthDateChanged}
                 className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${!birthDateChanged
-                    ? 'bg-gray-100 text-gray-400 cursor-default'
-                    : 'bg-black text-white hover:bg-gray-800'
+                  ? 'bg-gray-100 text-gray-400 cursor-default'
+                  : 'bg-black text-white hover:bg-gray-800'
                   }`}
               >
                 {savingBirthDate ? (

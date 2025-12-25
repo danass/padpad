@@ -40,6 +40,8 @@ async function getFeaturedArticles() {
                 content,
                 updatedAt: doc.updated_at?.toISOString() || null,
                 featuredAt: doc.featured_at?.toISOString() || null,
+                isFullWidth: doc.is_full_width || false,
+                showTitle: doc.show_title !== false, // Default to true if not set
                 author: {
                     username: doc.testament_username,
                     avatarUrl: doc.avatar_url,

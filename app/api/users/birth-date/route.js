@@ -1,5 +1,6 @@
 import { sql } from '@vercel/postgres'
 import { getUserId } from '@/lib/auth/getSession'
+import { generateArchiveId } from '@/lib/utils/archive-id'
 
 export async function GET() {
   try {
@@ -43,8 +44,8 @@ export async function PATCH(request) {
       }
     }
 
-    // Insert or update user - auto-generate archive_id
-    const archiveId = userId.replace(/-/g, '').substring(0, 8)
+    // Insert or update user - use random archive_id for privacy
+    const archiveId = generateArchiveId()
     const result = await sql.query(
       `INSERT INTO users (id, birth_date, archive_id, updated_at)
        VALUES ($1, $2, $3, NOW())

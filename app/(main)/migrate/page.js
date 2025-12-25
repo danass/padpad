@@ -8,93 +8,70 @@ export default function MigratePage() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [adminEmail, setAdminEmail] = useState('')
-  const [adminLoading, setAdminLoading] = useState(false)
-  const [adminResult, setAdminResult] = useState(null)
   const [adminsExist, setAdminsExist] = useState(false)
-  const [checkingAdmins, setCheckingAdmins] = useState(true)
-  const [dbNeedsMigration, setDbNeedsMigration] = useState(true)
-  const [checkingDb, setCheckingDb] = useState(true)
-  const [featuredLoading, setFeaturedLoading] = useState(false)
-  const [featuredResult, setFeaturedResult] = useState(null)
+  const [checking, setChecking] = useState(true)
 
-  const runMigration = async () => {
+  const runFullMigration = async () => {
     setLoading(true)
     setResult(null)
 
     try {
-      const response = await fetch('/api/migrate', {
-        method: 'POST'
-      })
+      // Run main migration
+      const mainResponse = await fetch('/api/migrate', { method: 'POST' })
+      const mainData = await mainResponse.json()
 
-      const data = await response.json()
-      setResult(data)
+      // Run featured migration
+      const featuredResponse = await fetch('/api/migrate-featured')
+      const featuredData = await featuredResponse.json()
+
+      // Run admin migration
+      const adminMigResponse = await fetch('/api/migrate-admin', { method: 'POST' })
+      const adminMigData = await adminMigResponse.json()
+
+      setResult({
+        success: mainData.success && (featuredData.success !== false) && (adminMigData.success !== false),
+        message: 'All migrations completed successfully!',
+        details: {
+          main: mainData,
+          featured: featuredData,
+          admin: adminMigData
+        }
+      })
     } catch (error) {
       setResult({ success: false, error: error.message })
     } finally {
       setLoading(false)
-    }
-  }
-
-  const runAdminMigration = async () => {
-    setAdminLoading(true)
-    setAdminResult(null)
-
-    try {
-      const response = await fetch('/api/migrate-admin', {
-        method: 'POST'
-      })
-
-      const data = await response.json()
-      setAdminResult(data)
-    } catch (error) {
-      setAdminResult({ success: false, error: error.message })
-    } finally {
-      setAdminLoading(false)
-    }
-  }
-
-  const runFeaturedMigration = async () => {
-    setFeaturedLoading(true)
-    setFeaturedResult(null)
-
-    try {
-      const response = await fetch('/api/migrate-featured')
-      const data = await response.json()
-      setFeaturedResult(data)
-    } catch (error) {
-      setFeaturedResult({ success: false, error: error.message })
-    } finally {
-      setFeaturedLoading(false)
+      checkAdminsExist()
     }
   }
 
   const setupAdmin = async () => {
-    if (!adminEmail || !adminEmail.includes('@')) {
-      setAdminResult({ success: false, error: 'Please enter a valid email address' })
+    const email = adminEmail || session?.user?.email
+    if (!email || !email.includes('@')) {
+      setResult({ success: false, error: 'Please enter a valid email address' })
       return
     }
 
-    setAdminLoading(true)
-    setAdminResult(null)
+    setLoading(true)
+    setResult(null)
 
     try {
       const response = await fetch('/api/admin/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: adminEmail })
+        body: JSON.stringify({ email })
       })
 
       const data = await response.json()
-      setAdminResult(data)
+      setResult(data)
       if (data.success) {
         setAdminEmail('')
-        // Check if admins exist now
         checkAdminsExist()
       }
     } catch (error) {
-      setAdminResult({ success: false, error: error.message })
+      setResult({ success: false, error: error.message })
     } finally {
-      setAdminLoading(false)
+      setLoading(false)
     }
   }
 
@@ -108,205 +85,86 @@ export default function MigratePage() {
     } catch (error) {
       console.error('Error checking admins:', error)
     } finally {
-      setCheckingAdmins(false)
-    }
-  }
-
-  const checkDbSetup = async () => {
-    try {
-      const response = await fetch('/api/migrate/compare')
-      if (response.ok) {
-        const data = await response.json()
-        setDbNeedsMigration(data.needsMigration)
-      }
-    } catch (error) {
-      console.error('Error checking database setup:', error)
-      setDbNeedsMigration(true) // Default to showing message if check fails
-    } finally {
-      setCheckingDb(false)
+      setChecking(false)
     }
   }
 
   useEffect(() => {
     checkAdminsExist()
-    checkDbSetup()
   }, [])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-8">
-      <div className="max-w-2xl w-full bg-white border border-gray-200 rounded-md shadow-lg p-8">
-        <h1 className="text-3xl font-bold mb-6 text-gray-900">Database Migration</h1>
-
-        {!checkingDb && dbNeedsMigration && (
-          <p className="mb-6 text-gray-600">
-            This will create all necessary database tables, indexes, and functions.
-            Safe to run multiple times - it will skip existing objects.
-          </p>
-        )}
-
-        {!checkingDb && !dbNeedsMigration && (
-          <p className="mb-6 text-green-600">
-            ✓ Database is already set up. You can still run migrations to ensure all tables and indexes are up to date.
-          </p>
-        )}
-
-        <div className="space-y-4 mb-6">
-          {!checkingDb && dbNeedsMigration && (
-            <div>
-              <button
-                onClick={runMigration}
-                disabled={loading}
-                className="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-              >
-                {loading ? 'Running Migration...' : 'Run Migration'}
-              </button>
-            </div>
-          )}
-
-          {/* Featured Migration */}
-          <div className="border-t pt-4">
-            <h2 className="text-lg font-semibold mb-3 text-gray-900">Featured Articles Migration</h2>
-            <p className="mb-4 text-sm text-gray-600">
-              Add is_featured and featured_at columns to documents table.
-            </p>
-            <button
-              onClick={runFeaturedMigration}
-              disabled={featuredLoading}
-              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-            >
-              {featuredLoading ? 'Running...' : 'Run Featured Migration'}
-            </button>
-            {featuredResult && (
-              <div className={`mt-3 p-3 rounded-lg ${featuredResult.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                {featuredResult.success ? '✓ ' + (featuredResult.message || 'Migration completed') : '✗ ' + (featuredResult.error || 'Failed')}
-              </div>
-            )}
-          </div>
-
-          {!checkingAdmins && !adminsExist && (
-            <div className="border-t pt-4">
-              <h2 className="text-lg font-semibold mb-3 text-gray-900">Admin Setup</h2>
-              <p className="mb-4 text-sm text-gray-600">
-                First, run the admin migration to create the admins table. Then add your first admin user.
-              </p>
-
-              <div className="mb-4">
-                <button
-                  onClick={runAdminMigration}
-                  disabled={adminLoading}
-                  className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors mb-3"
-                >
-                  {adminLoading ? 'Running...' : 'Run Admin Migration'}
-                </button>
-              </div>
-
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  value={adminEmail}
-                  onChange={(e) => setAdminEmail(e.target.value)}
-                  placeholder={session?.user?.email || "Enter admin email"}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-                />
-                <button
-                  onClick={setupAdmin}
-                  disabled={adminLoading || !adminEmail}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-                >
-                  {adminLoading ? 'Adding...' : 'Add Admin'}
-                </button>
-              </div>
-            </div>
-          )}
+      <div className="max-w-md w-full bg-white border border-gray-200 rounded-lg shadow-lg p-8">
+        <div className="text-center mb-6">
+          <img src="/padpad.png" alt="Textpad" className="w-16 h-16 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900">Database Setup</h1>
         </div>
 
-        {result && (
-          <div className={`p-4 rounded-lg mb-4 ${result.success
-            ? 'bg-green-50 border border-green-200'
-            : 'bg-red-50 border border-red-200'
-            }`}>
-            <h2 className={`font-semibold mb-2 ${result.success ? 'text-green-800' : 'text-red-800'
-              }`}>
-              {result.success ? '✓ Migration Successful' : '✗ Migration Failed'}
-            </h2>
+        <p className="mb-6 text-gray-600 text-center text-sm">
+          Creates all tables and indexes. Safe to run multiple times.
+        </p>
 
-            {result.error && (
-              <p className="text-red-600 mb-4">{result.error}</p>
-            )}
-
-            {result.results && (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {result.results.map((r, i) => (
-                  <div key={i} className="text-sm">
-                    {r.success ? (
-                      <span className="text-green-600">
-                        ✓ {r.statement || r.message || 'Success'}
-                      </span>
-                    ) : (
-                      <span className="text-red-600">
-                        ✗ {r.error || 'Failed'}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* Migration Button - hide after success, show success message instead */}
+        {result?.success ? (
+          <div className="w-full px-6 py-3 bg-green-100 text-green-700 rounded-lg text-center font-medium mb-6">
+            ✓ Database ready!
           </div>
-        )}
-
-        {adminResult && (
-          <div className={`p-4 rounded-lg ${adminResult.success
-            ? 'bg-green-50 border border-green-200'
-            : 'bg-red-50 border border-red-200'
-            }`}>
-            <h2 className={`font-semibold mb-2 ${adminResult.success ? 'text-green-800' : 'text-red-800'
-              }`}>
-              {adminResult.success ? '✓ Admin Setup Successful' : '✗ Admin Setup Failed'}
-            </h2>
-
-            {adminResult.error && (
-              <p className="text-red-600 mb-4">{adminResult.error}</p>
-            )}
-
-            {adminResult.message && (
-              <p className="text-green-600 mb-4">{adminResult.message}</p>
-            )}
-
-            {adminResult.results && (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {adminResult.results.map((r, i) => (
-                  <div key={i} className="text-sm">
-                    {r.success ? (
-                      <span className="text-green-600">
-                        ✓ {r.statement || r.message || 'Success'}
-                      </span>
-                    ) : (
-                      <span className="text-red-600">
-                        ✗ {r.error || 'Failed'}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="mt-6 pt-6 border-t">
-          <a
-            href="/drive"
-            className="text-blue-500 hover:text-blue-600"
+        ) : (
+          <button
+            onClick={runFullMigration}
+            disabled={loading}
+            className="w-full px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors mb-6"
           >
-            ← Go to Drive
+            {loading ? 'Running...' : '🚀 Run Migration'}
+          </button>
+        )}
+
+        {/* Admin Setup - only shown if no admins exist */}
+        {!checking && !adminsExist && (
+          <div className="border-t pt-6">
+            <h2 className="text-sm font-semibold mb-3 text-gray-700">Add First Admin</h2>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+                placeholder={session?.user?.email || "admin@email.com"}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              />
+              <button
+                onClick={setupAdmin}
+                disabled={loading}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium transition-colors"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Admin exists indicator */}
+        {!checking && adminsExist && (
+          <div className="text-center text-sm text-green-600 mb-4">
+            ✓ Admin already configured
+          </div>
+        )}
+
+        {/* Result */}
+        {result && (
+          <div className={`mt-4 p-4 rounded-lg ${result.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+            <p className="font-medium">
+              {result.success ? '✓ ' + (result.message || 'Success!') : '✗ ' + (result.error || 'Failed')}
+            </p>
+          </div>
+        )}
+
+        <div className="mt-6 pt-6 border-t text-center">
+          <a href="/" className="text-blue-500 hover:text-blue-600 text-sm">
+            ← Back to Home
           </a>
         </div>
       </div>
     </div>
   )
 }
-
-
-
-
-
-

@@ -21,6 +21,34 @@ import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-ex
 import { LinkPreview } from '@/lib/editor/link-preview-extension'
 import Emoji from '@tiptap/extension-emoji'
 
+// Extract text from TipTap JSON content
+function extractTextFromContent(content) {
+    if (!content) return ''
+
+    const extractText = (node) => {
+        if (!node) return ''
+        if (typeof node === 'string') return node
+        if (node.text) return node.text
+        if (node.content && Array.isArray(node.content)) {
+            return node.content.map(extractText).join(' ')
+        }
+        return ''
+    }
+
+    return extractText(content).trim()
+}
+
+// Get display title - only show if it's a real title (not "Untitled")
+function getDisplayTitle(article) {
+    const hasRealTitle = article.title && article.title !== 'Untitled' && article.title.trim() !== ''
+
+    if (hasRealTitle) {
+        return article.title
+    }
+
+    return null
+}
+
 function ArticleContent({ content }) {
     const editor = useEditor({
         editable: false,
@@ -50,41 +78,57 @@ export default function FeaturedArticlesClient({ articles = [] }) {
             <h2 className="text-2xl font-bold text-gray-900 mb-8">Featured</h2>
 
             <div className="space-y-12">
-                {articles.map((article) => (
-                    <article key={article.id} className="border-b border-gray-100 pb-10 last:border-none">
-                        <div className="mb-4">
-                            {(article.author?.username || article.author?.archiveId) && (
-                                <div className="flex items-center gap-2 mb-3">
-                                    {article.author.avatarUrl ? (
-                                        <img src={article.author.avatarUrl} alt="" className="w-8 h-8 rounded-full" />
-                                    ) : (
-                                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                                            <span className="text-sm text-gray-500">
-                                                {(article.author.username || article.author.archiveId || '?').charAt(0).toUpperCase()}
-                                            </span>
-                                        </div>
-                                    )}
-                                    <span className="text-sm text-gray-600">
-                                        @{article.author.username || article.author.archiveId}
-                                    </span>
-                                    <span className="text-gray-300">·</span>
-                                    <span className="text-sm text-gray-400">
-                                        {new Date(article.featuredAt || article.updatedAt).toLocaleDateString()}
-                                    </span>
-                                </div>
-                            )}
-                            <Link href={`/public/doc/${article.id}`}>
-                                <h3 className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                                    {article.title}
-                                </h3>
-                            </Link>
-                        </div>
+                {articles.map((article) => {
+                    const displayTitle = getDisplayTitle(article)
+                    const isFullWidth = article.isFullWidth || false
 
-                        <div className="prose max-w-none text-gray-700">
-                            {article.content && <ArticleContent content={article.content} />}
-                        </div>
-                    </article>
-                ))}
+                    return (
+                        <article
+                            key={article.id}
+                            className={`border-b border-gray-100 pb-10 last:border-none ${isFullWidth ? '-mx-4 md:-mx-6 px-4 md:px-6' : ''}`}
+                        >
+                            <div className="mb-4">
+                                {(article.author?.username || article.author?.archiveId) && (
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Link
+                                            href={`/public/archive/${article.author.username || article.author.archiveId}`}
+                                            className="flex items-center gap-2 group/author"
+                                        >
+                                            {article.author.avatarUrl ? (
+                                                <img src={article.author.avatarUrl} alt="" className="w-8 h-8 rounded-full transition-transform group-hover/author:scale-110" />
+                                            ) : (
+                                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center transition-transform group-hover/author:scale-110">
+                                                    <span className="text-sm text-gray-500">
+                                                        {(article.author.username || article.author.archiveId || '?').charAt(0).toUpperCase()}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            <span className="text-sm text-gray-600 group-hover/author:text-black transition-colors font-medium">
+                                                @{article.author.username || article.author.archiveId}
+                                            </span>
+                                        </Link>
+                                        <span className="text-gray-300">·</span>
+                                        <span className="text-sm text-gray-400">
+                                            {new Date(article.featuredAt || article.updatedAt).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                )}
+                                {/* Only show title if we have one */}
+                                {displayTitle && (
+                                    <Link href={`/public/doc/${article.id}`}>
+                                        <h3 className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                                            {displayTitle}
+                                        </h3>
+                                    </Link>
+                                )}
+                            </div>
+
+                            <div className={`prose text-gray-700 ${isFullWidth ? 'max-w-none' : 'max-w-none'}`}>
+                                {article.content && <ArticleContent content={article.content} />}
+                            </div>
+                        </article>
+                    )
+                })}
             </div>
         </section>
     )

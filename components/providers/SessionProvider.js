@@ -33,30 +33,21 @@ export default function SessionProvider({ children }) {
     setHydrated(true)
   }, [])
 
-  // During SSR, render with NextAuth (won't make calls server-side)
-  // After hydration on subdomain, switch to mock provider
-  if (!hydrated) {
-    // SSR: use NextAuth but it won't make client calls yet
-    return (
-      <NextAuthSessionProvider basePath="/api/auth" refetchInterval={0} refetchOnWindowFocus={false}>
-        {children}
-      </NextAuthSessionProvider>
-    )
-  }
-
-  // On subdomains after hydration: use mock context, NO NextAuth at all
-  if (isSubdomain) {
-    return (
-      <MockSessionContext.Provider value={{ data: null, status: 'unauthenticated', update: async () => null }}>
-        {children}
-      </MockSessionContext.Provider>
-    )
-  }
-
-  // On main domain: use real NextAuth
-  return (
-    <NextAuthSessionProvider basePath="/api/auth" refetchInterval={5 * 60} refetchOnWindowFocus={false}>
+  // On subdomains after hydration: use mock context to avoid NextAuth fetches
+  // But we still wrap with NextAuthSessionProvider as outer to provide context
+  const content = (hydrated && isSubdomain) ? (
+    <MockSessionContext.Provider value={{ data: null, status: 'unauthenticated', update: async () => null }}>
       {children}
+    </MockSessionContext.Provider>
+  ) : children
+
+  return (
+    <NextAuthSessionProvider
+      basePath="/api/auth"
+      refetchInterval={isSubdomain ? 0 : 5 * 60}
+      refetchOnWindowFocus={false}
+    >
+      {content}
     </NextAuthSessionProvider>
   )
 }
