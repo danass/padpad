@@ -19,8 +19,10 @@ async function getDocuments(userId) {
     let username = null
 
     const isUUIDish = /^[0-9a-f-]+$/i.test(userId)
+    const isEmail = userId.includes('@')
 
-    if (!isUUIDish) {
+    // First try testament_username (if not UUID-like and not email)
+    if (!isUUIDish && !isEmail) {
       const userResult = await sql.query(
         'SELECT id, testament_username FROM users WHERE testament_username = $1',
         [userId]
@@ -31,10 +33,23 @@ async function getDocuments(userId) {
       }
     }
 
+    // Then try by user ID (UUID)
     if (!actualUserId) {
       const userResult = await sql.query(
         'SELECT id, testament_username FROM users WHERE id LIKE $1 OR id = $2',
         [`${userId}%`, userId]
+      )
+      if (userResult.rows.length > 0) {
+        actualUserId = userResult.rows[0].id
+        username = userResult.rows[0].testament_username
+      }
+    }
+
+    // Finally try by email (for legacy records)
+    if (!actualUserId && isEmail) {
+      const userResult = await sql.query(
+        'SELECT id, testament_username FROM users WHERE email = $1',
+        [userId]
       )
       if (userResult.rows.length > 0) {
         actualUserId = userResult.rows[0].id
