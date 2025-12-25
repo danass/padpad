@@ -539,6 +539,8 @@ export default function HomeClient({ featuredArticles = [] }) {
           // Determine file type and insert accordingly
           const ext = file.key.split('.').pop()?.toLowerCase()
           const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']
+          const videoExts = ['mp4', 'webm', 'mov', 'avi', 'mkv']
+          const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac']
 
           if (imageExts.includes(ext)) {
             // Insert as image
@@ -546,8 +548,18 @@ export default function HomeClient({ featuredArticles = [] }) {
               type: 'image',
               attrs: { src: file.gatewayUrl, alt: file.key },
             }).run()
+          } else if (videoExts.includes(ext)) {
+            // Insert as video with HTML
+            editor.chain().focus().insertContent(
+              `<p><video src="${file.gatewayUrl}" controls style="max-width: 100%; border-radius: 8px;">Your browser does not support video.</video></p>`
+            ).run()
+          } else if (audioExts.includes(ext)) {
+            // Insert as audio with HTML
+            editor.chain().focus().insertContent(
+              `<p><audio src="${file.gatewayUrl}" controls style="width: 100%;">Your browser does not support audio.</audio></p>`
+            ).run()
           } else {
-            // Insert as link
+            // Insert as link for other files
             editor.chain().focus().insertContent({
               type: 'text',
               marks: [{ type: 'link', attrs: { href: file.gatewayUrl } }],
