@@ -18,6 +18,8 @@ import {
   Italic,
   Underline,
   Highlighter,
+  Superscript,
+  Subscript,
   X
 } from 'lucide-react'
 import { useLanguage } from '@/app/i18n/LanguageContext'
@@ -171,6 +173,18 @@ export default function ContextMenu({ editor }) {
           action: () => editor.chain().focus().toggleHighlight().run(),
           isActive: editor?.isActive('highlight'),
         },
+        {
+          icon: <Superscript className="w-4 h-4" />,
+          label: t?.superscript || 'Superscript',
+          action: () => editor.chain().focus().toggleSuperscript().run(),
+          isActive: editor?.isActive('superscript'),
+        },
+        {
+          icon: <Subscript className="w-4 h-4" />,
+          label: t?.subscript || 'Subscript',
+          action: () => editor.chain().focus().toggleSubscript().run(),
+          isActive: editor?.isActive('subscript'),
+        },
       ]
     },
     {
@@ -311,8 +325,8 @@ export default function ContextMenu({ editor }) {
                 key={item.label}
                 onClick={() => handleAction(item.action)}
                 className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${item.isActive
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-700 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-gray-700 hover:bg-gray-50'
                   }`}
               >
                 <span className={item.isActive ? 'text-blue-600' : 'text-gray-500'}>

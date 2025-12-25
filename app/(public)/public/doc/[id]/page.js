@@ -1,5 +1,6 @@
 import { sql } from '@vercel/postgres'
 import { replayHistory } from '@/lib/editor/history-replay'
+import { auth } from '@/auth'
 import PublicDocumentClient from './client'
 
 export const dynamic = 'force-dynamic'
@@ -58,6 +59,7 @@ async function getDocumentData(documentId) {
     }
 
     // Get latest snapshot
+    const userId = document.user_id
     let content = null
     if (document.current_snapshot_id) {
       const snapshotResult = await sql.query(
@@ -131,6 +133,7 @@ async function getDocumentData(documentId) {
         is_full_width: document.is_full_width || false,
         archive_id: archiveId,
         author_name: authorName,
+        user_id: userId,
       },
       content,
       navigation
@@ -202,7 +205,16 @@ export async function generateMetadata({ params }) {
 
 export default async function PublicDocumentPage({ params }) {
   const { id: documentId } = await params
+  const session = await auth()
   const data = await getDocumentData(documentId)
+
+  // Add isOwner/isAdmin flags
+  const isOwner = session?.user?.id && data.document?.user_id && session.user.id === data.document.user_id
+  const isAdmin = session?.user?.isAdmin === true
+
+  if (data.document) {
+    data.document.isOwner = !!(isOwner || isAdmin)
+  }
 
   return <PublicDocumentClient serverData={data} />
 }

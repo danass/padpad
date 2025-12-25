@@ -28,7 +28,10 @@ function ArticleContent({ content }) {
         editable: false,
         immediatelyRender: false,
         extensions: [
-            StarterKit.configure({ heading: { levels: [1, 2, 3, 4, 5, 6] } }),
+            StarterKit.configure({
+                heading: { levels: [1, 2, 3, 4, 5, 6] },
+                codeBlock: false,
+            }),
             ResizableImage.configure({ HTMLAttributes: { class: 'max-w-full h-auto' } }),
             Youtube, TaskList, TaskItem, Details, DetailsSummary, DetailsContent,
             LinkExtension.configure({ openOnClick: true, HTMLAttributes: { class: 'text-blue-500 underline' } }),

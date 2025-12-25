@@ -25,21 +25,21 @@ export const translations = {
     // App
     appName: 'textpad',
     tagline: 'A simple, beautiful writing space',
-    
+
     // Header
     newDocument: 'New Document',
     drive: 'Drive',
     settings: 'Settings',
     signIn: 'Sign in',
     signOut: 'Sign out',
-    
+
     // Home page
     startWriting: 'Start writing...',
     saveDocument: 'Save Document',
     saving: 'Saving...',
     savedLocally: 'Your document is saved locally. Click "Save Document" to save it permanently.',
     clickToSave: 'Click "Save" to sign in and save your document permanently.',
-    
+
     // Drive
     myDocuments: 'My Documents',
     createFolder: 'Create Folder',
@@ -47,7 +47,7 @@ export const translations = {
     noDocuments: 'No documents yet',
     createFirst: 'Create a new document to get started',
     searchDocuments: 'Search documents...',
-    
+
     // Document list
     name: 'Name',
     type: 'Type',
@@ -56,7 +56,7 @@ export const translations = {
     folder: 'Folder',
     document: 'Document',
     untitled: 'Untitled',
-    
+
     // Context menu
     open: 'Open',
     viewPublic: 'View public',
@@ -71,7 +71,7 @@ export const translations = {
     drawings: 'drawings',
     drawing: 'drawing',
     emptyDocument: 'Empty document',
-    
+
     // Editor
     back: 'Back',
     backToDrive: 'Back to Drive',
@@ -88,11 +88,11 @@ export const translations = {
     fullWidth: 'Full width',
     normalWidth: 'Normal width',
     preview: 'Preview',
-    
+
     // Save status
     unsavedChanges: 'Unsaved changes',
     saved: 'Saved',
-    
+
     // Toolbar
     bold: 'Bold',
     italic: 'Italic',
@@ -118,13 +118,13 @@ export const translations = {
     center: 'Center',
     right: 'Right',
     justified: 'Justified',
-    
+
     // Alignment
     alignLeft: 'Align left',
     alignCenter: 'Align center',
     alignRight: 'Align right',
     alignJustify: 'Justify',
-    
+
     // Context menu (editor)
     convertTo: 'Convert to',
     blocks: 'Blocks',
@@ -149,20 +149,20 @@ export const translations = {
     horizontalRule: 'Horizontal rule',
     link: 'Link',
     linkUrl: 'Link URL:',
-    
+
     // History
     documentHistory: 'Document History',
     noHistory: 'No history available',
     restore: 'Restore',
     restoreVersion: 'Restore this version?',
-    
+
     // Settings
     accountSettings: 'Account Settings',
     profilePicture: 'Profile Picture',
     changeAvatar: 'Change Avatar',
     useGoogleAvatar: 'Use Google Avatar',
     removeAvatar: 'Remove Avatar',
-    
+
     // Digital Legacy
     digitalLegacy: 'Digital Legacy',
     digitalLegacySettings: 'Digital Legacy Settings',
@@ -175,7 +175,7 @@ export const translations = {
     usernameHint: 'Only lowercase letters, numbers, hyphens, and underscores.',
     previewLegacy: 'Preview Digital Legacy',
     previewLegacyDescription: 'See how your public digital legacy page will appear.',
-    
+
     // Public view
     allArticles: 'All articles',
     previous: 'Previous',
@@ -185,12 +185,12 @@ export const translations = {
     publicDocument: 'public document',
     noPublicDocuments: 'No public documents',
     userNoPublicDocs: 'This user has no public documents yet.',
-    
+
     // Footer
     credits: 'Credits',
     madeBy: 'Made with care by',
     brotherApp: 'Brother app of',
-    
+
     // Errors
     error: 'Error',
     documentNotFound: 'Document not found',
@@ -200,116 +200,116 @@ export const translations = {
     goHome: 'Go to Home',
     failedToLoad: 'Failed to load',
     failedToUpdate: 'Failed to update',
-    
+
     // Image
     size: 'Size',
     align: 'Align',
     duplicate: 'Duplicate',
     full: 'Full',
     noImageSource: 'No image source',
-  
-  // History Panel
-  history: 'History',
-  snapshot: 'Snapshot',
-  empty: 'Empty',
-  restoring: 'Restoring...',
-  restoreThisVersion: 'Restore this version',
-  noSnapshotsYet: 'No snapshots yet',
-  deleteSnapshot: 'Delete snapshot',
-  deleteEmptySnapshots: 'Delete empty snapshots',
-  confirmDeleteSnapshot: 'Are you sure you want to delete this snapshot?',
-  confirmDeleteEmptySnapshots: 'Are you sure you want to delete {count} empty snapshot(s)?',
-  failedToDelete: 'Failed to delete',
-  completeSave: 'Complete save. Click to restore.',
-  
-  // Drawing Component
-  undoLastStroke: 'Undo last stroke',
-  exportAsPng: 'Export as PNG',
-  makeAbsolute: 'Make absolute',
-  returnToFlow: 'Return to text flow',
-  
-  // Link Editor
-  noLink: 'No link',
-  modify: 'Modify',
-  removeLink: 'Remove link',
-  enterUrl: 'Enter URL',
-  cancel: 'Cancel',
-  
-  // Block Menu
-  moveUp: 'Move up',
-  moveDown: 'Move down',
-  
-  // Color Picker
-  backgroundColor: 'Background color',
-  
-  // Drag Handle
-  clickForOptions: 'Click for options',
-  holdForDrag: 'Hold for drag',
-  addContent: 'Add content',
-  options: 'Options',
-  
-  // Image Component
-  alignment: 'Alignment',
-  widthLabel: 'Width',
-  oneThirdWidth: '1/3 of width',
-  twoThirdsWidth: '2/3 of width',
-  fullWidthLabel: 'Full width',
-  
-  // Search & Drive
-  searchDocuments: 'Search documents...',
-  documents: 'Documents',
-  folders: 'Folders',
-  noResultsFound: 'No results found',
-  confirmDelete: 'Are you sure you want to delete this item?',
-  confirmDeleteMultiple: 'Are you sure you want to delete {count} item(s)?',
-  words: 'words',
-  word: 'word',
-  characters: 'characters',
-  character: 'character',
-  images: 'images',
-  image: 'image',
-  drawings: 'drawings',
-  drawing: 'drawing',
-  emptyDocument: 'Empty document',
-  viewPublic: 'View public',
-  publicLabel: 'Public',
-  privateLabel: 'Private',
-  folder: 'Folder',
-  doc: 'Doc',
-  publicClickPrivate: 'Public - Click to make private',
-  privateClickPublic: 'Private - Click to make public',
-  makePublic: 'Make selected documents public',
-  makePrivate: 'Make selected documents private',
-  gridView: 'Compact grid view',
-  listView: 'List view',
-  cannotMoveFolder: 'Cannot move folder into its own subfolder',
-  view: 'View',
-  
-  // File Import
-  fileImported: 'File imported successfully',
-  failedToImport: 'Failed to import file',
-  importing: 'Importing...',
-  dropFilesHere: 'Drop .txt or .md files here',
-  or: 'or',
-  selectFiles: 'Select Files',
-  
-  // Settings Page
-  yourLegacyUrl: 'Your Legacy URL',
-  copyUrl: 'Copy URL',
-  accessibleOn: 'This page will become accessible on {date}.',
-  avatarSaved: 'Avatar saved successfully',
-  failedToSaveAvatar: 'Failed to save avatar',
-  usernameSaved: 'Username saved successfully',
-  failedToSaveUsername: 'Failed to save username',
-  pleaseEnterBirthDate: 'Please enter your birth date',
-  birthDateSaved: 'Birth date saved successfully',
-  docsPublicOn: 'Your documents will become public on {date} (your 99th birthday)',
-  failedToSaveBirthDate: 'Failed to save birth date',
-  legacyDisabled: 'Digital Legacy disabled - your documents will remain private',
-  failedToRemoveBirthDate: 'Failed to remove birth date',
-  useGoogleAvatar: 'Use Google avatar',
-  generateRandomAvatar: 'Generate random avatar',
-    
+
+    // History Panel
+    history: 'History',
+    snapshot: 'Snapshot',
+    empty: 'Empty',
+    restoring: 'Restoring...',
+    restoreThisVersion: 'Restore this version',
+    noSnapshotsYet: 'No snapshots yet',
+    deleteSnapshot: 'Delete snapshot',
+    deleteEmptySnapshots: 'Delete empty snapshots',
+    confirmDeleteSnapshot: 'Are you sure you want to delete this snapshot?',
+    confirmDeleteEmptySnapshots: 'Are you sure you want to delete {count} empty snapshot(s)?',
+    failedToDelete: 'Failed to delete',
+    completeSave: 'Complete save. Click to restore.',
+
+    // Drawing Component
+    undoLastStroke: 'Undo last stroke',
+    exportAsPng: 'Export as PNG',
+    makeAbsolute: 'Make absolute',
+    returnToFlow: 'Return to text flow',
+
+    // Link Editor
+    noLink: 'No link',
+    modify: 'Modify',
+    removeLink: 'Remove link',
+    enterUrl: 'Enter URL',
+    cancel: 'Cancel',
+
+    // Block Menu
+    moveUp: 'Move up',
+    moveDown: 'Move down',
+
+    // Color Picker
+    backgroundColor: 'Background color',
+
+    // Drag Handle
+    clickForOptions: 'Click for options',
+    holdForDrag: 'Hold for drag',
+    addContent: 'Add content',
+    options: 'Options',
+
+    // Image Component
+    alignment: 'Alignment',
+    widthLabel: 'Width',
+    oneThirdWidth: '1/3 of width',
+    twoThirdsWidth: '2/3 of width',
+    fullWidthLabel: 'Full width',
+
+    // Search & Drive
+    searchDocuments: 'Search documents...',
+    documents: 'Documents',
+    folders: 'Folders',
+    noResultsFound: 'No results found',
+    confirmDelete: 'Are you sure you want to delete this item?',
+    confirmDeleteMultiple: 'Are you sure you want to delete {count} item(s)?',
+    words: 'words',
+    word: 'word',
+    characters: 'characters',
+    character: 'character',
+    images: 'images',
+    image: 'image',
+    drawings: 'drawings',
+    drawing: 'drawing',
+    emptyDocument: 'Empty document',
+    viewPublic: 'View public',
+    publicLabel: 'Public',
+    privateLabel: 'Private',
+    folder: 'Folder',
+    doc: 'Doc',
+    publicClickPrivate: 'Public - Click to make private',
+    privateClickPublic: 'Private - Click to make public',
+    makePublic: 'Make selected documents public',
+    makePrivate: 'Make selected documents private',
+    gridView: 'Compact grid view',
+    listView: 'List view',
+    cannotMoveFolder: 'Cannot move folder into its own subfolder',
+    view: 'View',
+
+    // File Import
+    fileImported: 'File imported successfully',
+    failedToImport: 'Failed to import file',
+    importing: 'Importing...',
+    dropFilesHere: 'Drop .txt or .md files here',
+    or: 'or',
+    selectFiles: 'Select Files',
+
+    // Settings Page
+    yourLegacyUrl: 'Your Legacy URL',
+    copyUrl: 'Copy URL',
+    accessibleOn: 'This page will become accessible on {date}.',
+    avatarSaved: 'Avatar saved successfully',
+    failedToSaveAvatar: 'Failed to save avatar',
+    usernameSaved: 'Username saved successfully',
+    failedToSaveUsername: 'Failed to save username',
+    pleaseEnterBirthDate: 'Please enter your birth date',
+    birthDateSaved: 'Birth date saved successfully',
+    docsPublicOn: 'Your documents will become public on {date} (your 99th birthday)',
+    failedToSaveBirthDate: 'Failed to save birth date',
+    legacyDisabled: 'Digital Legacy disabled - your documents will remain private',
+    failedToRemoveBirthDate: 'Failed to remove birth date',
+    useGoogleAvatar: 'Use Google avatar',
+    generateRandomAvatar: 'Generate random avatar',
+
     // General
     loading: 'Loading...',
     cancel: 'Cancel',
@@ -319,21 +319,22 @@ export const translations = {
     yes: 'Yes',
     no: 'No',
     language: 'Language',
-    
+    edit: 'Edit',
+
     // Sign in
     welcomeTo: 'Welcome to',
     signInToAccess: 'Sign in to access your documents',
     signInWithGoogle: 'Sign in with Google',
-    
+
     // Placeholder
     editorPlaceholder: 'Start typing... Create your document here',
     editorPlaceholderDoc: 'Start typing... Type / for commands',
-    
+
     // Settings extras
     yourLegacyUrl: 'Your Legacy URL',
     legacyAccessDate: 'This page will become accessible on',
     creatingFolder: 'Creating...',
-    
+
     // Admin Page
     adminPanel: 'Admin Panel',
     manageDocsUsersAdmins: 'Manage documents, users, and admin access',
@@ -360,14 +361,14 @@ export const translations = {
     makeAdmin: 'Make Admin',
     failedToUpdateAdminStatus: 'Failed to update admin status',
     pageOf: 'Page {page} of {total}',
-    
+
     // Testament Page
     digitalTestament: 'Digital Testament',
     documentsBecamePublic: 'Documents became public on',
     documentsWillBecomePublic: 'Documents will become public on',
     noDocumentsAvailable: 'No documents available yet.',
     testamentNotFound: 'Testament Not Found',
-    
+
     // Archive Page
     archive: 'Archive',
     noPublicDocs: 'No public documents',
@@ -376,7 +377,7 @@ export const translations = {
     errorText: 'Error',
     anErrorOccurred: 'An error occurred',
     failedToLoadDocuments: 'Failed to load documents',
-    
+
     // Privacy Policy
     privacyTitle: 'Privacy Policy',
     privacyLastUpdated: 'Last Updated',
@@ -410,7 +411,7 @@ export const translations = {
     privacyRightUpdate: 'Update your information',
     privacyContact: 'Contact Us',
     privacyContactText: 'If you have questions about this Privacy Policy, please contact us through the settings page.',
-    
+
     // Terms of Service
     termsTitle: 'Terms of Service',
     termsLastUpdated: 'Last Updated',
@@ -440,26 +441,26 @@ export const translations = {
     termsContact: 'Contact Us',
     termsContactText: 'If you have questions about these Terms of Service, please contact us through the settings page.',
   },
-  
+
   fr: {
     // App
     appName: 'textpad',
     tagline: 'Un espace d\'écriture simple et élégant',
-    
+
     // Header
     newDocument: 'Nouveau document',
     drive: 'Drive',
     settings: 'Paramètres',
     signIn: 'Se connecter',
     signOut: 'Se déconnecter',
-    
+
     // Home page
     startWriting: 'Commencez à écrire...',
     saveDocument: 'Enregistrer',
     saving: 'Enregistrement...',
     savedLocally: 'Votre document est enregistré localement. Cliquez sur "Enregistrer" pour le sauvegarder définitivement.',
     clickToSave: 'Cliquez sur "Enregistrer" pour vous connecter et sauvegarder votre document.',
-    
+
     // Drive
     myDocuments: 'Mes Documents',
     createFolder: 'Créer un dossier',
@@ -467,7 +468,7 @@ export const translations = {
     noDocuments: 'Aucun document',
     createFirst: 'Créez un nouveau document pour commencer',
     searchDocuments: 'Rechercher des documents...',
-    
+
     // Document list
     name: 'Nom',
     type: 'Type',
@@ -476,7 +477,7 @@ export const translations = {
     folder: 'Dossier',
     document: 'Document',
     untitled: 'Sans titre',
-    
+
     // Context menu
     open: 'Ouvrir',
     viewPublic: 'Voir en public',
@@ -491,7 +492,7 @@ export const translations = {
     drawings: 'dessins',
     drawing: 'dessin',
     emptyDocument: 'Document vide',
-    
+
     // Editor
     back: 'Retour',
     backToDrive: 'Retour au Drive',
@@ -508,11 +509,11 @@ export const translations = {
     fullWidth: 'Pleine largeur',
     normalWidth: 'Largeur normale',
     preview: 'Aperçu',
-    
+
     // Save status
     unsavedChanges: 'Modifications non enregistrées',
     saved: 'Enregistré',
-    
+
     // Toolbar
     bold: 'Gras',
     italic: 'Italique',
@@ -538,13 +539,13 @@ export const translations = {
     center: 'Centre',
     right: 'Droite',
     justified: 'Justifié',
-    
+
     // Alignment
     alignLeft: 'Aligner à gauche',
     alignCenter: 'Centrer',
     alignRight: 'Aligner à droite',
     alignJustify: 'Justifier',
-    
+
     // Context menu (editor)
     convertTo: 'Convertir en',
     blocks: 'Blocs',
@@ -569,20 +570,20 @@ export const translations = {
     horizontalRule: 'Ligne horizontale',
     link: 'Lien',
     linkUrl: 'URL du lien :',
-    
+
     // History
     documentHistory: 'Historique du document',
     noHistory: 'Aucun historique disponible',
     restore: 'Restaurer',
     restoreVersion: 'Restaurer cette version ?',
-    
+
     // Settings
     accountSettings: 'Paramètres du compte',
     profilePicture: 'Photo de profil',
     changeAvatar: 'Changer l\'avatar',
     useGoogleAvatar: 'Utiliser l\'avatar Google',
     removeAvatar: 'Supprimer l\'avatar',
-    
+
     // Digital Legacy
     digitalLegacy: 'Héritage numérique',
     digitalLegacySettings: 'Paramètres de l\'héritage numérique',
@@ -595,7 +596,7 @@ export const translations = {
     usernameHint: 'Uniquement lettres minuscules, chiffres, tirets et underscores.',
     previewLegacy: 'Aperçu de l\'héritage numérique',
     previewLegacyDescription: 'Voir comment votre page publique apparaîtra.',
-    
+
     // Public view
     allArticles: 'Tous les articles',
     previous: 'Précédent',
@@ -605,12 +606,12 @@ export const translations = {
     publicDocument: 'document public',
     noPublicDocuments: 'Aucun document public',
     userNoPublicDocs: 'Cet utilisateur n\'a pas encore de documents publics.',
-    
+
     // Footer
     credits: 'Crédits',
     madeBy: 'Créé avec soin par',
     brotherApp: 'Application sœur de',
-    
+
     // Errors
     error: 'Erreur',
     documentNotFound: 'Document non trouvé',
@@ -620,115 +621,115 @@ export const translations = {
     goHome: 'Retour à l\'accueil',
     failedToLoad: 'Échec du chargement',
     failedToUpdate: 'Échec de la mise à jour',
-    
+
     // Image
     size: 'Taille',
     align: 'Alignement',
     duplicate: 'Dupliquer',
     full: 'Pleine',
     noImageSource: 'Aucune source d\'image',
-  
-  // History Panel
-  history: 'Historique',
-  snapshot: 'Snapshot',
-  empty: 'Vide',
-  restoring: 'Restauration...',
-  restoreThisVersion: 'Restaurer cette version',
-  noSnapshotsYet: 'Aucun snapshot pour le moment',
-  deleteSnapshot: 'Supprimer le snapshot',
-  deleteEmptySnapshots: 'Supprimer les snapshots vides',
-  confirmDeleteSnapshot: 'Êtes-vous sûr de vouloir supprimer ce snapshot ?',
-  confirmDeleteEmptySnapshots: 'Êtes-vous sûr de vouloir supprimer {count} snapshot(s) vide(s) ?',
-  failedToDelete: 'Échec de la suppression',
-  completeSave: 'Sauvegarde complète. Cliquez pour restaurer.',
-  
-  // Drawing Component
-  undoLastStroke: 'Annuler le dernier trait',
-  exportAsPng: 'Exporter en PNG',
-  makeAbsolute: 'Rendre absolu',
-  returnToFlow: 'Remettre dans le flux du texte',
-  
-  // Link Editor
-  noLink: 'Aucun lien',
-  modify: 'Modifier',
-  removeLink: 'Supprimer le lien',
-  enterUrl: 'Entrer l\'URL',
-  
-  // Block Menu
-  moveUp: 'Déplacer vers le haut',
-  moveDown: 'Déplacer vers le bas',
-  
-  // Color Picker
-  backgroundColor: 'Couleur de fond',
-  
-  // Drag Handle
-  clickForOptions: 'Cliquer pour les options',
-  holdForDrag: 'Maintenir pour glisser',
-  addContent: 'Ajouter du contenu',
-  options: 'Options',
-  
-  // Image Component
-  alignment: 'Alignement',
-  widthLabel: 'Largeur',
-  oneThirdWidth: '1/3 de la largeur',
-  twoThirdsWidth: '2/3 de la largeur',
-  fullWidthLabel: 'Pleine largeur',
-  
-  // Search & Drive
-  searchDocuments: 'Rechercher des documents...',
-  documents: 'Documents',
-  folders: 'Dossiers',
-  noResultsFound: 'Aucun résultat trouvé',
-  confirmDelete: 'Êtes-vous sûr de vouloir supprimer cet élément ?',
-  confirmDeleteMultiple: 'Êtes-vous sûr de vouloir supprimer {count} élément(s) ?',
-  words: 'mots',
-  word: 'mot',
-  characters: 'caractères',
-  character: 'caractère',
-  images: 'images',
-  image: 'image',
-  drawings: 'dessins',
-  drawing: 'dessin',
-  emptyDocument: 'Document vide',
-  viewPublic: 'Voir en public',
-  publicLabel: 'Public',
-  privateLabel: 'Privé',
-  folder: 'Dossier',
-  doc: 'Doc',
-  publicClickPrivate: 'Public - Cliquer pour rendre privé',
-  privateClickPublic: 'Privé - Cliquer pour rendre public',
-  makePublic: 'Rendre les documents sélectionnés publics',
-  makePrivate: 'Rendre les documents sélectionnés privés',
-  gridView: 'Vue grille compacte',
-  listView: 'Vue liste',
-  cannotMoveFolder: 'Impossible de déplacer un dossier dans son propre sous-dossier',
-  view: 'Vue',
-  
-  // File Import
-  fileImported: 'Fichier importé avec succès',
-  failedToImport: 'Échec de l\'importation du fichier',
-  importing: 'Importation...',
-  dropFilesHere: 'Déposez les fichiers .txt ou .md ici',
-  or: 'ou',
-  selectFiles: 'Sélectionner des fichiers',
-  
-  // Settings Page
-  yourLegacyUrl: 'Votre URL de legs',
-  copyUrl: 'Copier l\'URL',
-  accessibleOn: 'Cette page sera accessible le {date}.',
-  avatarSaved: 'Avatar enregistré avec succès',
-  failedToSaveAvatar: 'Échec de l\'enregistrement de l\'avatar',
-  usernameSaved: 'Nom d\'utilisateur enregistré avec succès',
-  failedToSaveUsername: 'Échec de l\'enregistrement du nom d\'utilisateur',
-  pleaseEnterBirthDate: 'Veuillez entrer votre date de naissance',
-  birthDateSaved: 'Date de naissance enregistrée avec succès',
-  docsPublicOn: 'Vos documents deviendront publics le {date} (votre 99ème anniversaire)',
-  failedToSaveBirthDate: 'Échec de l\'enregistrement de la date de naissance',
-  legacyDisabled: 'Legs numérique désactivé - vos documents resteront privés',
-  failedToRemoveBirthDate: 'Échec de la suppression de la date de naissance',
-  useGoogleAvatar: 'Utiliser l\'avatar Google',
-  generateRandomAvatar: 'Générer un avatar aléatoire',
-    
+
+    // History Panel
+    history: 'Historique',
+    snapshot: 'Snapshot',
+    empty: 'Vide',
+    restoring: 'Restauration...',
+    restoreThisVersion: 'Restaurer cette version',
+    noSnapshotsYet: 'Aucun snapshot pour le moment',
+    deleteSnapshot: 'Supprimer le snapshot',
+    deleteEmptySnapshots: 'Supprimer les snapshots vides',
+    confirmDeleteSnapshot: 'Êtes-vous sûr de vouloir supprimer ce snapshot ?',
+    confirmDeleteEmptySnapshots: 'Êtes-vous sûr de vouloir supprimer {count} snapshot(s) vide(s) ?',
+    failedToDelete: 'Échec de la suppression',
+    completeSave: 'Sauvegarde complète. Cliquez pour restaurer.',
+
+    // Drawing Component
+    undoLastStroke: 'Annuler le dernier trait',
+    exportAsPng: 'Exporter en PNG',
+    makeAbsolute: 'Rendre absolu',
+    returnToFlow: 'Remettre dans le flux du texte',
+
+    // Link Editor
+    noLink: 'Aucun lien',
+    modify: 'Modifier',
+    removeLink: 'Supprimer le lien',
+    enterUrl: 'Entrer l\'URL',
+
+    // Block Menu
+    moveUp: 'Déplacer vers le haut',
+    moveDown: 'Déplacer vers le bas',
+
+    // Color Picker
+    backgroundColor: 'Couleur de fond',
+
+    // Drag Handle
+    clickForOptions: 'Cliquer pour les options',
+    holdForDrag: 'Maintenir pour glisser',
+    addContent: 'Ajouter du contenu',
+    options: 'Options',
+
+    // Image Component
+    alignment: 'Alignement',
+    widthLabel: 'Largeur',
+    oneThirdWidth: '1/3 de la largeur',
+    twoThirdsWidth: '2/3 de la largeur',
+    fullWidthLabel: 'Pleine largeur',
+
+    // Search & Drive
+    searchDocuments: 'Rechercher des documents...',
+    documents: 'Documents',
+    folders: 'Dossiers',
+    noResultsFound: 'Aucun résultat trouvé',
+    confirmDelete: 'Êtes-vous sûr de vouloir supprimer cet élément ?',
+    confirmDeleteMultiple: 'Êtes-vous sûr de vouloir supprimer {count} élément(s) ?',
+    words: 'mots',
+    word: 'mot',
+    characters: 'caractères',
+    character: 'caractère',
+    images: 'images',
+    image: 'image',
+    drawings: 'dessins',
+    drawing: 'dessin',
+    emptyDocument: 'Document vide',
+    viewPublic: 'Voir en public',
+    publicLabel: 'Public',
+    privateLabel: 'Privé',
+    folder: 'Dossier',
+    doc: 'Doc',
+    publicClickPrivate: 'Public - Cliquer pour rendre privé',
+    privateClickPublic: 'Privé - Cliquer pour rendre public',
+    makePublic: 'Rendre les documents sélectionnés publics',
+    makePrivate: 'Rendre les documents sélectionnés privés',
+    gridView: 'Vue grille compacte',
+    listView: 'Vue liste',
+    cannotMoveFolder: 'Impossible de déplacer un dossier dans son propre sous-dossier',
+    view: 'Vue',
+
+    // File Import
+    fileImported: 'Fichier importé avec succès',
+    failedToImport: 'Échec de l\'importation du fichier',
+    importing: 'Importation...',
+    dropFilesHere: 'Déposez les fichiers .txt ou .md ici',
+    or: 'ou',
+    selectFiles: 'Sélectionner des fichiers',
+
+    // Settings Page
+    yourLegacyUrl: 'Votre URL de legs',
+    copyUrl: 'Copier l\'URL',
+    accessibleOn: 'Cette page sera accessible le {date}.',
+    avatarSaved: 'Avatar enregistré avec succès',
+    failedToSaveAvatar: 'Échec de l\'enregistrement de l\'avatar',
+    usernameSaved: 'Nom d\'utilisateur enregistré avec succès',
+    failedToSaveUsername: 'Échec de l\'enregistrement du nom d\'utilisateur',
+    pleaseEnterBirthDate: 'Veuillez entrer votre date de naissance',
+    birthDateSaved: 'Date de naissance enregistrée avec succès',
+    docsPublicOn: 'Vos documents deviendront publics le {date} (votre 99ème anniversaire)',
+    failedToSaveBirthDate: 'Échec de l\'enregistrement de la date de naissance',
+    legacyDisabled: 'Legs numérique désactivé - vos documents resteront privés',
+    failedToRemoveBirthDate: 'Échec de la suppression de la date de naissance',
+    useGoogleAvatar: 'Utiliser l\'avatar Google',
+    generateRandomAvatar: 'Générer un avatar aléatoire',
+
     // General
     loading: 'Chargement...',
     cancel: 'Annuler',
@@ -738,21 +739,22 @@ export const translations = {
     yes: 'Oui',
     no: 'Non',
     language: 'Langue',
-    
+    edit: 'Modifier',
+
     // Sign in
     welcomeTo: 'Bienvenue sur',
     signInToAccess: 'Connectez-vous pour accéder à vos documents',
     signInWithGoogle: 'Se connecter avec Google',
-    
+
     // Placeholder
     editorPlaceholder: 'Commencez à écrire... Créez votre document ici',
     editorPlaceholderDoc: 'Commencez à écrire... Tapez / pour les commandes',
-    
+
     // Settings extras
     yourLegacyUrl: 'Votre URL d\'héritage',
     legacyAccessDate: 'Cette page sera accessible le',
     creatingFolder: 'Création...',
-    
+
     // Admin Page
     adminPanel: 'Panneau d\'administration',
     manageDocsUsersAdmins: 'Gérer les documents, utilisateurs et accès admin',
@@ -779,14 +781,14 @@ export const translations = {
     makeAdmin: 'Rendre Admin',
     failedToUpdateAdminStatus: 'Échec de la mise à jour du statut admin',
     pageOf: 'Page {page} sur {total}',
-    
+
     // Testament Page
     digitalTestament: 'Testament numérique',
     documentsBecamePublic: 'Documents devenus publics le',
     documentsWillBecomePublic: 'Documents deviendront publics le',
     noDocumentsAvailable: 'Aucun document disponible pour le moment.',
     testamentNotFound: 'Testament non trouvé',
-    
+
     // Archive Page
     archive: 'Archive',
     noPublicDocs: 'Aucun document public',
@@ -795,7 +797,7 @@ export const translations = {
     errorText: 'Erreur',
     anErrorOccurred: 'Une erreur s\'est produite',
     failedToLoadDocuments: 'Échec du chargement des documents',
-    
+
     // Privacy Policy
     privacyTitle: 'Politique de Confidentialité',
     privacyLastUpdated: 'Dernière mise à jour',
@@ -829,7 +831,7 @@ export const translations = {
     privacyRightUpdate: 'Mettre à jour vos informations',
     privacyContact: 'Nous contacter',
     privacyContactText: 'Si vous avez des questions sur cette Politique de Confidentialité, veuillez nous contacter via la page des paramètres.',
-    
+
     // Terms of Service
     termsTitle: 'Conditions d\'Utilisation',
     termsLastUpdated: 'Dernière mise à jour',
@@ -859,26 +861,26 @@ export const translations = {
     termsContact: 'Nous contacter',
     termsContactText: 'Si vous avez des questions sur ces Conditions d\'Utilisation, veuillez nous contacter via la page des paramètres.',
   },
-  
+
   es: {
     // App
     appName: 'textpad',
     tagline: 'Un espacio de escritura simple y hermoso',
-    
+
     // Header
     newDocument: 'Nuevo documento',
     drive: 'Drive',
     settings: 'Configuración',
     signIn: 'Iniciar sesión',
     signOut: 'Cerrar sesión',
-    
+
     // Home page
     startWriting: 'Empieza a escribir...',
     saveDocument: 'Guardar documento',
     saving: 'Guardando...',
     savedLocally: 'Tu documento está guardado localmente. Haz clic en "Guardar" para guardarlo permanentemente.',
     clickToSave: 'Haz clic en "Guardar" para iniciar sesión y guardar tu documento.',
-    
+
     // Drive
     myDocuments: 'Mis Documentos',
     createFolder: 'Crear carpeta',
@@ -886,7 +888,7 @@ export const translations = {
     noDocuments: 'Sin documentos',
     createFirst: 'Crea un nuevo documento para empezar',
     searchDocuments: 'Buscar documentos...',
-    
+
     // Document list
     name: 'Nombre',
     type: 'Tipo',
@@ -895,7 +897,7 @@ export const translations = {
     folder: 'Carpeta',
     document: 'Documento',
     untitled: 'Sin título',
-    
+
     // Context menu
     open: 'Abrir',
     viewPublic: 'Ver público',
@@ -910,7 +912,7 @@ export const translations = {
     drawings: 'dibujos',
     drawing: 'dibujo',
     emptyDocument: 'Documento vacío',
-    
+
     // Editor
     back: 'Volver',
     backToDrive: 'Volver al Drive',
@@ -927,11 +929,11 @@ export const translations = {
     fullWidth: 'Ancho completo',
     normalWidth: 'Ancho normal',
     preview: 'Vista previa',
-    
+
     // Save status
     unsavedChanges: 'Cambios sin guardar',
     saved: 'Guardado',
-    
+
     // Toolbar
     bold: 'Negrita',
     italic: 'Cursiva',
@@ -957,13 +959,13 @@ export const translations = {
     center: 'Centro',
     right: 'Derecha',
     justified: 'Justificado',
-    
+
     // Alignment
     alignLeft: 'Alinear a la izquierda',
     alignCenter: 'Centrar',
     alignRight: 'Alinear a la derecha',
     alignJustify: 'Justificar',
-    
+
     // Context menu (editor)
     convertTo: 'Convertir a',
     blocks: 'Bloques',
@@ -988,20 +990,20 @@ export const translations = {
     horizontalRule: 'Línea horizontal',
     link: 'Enlace',
     linkUrl: 'URL del enlace:',
-    
+
     // History
     documentHistory: 'Historial del documento',
     noHistory: 'No hay historial disponible',
     restore: 'Restaurar',
     restoreVersion: '¿Restaurar esta versión?',
-    
+
     // Settings
     accountSettings: 'Configuración de la cuenta',
     profilePicture: 'Foto de perfil',
     changeAvatar: 'Cambiar avatar',
     useGoogleAvatar: 'Usar avatar de Google',
     removeAvatar: 'Eliminar avatar',
-    
+
     // Digital Legacy
     digitalLegacy: 'Legado digital',
     digitalLegacySettings: 'Configuración del legado digital',
@@ -1014,7 +1016,7 @@ export const translations = {
     usernameHint: 'Solo letras minúsculas, números, guiones y guiones bajos.',
     previewLegacy: 'Vista previa del legado digital',
     previewLegacyDescription: 'Ver cómo aparecerá tu página pública.',
-    
+
     // Public view
     allArticles: 'Todos los artículos',
     previous: 'Anterior',
@@ -1024,12 +1026,12 @@ export const translations = {
     publicDocument: 'documento público',
     noPublicDocuments: 'Sin documentos públicos',
     userNoPublicDocs: 'Este usuario aún no tiene documentos públicos.',
-    
+
     // Footer
     credits: 'Créditos',
     madeBy: 'Hecho con cariño por',
     brotherApp: 'Aplicación hermana de',
-    
+
     // Errors
     error: 'Error',
     documentNotFound: 'Documento no encontrado',
@@ -1039,115 +1041,115 @@ export const translations = {
     goHome: 'Ir al inicio',
     failedToLoad: 'Error al cargar',
     failedToUpdate: 'Error al actualizar',
-    
+
     // Image
     size: 'Tamaño',
     align: 'Alinear',
     duplicate: 'Duplicar',
     full: 'Completo',
     noImageSource: 'Sin fuente de imagen',
-  
-  // History Panel
-  history: 'Historial',
-  snapshot: 'Snapshot',
-  empty: 'Vacío',
-  restoring: 'Restaurando...',
-  restoreThisVersion: 'Restaurar esta versión',
-  noSnapshotsYet: 'Aún no hay snapshots',
-  deleteSnapshot: 'Eliminar snapshot',
-  deleteEmptySnapshots: 'Eliminar snapshots vacíos',
-  confirmDeleteSnapshot: '¿Estás seguro de que quieres eliminar este snapshot?',
-  confirmDeleteEmptySnapshots: '¿Estás seguro de que quieres eliminar {count} snapshot(s) vacío(s)?',
-  failedToDelete: 'Error al eliminar',
-  completeSave: 'Guardado completo. Clic para restaurar.',
-  
-  // Drawing Component
-  undoLastStroke: 'Deshacer último trazo',
-  exportAsPng: 'Exportar como PNG',
-  makeAbsolute: 'Hacer absoluto',
-  returnToFlow: 'Volver al flujo del texto',
-  
-  // Link Editor
-  noLink: 'Sin enlace',
-  modify: 'Modificar',
-  removeLink: 'Eliminar enlace',
-  enterUrl: 'Introducir URL',
-  
-  // Block Menu
-  moveUp: 'Mover arriba',
-  moveDown: 'Mover abajo',
-  
-  // Color Picker
-  backgroundColor: 'Color de fondo',
-  
-  // Drag Handle
-  clickForOptions: 'Clic para opciones',
-  holdForDrag: 'Mantener para arrastrar',
-  addContent: 'Añadir contenido',
-  options: 'Opciones',
-  
-  // Image Component
-  alignment: 'Alineación',
-  widthLabel: 'Ancho',
-  oneThirdWidth: '1/3 del ancho',
-  twoThirdsWidth: '2/3 del ancho',
-  fullWidthLabel: 'Ancho completo',
-  
-  // Search & Drive
-  searchDocuments: 'Buscar documentos...',
-  documents: 'Documentos',
-  folders: 'Carpetas',
-  noResultsFound: 'No se encontraron resultados',
-  confirmDelete: '¿Estás seguro de que quieres eliminar este elemento?',
-  confirmDeleteMultiple: '¿Estás seguro de que quieres eliminar {count} elemento(s)?',
-  words: 'palabras',
-  word: 'palabra',
-  characters: 'caracteres',
-  character: 'carácter',
-  images: 'imágenes',
-  image: 'imagen',
-  drawings: 'dibujos',
-  drawing: 'dibujo',
-  emptyDocument: 'Documento vacío',
-  viewPublic: 'Ver público',
-  publicLabel: 'Público',
-  privateLabel: 'Privado',
-  folder: 'Carpeta',
-  doc: 'Doc',
-  publicClickPrivate: 'Público - Clic para hacer privado',
-  privateClickPublic: 'Privado - Clic para hacer público',
-  makePublic: 'Hacer públicos los documentos seleccionados',
-  makePrivate: 'Hacer privados los documentos seleccionados',
-  gridView: 'Vista de cuadrícula compacta',
-  listView: 'Vista de lista',
-  cannotMoveFolder: 'No se puede mover una carpeta a su propia subcarpeta',
-  view: 'Vista',
-  
-  // File Import
-  fileImported: 'Archivo importado con éxito',
-  failedToImport: 'Error al importar archivo',
-  importing: 'Importando...',
-  dropFilesHere: 'Suelta archivos .txt o .md aquí',
-  or: 'o',
-  selectFiles: 'Seleccionar archivos',
-  
-  // Settings Page
-  yourLegacyUrl: 'Tu URL de legado',
-  copyUrl: 'Copiar URL',
-  accessibleOn: 'Esta página será accesible el {date}.',
-  avatarSaved: 'Avatar guardado con éxito',
-  failedToSaveAvatar: 'Error al guardar avatar',
-  usernameSaved: 'Nombre de usuario guardado con éxito',
-  failedToSaveUsername: 'Error al guardar nombre de usuario',
-  pleaseEnterBirthDate: 'Por favor, introduce tu fecha de nacimiento',
-  birthDateSaved: 'Fecha de nacimiento guardada con éxito',
-  docsPublicOn: 'Tus documentos serán públicos el {date} (tu 99º cumpleaños)',
-  failedToSaveBirthDate: 'Error al guardar fecha de nacimiento',
-  legacyDisabled: 'Legado digital desactivado - tus documentos permanecerán privados',
-  failedToRemoveBirthDate: 'Error al eliminar fecha de nacimiento',
-  useGoogleAvatar: 'Usar avatar de Google',
-  generateRandomAvatar: 'Generar avatar aleatorio',
-    
+
+    // History Panel
+    history: 'Historial',
+    snapshot: 'Snapshot',
+    empty: 'Vacío',
+    restoring: 'Restaurando...',
+    restoreThisVersion: 'Restaurar esta versión',
+    noSnapshotsYet: 'Aún no hay snapshots',
+    deleteSnapshot: 'Eliminar snapshot',
+    deleteEmptySnapshots: 'Eliminar snapshots vacíos',
+    confirmDeleteSnapshot: '¿Estás seguro de que quieres eliminar este snapshot?',
+    confirmDeleteEmptySnapshots: '¿Estás seguro de que quieres eliminar {count} snapshot(s) vacío(s)?',
+    failedToDelete: 'Error al eliminar',
+    completeSave: 'Guardado completo. Clic para restaurar.',
+
+    // Drawing Component
+    undoLastStroke: 'Deshacer último trazo',
+    exportAsPng: 'Exportar como PNG',
+    makeAbsolute: 'Hacer absoluto',
+    returnToFlow: 'Volver al flujo del texto',
+
+    // Link Editor
+    noLink: 'Sin enlace',
+    modify: 'Modificar',
+    removeLink: 'Eliminar enlace',
+    enterUrl: 'Introducir URL',
+
+    // Block Menu
+    moveUp: 'Mover arriba',
+    moveDown: 'Mover abajo',
+
+    // Color Picker
+    backgroundColor: 'Color de fondo',
+
+    // Drag Handle
+    clickForOptions: 'Clic para opciones',
+    holdForDrag: 'Mantener para arrastrar',
+    addContent: 'Añadir contenido',
+    options: 'Opciones',
+
+    // Image Component
+    alignment: 'Alineación',
+    widthLabel: 'Ancho',
+    oneThirdWidth: '1/3 del ancho',
+    twoThirdsWidth: '2/3 del ancho',
+    fullWidthLabel: 'Ancho completo',
+
+    // Search & Drive
+    searchDocuments: 'Buscar documentos...',
+    documents: 'Documentos',
+    folders: 'Carpetas',
+    noResultsFound: 'No se encontraron resultados',
+    confirmDelete: '¿Estás seguro de que quieres eliminar este elemento?',
+    confirmDeleteMultiple: '¿Estás seguro de que quieres eliminar {count} elemento(s)?',
+    words: 'palabras',
+    word: 'palabra',
+    characters: 'caracteres',
+    character: 'carácter',
+    images: 'imágenes',
+    image: 'imagen',
+    drawings: 'dibujos',
+    drawing: 'dibujo',
+    emptyDocument: 'Documento vacío',
+    viewPublic: 'Ver público',
+    publicLabel: 'Público',
+    privateLabel: 'Privado',
+    folder: 'Carpeta',
+    doc: 'Doc',
+    publicClickPrivate: 'Público - Clic para hacer privado',
+    privateClickPublic: 'Privado - Clic para hacer público',
+    makePublic: 'Hacer públicos los documentos seleccionados',
+    makePrivate: 'Hacer privados los documentos seleccionados',
+    gridView: 'Vista de cuadrícula compacta',
+    listView: 'Vista de lista',
+    cannotMoveFolder: 'No se puede mover una carpeta a su propia subcarpeta',
+    view: 'Vista',
+
+    // File Import
+    fileImported: 'Archivo importado con éxito',
+    failedToImport: 'Error al importar archivo',
+    importing: 'Importando...',
+    dropFilesHere: 'Suelta archivos .txt o .md aquí',
+    or: 'o',
+    selectFiles: 'Seleccionar archivos',
+
+    // Settings Page
+    yourLegacyUrl: 'Tu URL de legado',
+    copyUrl: 'Copiar URL',
+    accessibleOn: 'Esta página será accesible el {date}.',
+    avatarSaved: 'Avatar guardado con éxito',
+    failedToSaveAvatar: 'Error al guardar avatar',
+    usernameSaved: 'Nombre de usuario guardado con éxito',
+    failedToSaveUsername: 'Error al guardar nombre de usuario',
+    pleaseEnterBirthDate: 'Por favor, introduce tu fecha de nacimiento',
+    birthDateSaved: 'Fecha de nacimiento guardada con éxito',
+    docsPublicOn: 'Tus documentos serán públicos el {date} (tu 99º cumpleaños)',
+    failedToSaveBirthDate: 'Error al guardar fecha de nacimiento',
+    legacyDisabled: 'Legado digital desactivado - tus documentos permanecerán privados',
+    failedToRemoveBirthDate: 'Error al eliminar fecha de nacimiento',
+    useGoogleAvatar: 'Usar avatar de Google',
+    generateRandomAvatar: 'Generar avatar aleatorio',
+
     // General
     loading: 'Cargando...',
     cancel: 'Cancelar',
@@ -1157,21 +1159,21 @@ export const translations = {
     yes: 'Sí',
     no: 'No',
     language: 'Idioma',
-    
+
     // Sign in
     welcomeTo: 'Bienvenido a',
     signInToAccess: 'Inicia sesión para acceder a tus documentos',
     signInWithGoogle: 'Iniciar sesión con Google',
-    
+
     // Placeholder
     editorPlaceholder: 'Empieza a escribir... Crea tu documento aquí',
     editorPlaceholderDoc: 'Empieza a escribir... Escribe / para comandos',
-    
+
     // Settings extras
     yourLegacyUrl: 'Tu URL de legado',
     legacyAccessDate: 'Esta página será accesible el',
     creatingFolder: 'Creando...',
-    
+
     // Admin Page
     adminPanel: 'Panel de administración',
     manageDocsUsersAdmins: 'Gestionar documentos, usuarios y acceso admin',
@@ -1198,14 +1200,14 @@ export const translations = {
     makeAdmin: 'Hacer Admin',
     failedToUpdateAdminStatus: 'Error al actualizar estado de admin',
     pageOf: 'Página {page} de {total}',
-    
+
     // Testament Page
     digitalTestament: 'Testamento digital',
     documentsBecamePublic: 'Los documentos se hicieron públicos el',
     documentsWillBecomePublic: 'Los documentos serán públicos el',
     noDocumentsAvailable: 'No hay documentos disponibles todavía.',
     testamentNotFound: 'Testamento no encontrado',
-    
+
     // Archive Page
     archive: 'Archivo',
     noPublicDocs: 'Sin documentos públicos',
@@ -1214,7 +1216,7 @@ export const translations = {
     errorText: 'Error',
     anErrorOccurred: 'Ha ocurrido un error',
     failedToLoadDocuments: 'Error al cargar documentos',
-    
+
     // Privacy Policy
     privacyTitle: 'Política de Privacidad',
     privacyLastUpdated: 'Última actualización',
@@ -1248,7 +1250,7 @@ export const translations = {
     privacyRightUpdate: 'Actualizar su información',
     privacyContact: 'Contáctenos',
     privacyContactText: 'Si tiene preguntas sobre esta Política de Privacidad, por favor contáctenos a través de la página de configuración.',
-    
+
     // Terms of Service
     termsTitle: 'Términos de Servicio',
     termsLastUpdated: 'Última actualización',
@@ -1278,26 +1280,26 @@ export const translations = {
     termsContact: 'Contáctenos',
     termsContactText: 'Si tiene preguntas sobre estos Términos de Servicio, por favor contáctenos a través de la página de configuración.',
   },
-  
+
   zh: {
     // App
     appName: 'textpad',
     tagline: '简单优雅的写作空间',
-    
+
     // Header
     newDocument: '新建文档',
     drive: '云盘',
     settings: '设置',
     signIn: '登录',
     signOut: '退出',
-    
+
     // Home page
     startWriting: '开始写作...',
     saveDocument: '保存文档',
     saving: '保存中...',
     savedLocally: '您的文档已本地保存。点击"保存"永久保存。',
     clickToSave: '点击"保存"登录并永久保存您的文档。',
-    
+
     // Drive
     myDocuments: '我的文档',
     createFolder: '创建文件夹',
@@ -1305,7 +1307,7 @@ export const translations = {
     noDocuments: '暂无文档',
     createFirst: '创建新文档开始使用',
     searchDocuments: '搜索文档...',
-    
+
     // Document list
     name: '名称',
     type: '类型',
@@ -1314,7 +1316,7 @@ export const translations = {
     folder: '文件夹',
     document: '文档',
     untitled: '无标题',
-    
+
     // Context menu
     open: '打开',
     viewPublic: '公开查看',
@@ -1329,7 +1331,7 @@ export const translations = {
     drawings: '绘图',
     drawing: '绘图',
     emptyDocument: '空文档',
-    
+
     // Editor
     back: '返回',
     backToDrive: '返回云盘',
@@ -1346,11 +1348,11 @@ export const translations = {
     fullWidth: '全宽',
     normalWidth: '标准宽度',
     preview: '预览',
-    
+
     // Save status
     unsavedChanges: '未保存的更改',
     saved: '已保存',
-    
+
     // Toolbar
     bold: '粗体',
     italic: '斜体',
@@ -1376,13 +1378,13 @@ export const translations = {
     center: '居中',
     right: '右',
     justified: '两端对齐',
-    
+
     // Alignment
     alignLeft: '左对齐',
     alignCenter: '居中',
     alignRight: '右对齐',
     alignJustify: '两端对齐',
-    
+
     // Context menu (editor)
     convertTo: '转换为',
     blocks: '块',
@@ -1407,20 +1409,20 @@ export const translations = {
     horizontalRule: '分隔线',
     link: '链接',
     linkUrl: '链接地址：',
-    
+
     // History
     documentHistory: '文档历史',
     noHistory: '暂无历史记录',
     restore: '恢复',
     restoreVersion: '恢复此版本？',
-    
+
     // Settings
     accountSettings: '账户设置',
     profilePicture: '头像',
     changeAvatar: '更换头像',
     useGoogleAvatar: '使用Google头像',
     removeAvatar: '删除头像',
-    
+
     // Digital Legacy
     digitalLegacy: '数字遗产',
     digitalLegacySettings: '数字遗产设置',
@@ -1433,7 +1435,7 @@ export const translations = {
     usernameHint: '仅限小写字母、数字、连字符和下划线。',
     previewLegacy: '预览数字遗产',
     previewLegacyDescription: '查看您的公开页面将如何显示。',
-    
+
     // Public view
     allArticles: '所有文章',
     previous: '上一篇',
@@ -1443,12 +1445,12 @@ export const translations = {
     publicDocument: '篇公开文档',
     noPublicDocuments: '暂无公开文档',
     userNoPublicDocs: '该用户暂无公开文档。',
-    
+
     // Footer
     credits: '关于',
     madeBy: '用心制作',
     brotherApp: '姊妹应用',
-    
+
     // Errors
     error: '错误',
     documentNotFound: '文档未找到',
@@ -1458,14 +1460,14 @@ export const translations = {
     goHome: '返回首页',
     failedToLoad: '加载失败',
     failedToUpdate: '更新失败',
-    
+
     // Image
     size: '大小',
     align: '对齐',
     duplicate: '复制',
     full: '全部',
     noImageSource: '无图片来源',
-    
+
     // History Panel
     history: '历史记录',
     snapshot: '快照',
@@ -1479,39 +1481,39 @@ export const translations = {
     confirmDeleteEmptySnapshots: '确定要删除{count}个空快照吗？',
     failedToDelete: '删除失败',
     completeSave: '完整保存。点击恢复。',
-    
+
     // Drawing Component
     undoLastStroke: '撤销最后一笔',
     exportAsPng: '导出为PNG',
     makeAbsolute: '设为绝对定位',
     returnToFlow: '返回文本流',
-    
+
     // Link Editor
     noLink: '无链接',
     modify: '修改',
     removeLink: '删除链接',
     enterUrl: '输入URL',
-    
+
     // Block Menu
     moveUp: '向上移动',
     moveDown: '向下移动',
-    
+
     // Color Picker
     backgroundColor: '背景颜色',
-    
+
     // Drag Handle
     clickForOptions: '点击查看选项',
     holdForDrag: '按住拖动',
     addContent: '添加内容',
     options: '选项',
-    
+
     // Image Component
     alignment: '对齐',
     widthLabel: '宽度',
     oneThirdWidth: '1/3宽度',
     twoThirdsWidth: '2/3宽度',
     fullWidthLabel: '全宽',
-    
+
     // Search & Drive
     searchDocuments: '搜索文档...',
     documents: '文档',
@@ -1541,7 +1543,7 @@ export const translations = {
     listView: '列表视图',
     cannotMoveFolder: '无法将文件夹移动到其自身的子文件夹中',
     view: '视图',
-    
+
     // File Import
     fileImported: '文件导入成功',
     failedToImport: '导入文件失败',
@@ -1549,7 +1551,7 @@ export const translations = {
     dropFilesHere: '将 .txt 或 .md 文件拖放到这里',
     or: '或',
     selectFiles: '选择文件',
-    
+
     // Settings Page
     yourLegacyUrl: '您的遗产URL',
     copyUrl: '复制URL',
@@ -1566,7 +1568,7 @@ export const translations = {
     failedToRemoveBirthDate: '删除出生日期失败',
     useGoogleAvatar: '使用Google头像',
     generateRandomAvatar: '生成随机头像',
-    
+
     // General
     loading: '加载中...',
     cancel: '取消',
@@ -1576,21 +1578,21 @@ export const translations = {
     yes: '是',
     no: '否',
     language: '语言',
-    
+
     // Sign in
     welcomeTo: '欢迎使用',
     signInToAccess: '登录以访问您的文档',
     signInWithGoogle: '使用Google登录',
-    
+
     // Placeholder
     editorPlaceholder: '开始写作... 在这里创建您的文档',
     editorPlaceholderDoc: '开始写作... 输入 / 查看命令',
-    
+
     // Settings extras
     yourLegacyUrl: '您的遗产链接',
     legacyAccessDate: '此页面将于以下日期开放',
     creatingFolder: '创建中...',
-    
+
     // Admin Page
     adminPanel: '管理面板',
     manageDocsUsersAdmins: '管理文档、用户和管理员权限',
@@ -1617,14 +1619,14 @@ export const translations = {
     makeAdmin: '设为管理员',
     failedToUpdateAdminStatus: '更新管理员状态失败',
     pageOf: '第 {page} 页，共 {total} 页',
-    
+
     // Testament Page
     digitalTestament: '数字遗嘱',
     documentsBecamePublic: '文档于以下日期公开',
     documentsWillBecomePublic: '文档将于以下日期公开',
     noDocumentsAvailable: '暂无可用文档。',
     testamentNotFound: '未找到遗嘱',
-    
+
     // Archive Page
     archive: '档案',
     noPublicDocs: '无公开文档',
@@ -1633,7 +1635,7 @@ export const translations = {
     errorText: '错误',
     anErrorOccurred: '发生错误',
     failedToLoadDocuments: '加载文档失败',
-    
+
     // Privacy Policy
     privacyTitle: '隐私政策',
     privacyLastUpdated: '最后更新',
@@ -1667,7 +1669,7 @@ export const translations = {
     privacyRightUpdate: '更新您的信息',
     privacyContact: '联系我们',
     privacyContactText: '如果您对本隐私政策有疑问，请通过设置页面联系我们。',
-    
+
     // Terms of Service
     termsTitle: '服务条款',
     termsLastUpdated: '最后更新',
@@ -1697,26 +1699,26 @@ export const translations = {
     termsContact: '联系我们',
     termsContactText: '如果您对这些服务条款有疑问，请通过设置页面联系我们。',
   },
-  
+
   ru: {
     // App
     appName: 'textpad',
     tagline: 'Простое и красивое пространство для письма',
-    
+
     // Header
     newDocument: 'Новый документ',
     drive: 'Диск',
     settings: 'Настройки',
     signIn: 'Войти',
     signOut: 'Выйти',
-    
+
     // Home page
     startWriting: 'Начните писать...',
     saveDocument: 'Сохранить документ',
     saving: 'Сохранение...',
     savedLocally: 'Ваш документ сохранён локально. Нажмите "Сохранить" для постоянного сохранения.',
     clickToSave: 'Нажмите "Сохранить" для входа и сохранения документа.',
-    
+
     // Drive
     myDocuments: 'Мои документы',
     createFolder: 'Создать папку',
@@ -1724,7 +1726,7 @@ export const translations = {
     noDocuments: 'Нет документов',
     createFirst: 'Создайте новый документ для начала',
     searchDocuments: 'Поиск документов...',
-    
+
     // Document list
     name: 'Название',
     type: 'Тип',
@@ -1733,7 +1735,7 @@ export const translations = {
     folder: 'Папка',
     document: 'Документ',
     untitled: 'Без названия',
-    
+
     // Context menu
     open: 'Открыть',
     viewPublic: 'Публичный просмотр',
@@ -1748,7 +1750,7 @@ export const translations = {
     drawings: 'рисунков',
     drawing: 'рисунок',
     emptyDocument: 'Пустой документ',
-    
+
     // Editor
     back: 'Назад',
     backToDrive: 'Вернуться на Диск',
@@ -1765,11 +1767,11 @@ export const translations = {
     fullWidth: 'Полная ширина',
     normalWidth: 'Обычная ширина',
     preview: 'Предпросмотр',
-    
+
     // Save status
     unsavedChanges: 'Несохранённые изменения',
     saved: 'Сохранено',
-    
+
     // Toolbar
     bold: 'Жирный',
     italic: 'Курсив',
@@ -1795,13 +1797,13 @@ export const translations = {
     center: 'По центру',
     right: 'Вправо',
     justified: 'По ширине',
-    
+
     // Alignment
     alignLeft: 'По левому краю',
     alignCenter: 'По центру',
     alignRight: 'По правому краю',
     alignJustify: 'По ширине',
-    
+
     // Context menu (editor)
     convertTo: 'Преобразовать в',
     blocks: 'Блоки',
@@ -1826,20 +1828,20 @@ export const translations = {
     horizontalRule: 'Горизонтальная линия',
     link: 'Ссылка',
     linkUrl: 'URL ссылки:',
-    
+
     // History
     documentHistory: 'История документа',
     noHistory: 'История недоступна',
     restore: 'Восстановить',
     restoreVersion: 'Восстановить эту версию?',
-    
+
     // Settings
     accountSettings: 'Настройки аккаунта',
     profilePicture: 'Фото профиля',
     changeAvatar: 'Изменить аватар',
     useGoogleAvatar: 'Использовать аватар Google',
     removeAvatar: 'Удалить аватар',
-    
+
     // Digital Legacy
     digitalLegacy: 'Цифровое наследие',
     digitalLegacySettings: 'Настройки цифрового наследия',
@@ -1852,7 +1854,7 @@ export const translations = {
     usernameHint: 'Только строчные буквы, цифры, дефисы и подчёркивания.',
     previewLegacy: 'Предпросмотр цифрового наследия',
     previewLegacyDescription: 'Посмотрите, как будет выглядеть ваша публичная страница.',
-    
+
     // Public view
     allArticles: 'Все статьи',
     previous: 'Предыдущий',
@@ -1862,12 +1864,12 @@ export const translations = {
     publicDocument: 'публичный документ',
     noPublicDocuments: 'Нет публичных документов',
     userNoPublicDocs: 'У этого пользователя пока нет публичных документов.',
-    
+
     // Footer
     credits: 'О проекте',
     madeBy: 'Сделано с заботой',
     brotherApp: 'Родственное приложение',
-    
+
     // Errors
     error: 'Ошибка',
     documentNotFound: 'Документ не найден',
@@ -1877,14 +1879,14 @@ export const translations = {
     goHome: 'На главную',
     failedToLoad: 'Ошибка загрузки',
     failedToUpdate: 'Ошибка обновления',
-    
+
     // Image
     size: 'Размер',
     align: 'Выравнивание',
     duplicate: 'Дублировать',
     full: 'Полный',
     noImageSource: 'Нет источника изображения',
-    
+
     // History Panel
     history: 'История',
     snapshot: 'Снимок',
@@ -1898,39 +1900,39 @@ export const translations = {
     confirmDeleteEmptySnapshots: 'Вы уверены, что хотите удалить {count} пустой(ых) снимок(ов)?',
     failedToDelete: 'Ошибка удаления',
     completeSave: 'Полное сохранение. Нажмите для восстановления.',
-    
+
     // Drawing Component
     undoLastStroke: 'Отменить последний штрих',
     exportAsPng: 'Экспорт в PNG',
     makeAbsolute: 'Сделать абсолютным',
     returnToFlow: 'Вернуть в текстовый поток',
-    
+
     // Link Editor
     noLink: 'Нет ссылки',
     modify: 'Изменить',
     removeLink: 'Удалить ссылку',
     enterUrl: 'Введите URL',
-    
+
     // Block Menu
     moveUp: 'Переместить вверх',
     moveDown: 'Переместить вниз',
-    
+
     // Color Picker
     backgroundColor: 'Цвет фона',
-    
+
     // Drag Handle
     clickForOptions: 'Нажмите для опций',
     holdForDrag: 'Удерживайте для перетаскивания',
     addContent: 'Добавить контент',
     options: 'Опции',
-    
+
     // Image Component
     alignment: 'Выравнивание',
     widthLabel: 'Ширина',
     oneThirdWidth: '1/3 ширины',
     twoThirdsWidth: '2/3 ширины',
     fullWidthLabel: 'Полная ширина',
-    
+
     // Search & Drive
     searchDocuments: 'Искать документы...',
     documents: 'Документы',
@@ -1960,7 +1962,7 @@ export const translations = {
     listView: 'Вид списка',
     cannotMoveFolder: 'Невозможно переместить папку в её собственную подпапку',
     view: 'Вид',
-    
+
     // File Import
     fileImported: 'Файл успешно импортирован',
     failedToImport: 'Ошибка импорта файла',
@@ -1968,7 +1970,7 @@ export const translations = {
     dropFilesHere: 'Перетащите файлы .txt или .md сюда',
     or: 'или',
     selectFiles: 'Выбрать файлы',
-    
+
     // Settings Page
     yourLegacyUrl: 'Ваш URL наследия',
     copyUrl: 'Копировать URL',
@@ -1985,7 +1987,7 @@ export const translations = {
     failedToRemoveBirthDate: 'Ошибка удаления даты рождения',
     useGoogleAvatar: 'Использовать аватар Google',
     generateRandomAvatar: 'Создать случайный аватар',
-    
+
     // General
     loading: 'Загрузка...',
     cancel: 'Отмена',
@@ -1995,21 +1997,21 @@ export const translations = {
     yes: 'Да',
     no: 'Нет',
     language: 'Язык',
-    
+
     // Sign in
     welcomeTo: 'Добро пожаловать в',
     signInToAccess: 'Войдите для доступа к документам',
     signInWithGoogle: 'Войти через Google',
-    
+
     // Placeholder
     editorPlaceholder: 'Начните писать... Создайте свой документ здесь',
     editorPlaceholderDoc: 'Начните писать... Введите / для команд',
-    
+
     // Settings extras
     yourLegacyUrl: 'URL вашего наследия',
     legacyAccessDate: 'Эта страница станет доступна',
     creatingFolder: 'Создание...',
-    
+
     // Admin Page
     adminPanel: 'Панель администратора',
     manageDocsUsersAdmins: 'Управление документами, пользователями и доступом администратора',
@@ -2036,14 +2038,14 @@ export const translations = {
     makeAdmin: 'Сделать администратором',
     failedToUpdateAdminStatus: 'Не удалось обновить статус администратора',
     pageOf: 'Страница {page} из {total}',
-    
+
     // Testament Page
     digitalTestament: 'Цифровое завещание',
     documentsBecamePublic: 'Документы стали публичными',
     documentsWillBecomePublic: 'Документы станут публичными',
     noDocumentsAvailable: 'Документы пока недоступны.',
     testamentNotFound: 'Завещание не найдено',
-    
+
     // Archive Page
     archive: 'Архив',
     noPublicDocs: 'Нет публичных документов',
@@ -2052,7 +2054,7 @@ export const translations = {
     errorText: 'Ошибка',
     anErrorOccurred: 'Произошла ошибка',
     failedToLoadDocuments: 'Не удалось загрузить документы',
-    
+
     // Privacy Policy
     privacyTitle: 'Политика конфиденциальности',
     privacyLastUpdated: 'Последнее обновление',
@@ -2086,7 +2088,7 @@ export const translations = {
     privacyRightUpdate: 'Обновлять вашу информацию',
     privacyContact: 'Связаться с нами',
     privacyContactText: 'Если у вас есть вопросы об этой Политике конфиденциальности, пожалуйста, свяжитесь с нами через страницу настроек.',
-    
+
     // Terms of Service
     termsTitle: 'Условия использования',
     termsLastUpdated: 'Последнее обновление',
@@ -2130,14 +2132,14 @@ export function getTranslation(locale) {
  */
 export function getBrowserLocale() {
   if (typeof window === 'undefined') return defaultLocale
-  
+
   const browserLang = navigator.language || navigator.userLanguage
   const shortLang = browserLang.split('-')[0]
-  
+
   if (locales.includes(shortLang)) {
     return shortLang
   }
-  
+
   return defaultLocale
 }
 

@@ -150,6 +150,19 @@ export default function PublicDocumentClient({ serverData }) {
     return (
         <div className="min-h-screen bg-white">
             <div className={isFullWidth ? 'px-4 sm:px-6 py-12' : 'max-w-4xl mx-auto px-6 py-12'}>
+                {document?.isOwner && (
+                    <div className="flex justify-end mb-4">
+                        <NextLink
+                            href={`/doc/${document.id}`}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 hover:text-gray-900 transition-colors"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                            {t?.edit || 'Edit'}
+                        </NextLink>
+                    </div>
+                )}
                 {title && title !== 'Untitled' && (
                     <h1 className="text-4xl font-bold text-gray-900 mb-8">{title}</h1>
                 )}
