@@ -24,6 +24,7 @@ import { Drawing } from '@/lib/editor/drawing-extension'
 import { Youtube } from '@/lib/editor/youtube-extension'
 import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
+import { LinkPreview } from '@/lib/editor/link-preview-extension'
 import Emoji from '@tiptap/extension-emoji'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 
@@ -89,6 +90,7 @@ export default function PublicDocumentClient() {
             FontSize,
             LineHeight,
             Drawing,
+            LinkPreview,
             Emoji.configure({
                 enableEmoticons: true,
             }),

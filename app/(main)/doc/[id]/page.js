@@ -26,6 +26,7 @@ import ListKeymap from '@tiptap/extension-list-keymap'
 import UniqueID from '@tiptap/extension-unique-id'
 import Emoji from '@tiptap/extension-emoji'
 import { Youtube } from '@/lib/editor/youtube-extension'
+import { LinkPreview } from '@/lib/editor/link-preview-extension'
 import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 // Collaboration requires Y.js and WebSocket provider - commented out for now
 // import Collaboration from '@tiptap/extension-collaboration'
@@ -354,6 +355,7 @@ export default function DocumentPage() {
       TaskList,
       TaskItem,
       Drawing,
+      LinkPreview,
     ],
     content: null,
     editable: true,
@@ -418,6 +420,44 @@ export default function DocumentPage() {
       window.removeEventListener('showLinkEditor', handleShowLinkEditor)
     }
   }, [])
+
+  // Detect pasted URLs and create link previews
+  useEffect(() => {
+    if (!editor) return
+
+    const handlePaste = (event) => {
+      const clipboardData = event.clipboardData
+      if (!clipboardData) return
+
+      const text = clipboardData.getData('text/plain').trim()
+
+      // Check if it's a URL
+      const urlPattern = /^https?:\/\/[^\s]+$/
+      if (!urlPattern.test(text)) return
+
+      // Don't create preview for YouTube URLs (already handled by Youtube extension)
+      if (text.includes('youtube.com') || text.includes('youtu.be')) return
+
+      // Prevent default paste
+      event.preventDefault()
+
+      // Insert link preview node
+      editor.chain().focus().insertContent({
+        type: 'linkPreview',
+        attrs: {
+          url: text,
+          loading: true,
+        },
+      }).run()
+    }
+
+    const editorElement = editor.view.dom
+    editorElement.addEventListener('paste', handlePaste)
+
+    return () => {
+      editorElement.removeEventListener('paste', handlePaste)
+    }
+  }, [editor])
 
   // Detect slash commands - improved detection
 
