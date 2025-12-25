@@ -8,6 +8,7 @@ import SEOKeywords from '@/components/SEOKeywords'
 import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 import ContextMenu from '@/components/editor/ContextMenu'
 import LinkEditor from '@/components/editor/LinkEditor'
+import IpfsBrowser from '@/components/ipfs/IpfsBrowser'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -49,6 +50,7 @@ export default function HomeClient({ featuredArticles = [] }) {
   const [hasEverHadContent, setHasEverHadContent] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [linkEditorPosition, setLinkEditorPosition] = useState(null)
+  const [showIpfsBrowser, setShowIpfsBrowser] = useState(false)
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -477,7 +479,7 @@ export default function HomeClient({ featuredArticles = [] }) {
           {editor && (
             <>
               <div className="mb-4">
-                <GoogleDocsToolbar editor={editor} />
+                <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} />
               </div>
               <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8 relative">
                 {/* Watermark logo - only for non-logged users */}
@@ -526,6 +528,36 @@ export default function HomeClient({ featuredArticles = [] }) {
           </div>
         </div>
       </main>
+
+      {/* IPFS Browser Modal */}
+      <IpfsBrowser
+        isOpen={showIpfsBrowser}
+        onClose={() => setShowIpfsBrowser(false)}
+        onSelectFile={(file) => {
+          if (!editor || !file.gatewayUrl) return
+
+          // Determine file type and insert accordingly
+          const ext = file.key.split('.').pop()?.toLowerCase()
+          const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']
+
+          if (imageExts.includes(ext)) {
+            // Insert as image
+            editor.chain().focus().insertContent({
+              type: 'image',
+              attrs: { src: file.gatewayUrl, alt: file.key },
+            }).run()
+          } else {
+            // Insert as link
+            editor.chain().focus().insertContent({
+              type: 'text',
+              marks: [{ type: 'link', attrs: { href: file.gatewayUrl } }],
+              text: file.key,
+            }).run()
+          }
+
+          setShowIpfsBrowser(false)
+        }}
+      />
     </>
   )
 }

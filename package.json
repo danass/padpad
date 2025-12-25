@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.958.0",
     "@floating-ui/react": "^0.26.28",
     "@tiptap/extension-bubble-menu": "^2.27.1",
     "@tiptap/extension-character-count": "^2.27.1",

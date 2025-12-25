@@ -49,6 +49,7 @@ import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 import ContextMenu from '@/components/editor/ContextMenu'
 import HistoryPanel from '@/components/editor/HistoryPanel'
 import LinkEditor from '@/components/editor/LinkEditor'
+import IpfsBrowser from '@/components/ipfs/IpfsBrowser'
 import { useEditorStore } from '@/store/editorStore'
 import { useToast } from '@/components/ui/toast'
 import { replayHistory } from '@/lib/editor/history-replay'
@@ -63,6 +64,7 @@ export default function DocumentPage() {
   const [saving, setSaving] = useState(false)
   const [title, setTitle] = useState('')
   const [showHistory, setShowHistory] = useState(false)
+  const [showIpfsBrowser, setShowIpfsBrowser] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
   const [isPublic, setIsPublic] = useState(false)
   const [isFullWidth, setIsFullWidth] = useState(false)
@@ -1459,7 +1461,7 @@ export default function DocumentPage() {
         {editor && (
           <>
             <div className="mb-4">
-              <GoogleDocsToolbar editor={editor} />
+              <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} />
             </div>
             <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8 relative">
               {mounted && <EditorContent editor={editor} />}
@@ -1483,6 +1485,33 @@ export default function DocumentPage() {
           onClose={() => setShowHistory(false)}
         />
       )}
+
+      {/* IPFS Browser Modal */}
+      <IpfsBrowser
+        isOpen={showIpfsBrowser}
+        onClose={() => setShowIpfsBrowser(false)}
+        onSelectFile={(file) => {
+          if (!editor || !file.gatewayUrl) return
+
+          const ext = file.key.split('.').pop()?.toLowerCase()
+          const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']
+
+          if (imageExts.includes(ext)) {
+            editor.chain().focus().insertContent({
+              type: 'image',
+              attrs: { src: file.gatewayUrl, alt: file.key },
+            }).run()
+          } else {
+            editor.chain().focus().insertContent({
+              type: 'text',
+              marks: [{ type: 'link', attrs: { href: file.gatewayUrl } }],
+              text: file.key,
+            }).run()
+          }
+
+          setShowIpfsBrowser(false)
+        }}
+      />
     </div>
   )
 }

@@ -25,6 +25,7 @@ import {
   Highlighter,
   Pencil,
   Type,
+  HardDrive,
 } from 'lucide-react'
 import Tooltip from '@/components/ui/Tooltip'
 import { useLanguage } from '@/app/i18n/LanguageContext'
@@ -73,7 +74,7 @@ const HIGHLIGHT_COLORS = [
   '#F9CB9C', '#FFE599', '#B6D7A8', '#A2C4C9', '#A4C2F4', '#9FC5E8', '#B4A7D6', '#D5A6BD', '#EA9999'
 ]
 
-export default function GoogleDocsToolbar({ editor }) {
+export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser }) {
   const { t } = useLanguage()
   const [showFontFamily, setShowFontFamily] = useState(false)
   const [showFontSize, setShowFontSize] = useState(false)
@@ -1146,8 +1147,8 @@ export default function GoogleDocsToolbar({ editor }) {
                         handleTextColorChange(color)
                       }}
                       className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${currentTextColor === color
-                          ? 'border-blue-500 ring-2 ring-blue-300'
-                          : 'border-gray-300 hover:border-gray-400'
+                        ? 'border-blue-500 ring-2 ring-blue-300'
+                        : 'border-gray-300 hover:border-gray-400'
                         }`}
                       style={{ backgroundColor: color }}
                       title={color}
@@ -1260,8 +1261,8 @@ export default function GoogleDocsToolbar({ editor }) {
                         handleHighlightColorChange(color)
                       }}
                       className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${currentHighlightColor === color
-                          ? 'border-blue-500 ring-2 ring-blue-300'
-                          : 'border-gray-300 hover:border-gray-400'
+                        ? 'border-blue-500 ring-2 ring-blue-300'
+                        : 'border-gray-300 hover:border-gray-400'
                         }`}
                       style={{ backgroundColor: color }}
                       title={color}
@@ -1514,6 +1515,17 @@ export default function GoogleDocsToolbar({ editor }) {
             <path d="M7 17c3-3 5-8 10-10" strokeLinecap="round" />
             <circle cx="17" cy="7" r="1.5" fill="currentColor" stroke="none" />
           </svg>
+        </button>
+      </Tooltip>
+
+      {/* IPFS Storage */}
+      <Tooltip label="IPFS Storage">
+        <button
+          aria-label="IPFS Storage"
+          onClick={onOpenIpfsBrowser}
+          className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
+        >
+          <HardDrive className="w-4 h-4 text-purple-600" />
         </button>
       </Tooltip>
 

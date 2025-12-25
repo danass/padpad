@@ -29,6 +29,16 @@ export default function SettingsPage() {
   const [savingUsername, setSavingUsername] = useState(false)
   const [savingBirthDate, setSavingBirthDate] = useState(false)
 
+  // IPFS states
+  const [ipfsProvider, setIpfsProvider] = useState('filebase')
+  const [ipfsAccessKey, setIpfsAccessKey] = useState('')
+  const [ipfsSecretKey, setIpfsSecretKey] = useState('')
+  const [ipfsBucket, setIpfsBucket] = useState('')
+  const [ipfsConfigured, setIpfsConfigured] = useState(false)
+  const [testingIpfs, setTestingIpfs] = useState(false)
+  const [savingIpfs, setSavingIpfs] = useState(false)
+  const [ipfsTestResult, setIpfsTestResult] = useState(null)
+
   // Track if values have changed
   const avatarChanged = avatarUrl !== originalAvatarUrl
   const usernameChanged = testamentUsername !== originalUsername
@@ -72,6 +82,17 @@ export default function SettingsPage() {
         const usernameData = await usernameResponse.json()
         setTestamentUsername(usernameData.testament_username || '')
         setOriginalUsername(usernameData.testament_username || '')
+      }
+
+      // Load IPFS config
+      const ipfsResponse = await fetch('/api/ipfs/config')
+      if (ipfsResponse.ok) {
+        const ipfsData = await ipfsResponse.json()
+        if (ipfsData.config) {
+          setIpfsProvider(ipfsData.config.provider || 'filebase')
+          setIpfsBucket(ipfsData.config.bucket || '')
+          setIpfsConfigured(true)
+        }
       }
     } catch (error) {
       console.error('Error loading data:', error)
@@ -158,6 +179,73 @@ export default function SettingsPage() {
 
   const handleClearBirthDate = () => {
     setBirthDate('')
+  }
+
+  const handleTestIpfs = async () => {
+    setTestingIpfs(true)
+    setIpfsTestResult(null)
+    try {
+      const response = await fetch('/api/ipfs/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: ipfsProvider,
+          accessKey: ipfsAccessKey,
+          secretKey: ipfsSecretKey,
+          bucket: ipfsBucket,
+        }),
+      })
+      const data = await response.json()
+      setIpfsTestResult(data)
+    } catch (error) {
+      setIpfsTestResult({ success: false, error: error.message })
+    } finally {
+      setTestingIpfs(false)
+    }
+  }
+
+  const handleSaveIpfs = async () => {
+    setSavingIpfs(true)
+    try {
+      const response = await fetch('/api/ipfs/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: ipfsProvider,
+          accessKey: ipfsAccessKey,
+          secretKey: ipfsSecretKey,
+          bucket: ipfsBucket,
+        }),
+      })
+      if (response.ok) {
+        showToast('IPFS configuration saved', 'success')
+        setIpfsConfigured(true)
+        setIpfsAccessKey('')
+        setIpfsSecretKey('')
+      } else {
+        const data = await response.json()
+        showToast(data.error || 'Failed to save', 'error')
+      }
+    } catch (error) {
+      showToast('Failed to save configuration', 'error')
+    } finally {
+      setSavingIpfs(false)
+    }
+  }
+
+  const handleClearIpfs = async () => {
+    try {
+      const response = await fetch('/api/ipfs/config', { method: 'DELETE' })
+      if (response.ok) {
+        setIpfsConfigured(false)
+        setIpfsAccessKey('')
+        setIpfsSecretKey('')
+        setIpfsBucket('')
+        showToast('IPFS configuration removed', 'success')
+      }
+    } catch (error) {
+      showToast('Failed to remove configuration', 'error')
+    }
   }
 
   if (loading) {
@@ -276,6 +364,119 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* External Storage Section */}
+        <div className="bg-white border border-gray-200 rounded-md p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">External Storage (IPFS)</h2>
+              <p className="text-sm text-gray-500">Connect decentralized storage for your files</p>
+            </div>
+          </div>
+
+          {ipfsConfigured ? (
+            <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-green-800 font-medium">IPFS Connected</span>
+                </div>
+                <button
+                  onClick={handleClearIpfs}
+                  className="text-sm text-red-600 hover:text-red-800"
+                >
+                  Disconnect
+                </button>
+              </div>
+              <p className="text-sm text-green-700 mt-1">Provider: {ipfsProvider} • Bucket: {ipfsBucket}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600 mb-4">
+              Connect your IPFS storage to host files externally. Files will be served via IPFS gateway instead of being stored in the database.
+            </p>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Provider</label>
+              <select
+                value={ipfsProvider}
+                onChange={(e) => setIpfsProvider(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black text-sm"
+                disabled={ipfsConfigured}
+              >
+                <option value="filebase">Filebase</option>
+              </select>
+            </div>
+
+            {!ipfsConfigured && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Access Key</label>
+                  <input
+                    type="text"
+                    value={ipfsAccessKey}
+                    onChange={(e) => setIpfsAccessKey(e.target.value)}
+                    placeholder="Your access key"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Secret Key</label>
+                  <input
+                    type="password"
+                    value={ipfsSecretKey}
+                    onChange={(e) => setIpfsSecretKey(e.target.value)}
+                    placeholder="Your secret key"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Bucket Name</label>
+                  <input
+                    type="text"
+                    value={ipfsBucket}
+                    onChange={(e) => setIpfsBucket(e.target.value)}
+                    placeholder="my-bucket"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black text-sm"
+                  />
+                </div>
+
+                {ipfsTestResult && (
+                  <div className={`p-3 rounded-md text-sm ${ipfsTestResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                    {ipfsTestResult.success ? '✓ Connection successful!' : `✗ ${ipfsTestResult.error}`}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleTestIpfs}
+                    disabled={testingIpfs || !ipfsAccessKey || !ipfsSecretKey || !ipfsBucket}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    {testingIpfs ? 'Testing...' : 'Test Connection'}
+                  </button>
+                  <button
+                    onClick={handleSaveIpfs}
+                    disabled={savingIpfs || !ipfsAccessKey || !ipfsSecretKey || !ipfsBucket}
+                    className="px-4 py-2 bg-black text-white rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+                  >
+                    {savingIpfs ? 'Saving...' : 'Save Configuration'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
