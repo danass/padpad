@@ -8,6 +8,7 @@ import SEOKeywords from '@/components/SEOKeywords'
 import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 import ContextMenu from '@/components/editor/ContextMenu'
 import LinkEditor from '@/components/editor/LinkEditor'
+import FeaturedArticles from '@/components/home/FeaturedArticles'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -472,6 +473,9 @@ export default function Home() {
               </p>
             </>
           )}
+
+          {/* Featured Articles */}
+          <FeaturedArticles />
         </div>
       </main>
     </>

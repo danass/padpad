@@ -9,12 +9,12 @@ export default function LinkPreviewComponent({ node, updateAttributes, deleteNod
     const [isLoading, setIsLoading] = useState(loading)
     const [error, setError] = useState(false)
 
-    // Fetch metadata if not already loaded
+    // Fetch metadata on mount or when url changes
     useEffect(() => {
-        if (url && !title && !isLoading && !error) {
+        if (url && !title) {
             fetchMetadata()
         }
-    }, [url])
+    }, [url]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchMetadata = async () => {
         if (!url) return

@@ -116,7 +116,8 @@ export async function GET(request, { params }) {
       document,
       snapshot,
       events,
-      isOwner: document.user_id === userId
+      isOwner: document.user_id === userId,
+      isAdmin: admin
     })
   } catch (error) {
     console.error('Error fetching document:', error)
