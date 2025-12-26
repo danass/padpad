@@ -1,19 +1,16 @@
 import Link from 'next/link'
 
 export async function generateMetadata() {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://textpad.cloud'
-
     return {
-        title: 'Version History | Textpad',
-        description: 'Every save is preserved. Browse your document history, restore any version, never lose your work.',
+        title: 'Version History – Never Lose Work | Textpad',
+        description: 'Every change is saved. Travel back in time to any previous version of your document with persistent history.',
         openGraph: {
             type: 'website',
-            url: `${baseUrl}/features/version-history`,
-            title: 'Version History | Textpad',
-            description: 'Every save is preserved. Browse your document history, restore any version.',
+            title: 'Version History – Never Lose Work | Textpad',
+            description: 'Every change is saved. Travel back in time to any previous version of your document.',
         },
         alternates: {
-            canonical: `${baseUrl}/features/version-history`,
+            canonical: '/features/version-history',
         },
     }
 }

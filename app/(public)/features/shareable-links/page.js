@@ -1,20 +1,16 @@
 import Link from 'next/link'
 
 export async function generateMetadata() {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://textpad.cloud'
-
     return {
-        title: 'Share Text Online with a Link | Textpad',
-        description: 'Mark any document as public and share it instantly. No signup needed, just a link.',
+        title: 'Shareable Links – Instant Collaboration | Textpad',
+        description: 'Share your work with a single click. Collaborative editing made simple, fast, and secure.',
         openGraph: {
             type: 'website',
-            url: `${baseUrl}/features/shareable-links`,
-            title: 'Share Text Online with a Link | Textpad',
-            description: 'Mark any document as public and share it instantly. No signup needed, just a link.',
-            images: [{ url: `${baseUrl}/padpad.png`, width: 512, height: 512, alt: 'Textpad' }],
+            title: 'Shareable Links – Instant Collaboration | Textpad',
+            description: 'Share your work with a single click. Collaborative editing made simple.',
         },
         alternates: {
-            canonical: `${baseUrl}/features/shareable-links`,
+            canonical: '/features/shareable-links',
         },
     }
 }

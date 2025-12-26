@@ -1,19 +1,16 @@
 import Link from 'next/link'
 
 export async function generateMetadata() {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://textpad.cloud'
-
     return {
-        title: 'Images & Drawings | Textpad',
-        description: 'Add images, resize them, and draw directly in your documents. Sketch ideas, add diagrams, illustrate your writing.',
+        title: 'Images & Drawings – Visual Writing | Textpad',
+        description: 'Enhance your documents with images and handwritten drawings. A truly multimedia writing experience.',
         openGraph: {
             type: 'website',
-            url: `${baseUrl}/features/images-and-drawings`,
-            title: 'Images & Drawings | Textpad',
-            description: 'Add images, resize them, and draw directly in your documents.',
+            title: 'Images & Drawings – Visual Writing | Textpad',
+            description: 'Enhance your documents with images and handwritten drawings.',
         },
         alternates: {
-            canonical: `${baseUrl}/features/images-and-drawings`,
+            canonical: '/features/images-and-drawings',
         },
     }
 }

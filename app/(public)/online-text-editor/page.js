@@ -1,24 +1,22 @@
 import Link from 'next/link'
 
 export async function generateMetadata() {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://textpad.cloud'
-
     return {
-        title: 'Online Text Editor – Write & Share Instantly | Textpad',
-        description: 'Write text online. Share with a link. No account needed. Fast, simple, collaborative.',
+        title: 'Professional Online Text Editor – Blocnote Online | TextPad',
+        description: 'Experience the best free online text editor. Write, format, and share documents instantly with TextPad, the ultimate professional blocnote online with pictures and version history.',
+        alternates: {
+            canonical: '/online-text-editor',
+        },
         openGraph: {
             type: 'website',
-            url: `${baseUrl}/online-text-editor`,
-            title: 'Online Text Editor – Write & Share Instantly | Textpad',
-            description: 'Write text online. Share with a link. No account needed. Fast, simple, collaborative.',
+            title: 'Professional Online Text Editor – Blocnote Online | TextPad',
+            description: 'Write, format, and share documents instantly with TextPad, the professional blocnote online.',
+            images: [{ url: '/padpad.png', width: 512, height: 512, alt: 'TextPad' }],
         },
         twitter: {
             card: 'summary_large_image',
-            title: 'Online Text Editor – Write & Share Instantly | Textpad',
-            description: 'Write text online. Share with a link. No account needed. Fast, simple, collaborative.',
-        },
-        alternates: {
-            canonical: `${baseUrl}/online-text-editor`,
+            title: 'Professional Online Text Editor – Write & Share | TextPad',
+            description: 'TextPad is a fast, free online text editor. Write text instantly, share with a link, or create disposable pads. No account needed.',
         },
     }
 }
@@ -28,58 +26,58 @@ export default function OnlineTextEditorPage() {
         <div className="min-h-screen bg-white">
             <div className="max-w-3xl mx-auto px-4 py-12 md:py-20">
                 <h1 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-6">
-                    Online Text Editor for Quick Writing
+                    Professional Online Text Editor
                 </h1>
 
-                <p className="text-lg text-gray-700 mb-8">
-                    Textpad is an online textpad for writing, editing and sharing text.
-                    Open it, write, share a link. Done.
+                <p className="text-lg text-gray-700 mb-8 leading-relaxed">
+                    TextPad is a high-performance online textpad designed for speed and simplicity.
+                    Whether you need a quick draft or a collaborative workspace, TextPad delivers a seamless writing experience.
                 </p>
 
                 <section className="mb-10">
-                    <h2 className="text-xl font-medium text-gray-900 mb-4">Write and Edit Text Online</h2>
-                    <p className="text-gray-700">
-                        A clean editor that loads instantly. No distractions, no toolbars you won't use.
-                        Just a place to write.
+                    <h2 className="text-xl font-medium text-gray-900 mb-4">Write and Edit Instantly</h2>
+                    <p className="text-gray-700 leading-relaxed">
+                        A clean, distraction-free editor that loads in milliseconds.
+                        Equipped with professional tools like auto-save and persistent history, your work is always protected.
                     </p>
                 </section>
 
                 <section className="mb-10">
-                    <h2 className="text-xl font-medium text-gray-900 mb-4">Share Your Text with a Link</h2>
-                    <p className="text-gray-700">
-                        Save your document and get a shareable URL.
-                        Send it to anyone. They can view or edit depending on permissions.
+                    <h2 className="text-xl font-medium text-gray-900 mb-4">Share with Full Control</h2>
+                    <p className="text-gray-700 leading-relaxed">
+                        Generate a secure, shareable URL for your documents instantly.
+                        Control permissions to allow others to view or collaborate on your text in real-time.
                     </p>
                 </section>
 
                 <section className="mb-10">
-                    <h2 className="text-xl font-medium text-gray-900 mb-4">No Account, No Friction</h2>
-                    <p className="text-gray-700">
-                        Start writing without signing up.
-                        Your text is saved locally. Create an account only when you need cloud sync.
+                    <h2 className="text-xl font-medium text-gray-900 mb-4">Disposable Pads for Maximum Privacy</h2>
+                    <p className="text-gray-700 leading-relaxed">
+                        Create temporary "disposable" pads that automatically expire after 48 hours.
+                        Perfect for quick notes, temporary collaboration, or sensitive information you don't want to keep forever.
                     </p>
                 </section>
 
                 <section className="mb-10">
                     <h2 className="text-xl font-medium text-gray-900 mb-4">Use Cases</h2>
-                    <ul className="space-y-2 text-gray-700">
-                        <li><strong>Developers:</strong> share code snippets, debug notes</li>
-                        <li><strong>Writers:</strong> drafts, outlines, quick ideas</li>
-                        <li><strong>Teams:</strong> meeting notes, shared documents</li>
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                        <li className="p-4 bg-gray-50 rounded-lg"><strong>Developers:</strong> Fast code snippets and technical documentation.</li>
+                        <li className="p-4 bg-gray-50 rounded-lg"><strong>Writers:</strong> Secure drafts and quick brainstorming sessions.</li>
+                        <li className="p-4 bg-gray-50 rounded-lg"><strong>Teams:</strong> Real-time meeting notes and shared task lists.</li>
+                        <li className="p-4 bg-gray-50 rounded-lg"><strong>Students:</strong> Quick lecture notes and research outlines.</li>
                     </ul>
                 </section>
 
-                <div className="pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-4">
+                <div className="pt-8 border-t border-gray-200 flex flex-col sm:flex-row items-center gap-6">
                     <Link
                         href="/"
-                        className="inline-block bg-gray-900 text-white px-6 py-3 rounded text-center font-medium hover:bg-gray-800 transition-colors"
+                        className="inline-block bg-black text-white px-8 py-3 rounded-md text-center font-medium hover:bg-gray-800 transition-all shadow-sm"
                     >
-                        Start Writing
+                        Start Writing Now
                     </Link>
-                    <div className="text-sm text-gray-600 flex items-center gap-3">
-                        <Link href="/features/collaborative-editing" className="underline">Collaboration</Link>
-                        <Link href="/features/shareable-links" className="underline">Sharing</Link>
-                        <Link href="/features/no-account" className="underline">No signup</Link>
+                    <div className="text-sm text-gray-500 flex items-center gap-4">
+                        <Link href="/features" className="hover:text-black transition-colors underline decoration-gray-300 underline-offset-4">Features</Link>
+                        <Link href="/landing" className="hover:text-black transition-colors underline decoration-gray-300 underline-offset-4">Browse Pads</Link>
                     </div>
                 </div>
             </div>

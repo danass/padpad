@@ -405,13 +405,13 @@ export default function HomeClient({ featuredArticles = [] }) {
     )
   }
 
-  const keywords = 'textpad online, online text editor, free online notepad, plain text editor, browser text editor, simple text editor online, write text online, edit text online, no signup text editor, quick text editor online, notepad, bloc note, bloc note en ligne, bloc notes, note pad, online notepad, free notepad, bloc-notes en ligne, bloc-notes, blocnote, blocnote en ligne, cuaderno de notas, bloc de notas, bloc de notas en línea, cuaderno de notas en línea, блокнот, блокнот онлайн, онлайн блокнот, 记事本, 在线记事本, 记事本在线'
+  const keywords = 'blocnote online, textpad online, online text editor with pictures, free online notepad, write text online, edit text online, blocnote en ligne, bloc-notes en ligne avec images, éditeur de texte en ligne, text sharing, simple text editor'
 
   return (
     <>
       <SEOKeywords keywords={keywords} />
       <main className="min-h-screen bg-white">
-        <h1 className="absolute opacity-0 pointer-events-none">Online Text Editor, Instantly Shareable</h1>
+        <h1 className="absolute opacity-0 pointer-events-none">Blocnote Online - Textpad Online Text Editor with Pictures</h1>
         <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-8">
           <div className="mb-4 md:mb-6 flex items-center justify-end">
             <button

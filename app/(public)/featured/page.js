@@ -2,6 +2,14 @@ import { sql } from '@vercel/postgres'
 import Link from 'next/link'
 import { replayHistory } from '@/lib/editor/history-replay'
 
+export const metadata = {
+    title: 'Featured | Textpad',
+    description: 'Explore the best public documents and articles curated by the Textpad community.',
+    alternates: {
+        canonical: '/featured',
+    },
+}
+
 export const dynamic = 'force-dynamic'
 
 async function getFeaturedArticles(page = 1, limit = 20) {

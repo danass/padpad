@@ -3,14 +3,15 @@ import { redirect } from 'next/navigation'
 
 export async function generateMetadata() {
     return {
+        metadataBase: new URL('https://www.textpad.cloud'),
         title: 'Textpad – Free Online Text Editor & Personal Blog',
         description: 'Write, edit and share text instantly with Textpad. Create your own public blog with a custom subdomain. Save documents, version history, organize in folders.',
         alternates: {
-            canonical: 'https://textpad.cloud/en',
+            canonical: '/en',
             languages: {
-                'en': 'https://textpad.cloud/en',
-                'fr': 'https://textpad.cloud/fr',
-                'x-default': 'https://textpad.cloud',
+                'en': '/en',
+                'fr': '/fr',
+                'x-default': '/',
             },
         },
     }

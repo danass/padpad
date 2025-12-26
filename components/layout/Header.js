@@ -31,20 +31,9 @@ export default function Header() {
   const pathname = usePathname()
   const router = useRouter()
 
-  // On subdomains, don't use session at all
+  const { data: sessionData } = useSession()
   const onSubdomain = isSubdomain()
-  let session = null
-
-  // Conditionally use session only if NOT on a subdomain
-  if (!onSubdomain) {
-    try {
-      const sessionData = useSession()
-      session = sessionData?.data
-    } catch (e) {
-      // If useSession fails (no provider), treat as no session
-      session = null
-    }
-  }
+  const session = onSubdomain ? null : sessionData
 
   const [isAdmin, setIsAdmin] = useState(false)
   const [customAvatar, setCustomAvatar] = useState(null)

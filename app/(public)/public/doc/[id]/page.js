@@ -1,6 +1,7 @@
 import { sql } from '@vercel/postgres'
 import { replayHistory } from '@/lib/editor/history-replay'
 import { auth } from '@/auth'
+import { cache } from 'react'
 import PublicDocumentClient from './client'
 
 export const dynamic = 'force-dynamic'
@@ -41,7 +42,7 @@ function extractTextFromContent(content) {
 }
 
 // Fetch document data server-side
-async function getDocumentData(documentId) {
+const getDocumentData = cache(async (documentId) => {
   try {
     const docResult = await sql.query(
       'SELECT * FROM documents WHERE id = $1',
@@ -157,12 +158,11 @@ async function getDocumentData(documentId) {
     console.error('Error loading document:', error)
     return { error: 'server_error' }
   }
-}
+})
 
 // Generate dynamic metadata for social sharing
 export async function generateMetadata({ params }) {
   const { id: documentId } = await params
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://textpad.cloud'
 
   const defaultMeta = {
     title: 'Document | Textpad',
@@ -171,7 +171,10 @@ export async function generateMetadata({ params }) {
       title: 'Document | Textpad',
       description: 'View this document on Textpad',
       type: 'article',
-      images: [{ url: `${baseUrl}/padpad.png`, width: 512, height: 512, alt: 'Textpad' }],
+      images: [{ url: '/padpad.png', width: 512, height: 512, alt: 'Textpad' }],
+    },
+    alternates: {
+      canonical: `/public/doc/${documentId}`,
     },
   }
 
@@ -201,15 +204,18 @@ export async function generateMetadata({ params }) {
         title: title,
         description: description,
         type: 'article',
-        url: `${baseUrl}/public/doc/${documentId}`,
+        url: `/public/doc/${documentId}`,
         siteName: 'Textpad',
-        images: [{ url: `${baseUrl}/padpad.png`, width: 512, height: 512, alt: 'Textpad' }],
+        images: [{ url: '/padpad.png', width: 512, height: 512, alt: 'Textpad' }],
       },
       twitter: {
         card: 'summary',
         title: title,
         description: description,
-        images: [`${baseUrl}/padpad.png`],
+        images: ['/padpad.png'],
+      },
+      alternates: {
+        canonical: `/public/doc/${documentId}`,
       },
     }
   } catch (error) {

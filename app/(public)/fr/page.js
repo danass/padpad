@@ -3,14 +3,15 @@ import { redirect } from 'next/navigation'
 
 export async function generateMetadata() {
     return {
+        metadataBase: new URL('https://www.textpad.cloud'),
         title: 'Textpad – Éditeur de texte en ligne gratuit et blog personnel',
-        description: 'Écrivez, éditez et partagez du texte instantanément avec Textpad. Créez votre propre blog public avec un sous-domaine personnalisé. Sauvegardez vos documents, historique des versions, organisez en dossiers.',
+        description: 'Écrivez, éditez et partagez du texte instantanément avec Textpad. Créez votre propre blog public avec un sous-domaine personnalisé.',
         alternates: {
-            canonical: 'https://textpad.cloud/fr',
+            canonical: '/fr',
             languages: {
-                'en': 'https://textpad.cloud/en',
-                'fr': 'https://textpad.cloud/fr',
-                'x-default': 'https://textpad.cloud',
+                'en': '/en',
+                'fr': '/fr',
+                'x-default': '/',
             },
         },
     }

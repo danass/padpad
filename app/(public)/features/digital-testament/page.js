@@ -1,19 +1,16 @@
 import Link from 'next/link'
 
 export async function generateMetadata() {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://textpad.cloud'
-
     return {
         title: 'Digital Legacy – Your Words Live On | Textpad',
         description: 'Write now, publish on your 99th birthday. Your documents become public automatically, preserving your words for future generations.',
         openGraph: {
             type: 'website',
-            url: `${baseUrl}/features/digital-testament`,
             title: 'Digital Legacy – Your Words Live On | Textpad',
             description: 'Write now, publish on your 99th birthday. Preserve your words for future generations.',
         },
         alternates: {
-            canonical: `${baseUrl}/features/digital-testament`,
+            canonical: '/features/digital-testament',
         },
     }
 }

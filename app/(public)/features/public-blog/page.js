@@ -2,19 +2,16 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export async function generateMetadata() {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://textpad.cloud'
-
     return {
-        title: 'Public Blog & Archive | Textpad',
-        description: 'Turn your documents into a public blog. Get your own subdomain at username.textpad.cloud. Simple publishing for writers.',
+        title: 'Public Blog – Your Own Corner of the Web | Textpad',
+        description: 'Turn your documents into a beautiful public blog. Custom handles, RSS feeds, and seamless sharing.',
         openGraph: {
             type: 'website',
-            url: `${baseUrl}/features/public-blog`,
-            title: 'Public Blog & Archive | Textpad',
-            description: 'Turn your documents into a public blog. Get your own subdomain at username.textpad.cloud.',
+            title: 'Public Blog – Your Own Corner of the Web | Textpad',
+            description: 'Turn your documents into a beautiful public blog. Custom handles and seamless sharing.',
         },
         alternates: {
-            canonical: `${baseUrl}/features/public-blog`,
+            canonical: '/features/public-blog',
         },
     }
 }

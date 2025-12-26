@@ -33,7 +33,7 @@ export default function TermsLayout({ children }) {
             publisher: {
               '@type': 'Organization',
               name: 'TextPad',
-              url: 'https://textpad.cloud',
+              url: 'https://www.textpad.cloud',
             },
           }),
         }}

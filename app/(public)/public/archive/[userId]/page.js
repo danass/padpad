@@ -2,17 +2,11 @@ import { sql } from '@vercel/postgres'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import Link from 'next/link'
+import { cache } from 'react'
 import ArchiveHeader from '@/components/archive/ArchiveHeader'
 
-export async function generateMetadata({ params }) {
-  const { userId } = await params
-  return {
-    title: `@${userId} - Archive | Textpad`,
-    description: `Public documents from ${userId}`,
-  }
-}
-
-async function getDocuments(userId) {
+// Memoize data request
+const getDocuments = cache(async (userId) => {
   if (!userId) return { documents: [], username: null, archiveId: null, ownerId: null, hasCustomUsername: false, error: 'No user ID' }
 
   try {
@@ -77,6 +71,24 @@ async function getDocuments(userId) {
   } catch (error) {
     console.error('Error fetching documents:', error)
     return { documents: [], username: null, archiveId: null, ownerId: null, hasCustomUsername: false, error: 'Database error' }
+  }
+})
+
+export async function generateMetadata({ params }) {
+  const { userId } = await params
+  const data = await getDocuments(userId)
+
+  const title = data.username ? `@${data.username}` : `@${userId}`
+  const description = data.documents?.length
+    ? `View ${data.documents.length} public documents in the archive of ${title} on TextPad.`
+    : `Public documents from ${title} on TextPad.`
+
+  return {
+    title: `${title} - Archive | Textpad`,
+    description,
+    alternates: {
+      canonical: `/public/archive/${userId}`,
+    },
   }
 }
 
@@ -148,8 +160,8 @@ export default async function PublicArchivePage({ params }) {
 
         {/* Footer */}
         <div className="mt-12 pt-8 border-t border-gray-100 text-center">
-          <a href="https://textpad.cloud" className="text-xs text-gray-400 hover:text-gray-600">
-            textpad.cloud
+          <a href="https://www.textpad.cloud" className="text-xs text-gray-400 hover:text-gray-600">
+            www.textpad.cloud
           </a>
         </div>
       </div>

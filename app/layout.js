@@ -1,16 +1,18 @@
 import './globals.css'
 import { LanguageProvider } from '@/app/i18n/LanguageContext'
 import { cookies, headers } from 'next/headers'
+import { auth } from '@/auth'
+import SessionProvider from '@/components/providers/SessionProvider'
 
 // SEO translations
 const seoTranslations = {
   en: {
-    title: 'Textpad – Free Online Text Editor & Personal Blog',
-    description: 'Write, edit and share text instantly with Textpad. Create your own public blog with a custom subdomain. Save documents, version history, organize in folders. No account needed to start.',
+    title: 'Textpad – Blocnote Online & Free Professional Text Editor',
+    description: 'Write, edit and share text instantly with Textpad, the professional blocnote online. Create a public blog, save with version history, and use our online text editor with pictures. No account needed.',
   },
   fr: {
-    title: 'Textpad – Éditeur de texte en ligne gratuit et blog personnel',
-    description: 'Écrivez, éditez et partagez du texte instantanément avec Textpad. Créez votre propre blog public avec un sous-domaine personnalisé. Sauvegardez vos documents, historique des versions, organisez en dossiers.',
+    title: 'Textpad – Blocnote en Ligne & Éditeur de Texte Gratuit',
+    description: 'Écrivez et partagez votre texte avec Textpad, le blocnote en ligne gratuit. Créez un blog public, sauvegardez avec historique, et profitez d\'un bloc-notes en ligne avec images. Sans inscription.',
   },
 }
 
@@ -39,9 +41,10 @@ export async function generateMetadata() {
   const t = seoTranslations[locale] || seoTranslations.en
 
   return {
+    metadataBase: new URL('https://www.textpad.cloud'),
     title: t.title,
     description: t.description,
-    keywords: 'online text editor, textpad, online notepad, personal blog, public blog, text sharing, document editor, free notepad, share text online, version history',
+    keywords: 'blocnote online, textpad online, online text editor with pictures, free online notepad, personal blog, public blog, text sharing, document editor, free notepad, share text online, version history, bloc-notes en ligne, blocnote en ligne avec images',
     icons: {
       icon: '/favicon.ico',
       apple: '/apple-touch-icon.png',
@@ -50,11 +53,11 @@ export async function generateMetadata() {
       title: t.title,
       description: t.description,
       type: 'website',
-      url: 'https://www.textpad.cloud',
+      url: '/',
       siteName: 'Textpad',
       locale: locale === 'fr' ? 'fr_FR' : 'en_US',
       alternateLocale: locale === 'fr' ? ['en_US'] : ['fr_FR'],
-      images: [{ url: 'https://www.textpad.cloud/padpad.png', width: 512, height: 512, alt: 'Textpad Logo' }],
+      images: [{ url: '/padpad.png', width: 512, height: 512, alt: 'Textpad Logo' }],
     },
     twitter: {
       card: 'summary_large_image',
@@ -62,11 +65,11 @@ export async function generateMetadata() {
       description: t.description,
     },
     alternates: {
-      canonical: 'https://www.textpad.cloud',
+      canonical: '/',
       languages: {
-        'en': 'https://www.textpad.cloud/?locale=en',
-        'fr': 'https://www.textpad.cloud/?locale=fr',
-        'x-default': 'https://www.textpad.cloud',
+        'en': '/?locale=en',
+        'fr': '/?locale=fr',
+        'x-default': '/',
       },
     },
   }
@@ -82,7 +85,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'Textpad',
-  url: 'https://www.textpad.cloud',
+  url: '/',
   description: 'Free online text editor with personal blog, document sharing, version history and folder organization.',
   applicationCategory: 'Productivity',
   operatingSystem: 'Any',
@@ -104,6 +107,7 @@ const jsonLd = {
 // Root layout - minimal, shared by all route groups
 export default async function RootLayout({ children }) {
   const locale = await getLocale()
+  const session = await auth()
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -117,9 +121,11 @@ export default async function RootLayout({ children }) {
         />
       </head>
       <body className="bg-white min-h-screen flex flex-col" suppressHydrationWarning>
-        <LanguageProvider initialLocale={locale}>
-          {children}
-        </LanguageProvider>
+        <SessionProvider session={session}>
+          <LanguageProvider initialLocale={locale}>
+            {children}
+          </LanguageProvider>
+        </SessionProvider>
       </body>
     </html>
   )

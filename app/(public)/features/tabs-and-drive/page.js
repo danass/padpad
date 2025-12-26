@@ -1,19 +1,16 @@
 import Link from 'next/link'
 
 export async function generateMetadata() {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://textpad.cloud'
-
     return {
-        title: 'Tabs & Drive | Textpad',
-        description: 'Organize your documents with folders and tabs. Quick access to recent files, context menus, and visibility controls.',
+        title: 'Tabs & Drive – Stay Organized | Textpad',
+        description: 'Manage multiple documents with browser-like tabs. Organize your writing in a clean, intuitive drive.',
         openGraph: {
             type: 'website',
-            url: `${baseUrl}/features/tabs-and-drive`,
-            title: 'Tabs & Drive | Textpad',
-            description: 'Organize your documents with folders and tabs.',
+            title: 'Tabs & Drive – Stay Organized | Textpad',
+            description: 'Manage multiple documents with browser-like tabs. Organize your writing in a clean, intuitive drive.',
         },
         alternates: {
-            canonical: `${baseUrl}/features/tabs-and-drive`,
+            canonical: '/features/tabs-and-drive',
         },
     }
 }

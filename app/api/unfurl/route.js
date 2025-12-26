@@ -23,7 +23,7 @@ export async function POST(request) {
 
         const response = await fetch(parsedUrl.toString(), {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (compatible; TextpadBot/1.0; +https://textpad.cloud)',
+                'User-Agent': 'Mozilla/5.0 (compatible; TextpadBot/1.0; +https://www.textpad.cloud)',
                 'Accept': 'text/html,application/xhtml+xml',
             },
             signal: controller.signal,

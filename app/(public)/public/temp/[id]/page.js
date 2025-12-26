@@ -1,10 +1,12 @@
 import { sql } from '@vercel/postgres'
 import { replayHistory } from '@/lib/editor/history-replay'
+import { cache } from 'react'
 import TempPadClient from './TempClient'
 
 export const dynamic = 'force-dynamic'
 
-async function getTempDocumentData(documentId) {
+// Memoize data request
+const getTempDocumentData = cache(async (documentId) => {
     // Validate UUID format to prevent DB errors
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
     if (!uuidRegex.test(documentId)) {
@@ -72,6 +74,23 @@ async function getTempDocumentData(documentId) {
     } catch (error) {
         console.error('Error loading temp document:', error)
         return { error: 'server_error' }
+    }
+})
+
+export async function generateMetadata({ params }) {
+    const { id } = await params
+    const data = await getTempDocumentData(id)
+
+    const title = data.document?.title && data.document.title !== 'Untitled'
+        ? data.document.title
+        : 'Temporary Pad'
+
+    return {
+        title: `${title} | TextPad`,
+        description: 'View this temporary document on TextPad. This pad is disposable and will expire automatically.',
+        alternates: {
+            canonical: `/public/temp/${id}`,
+        },
     }
 }
 
