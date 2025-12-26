@@ -26,6 +26,7 @@ import {
   Pencil,
   Type,
   HardDrive,
+  Save,
 } from 'lucide-react'
 import Tooltip from '@/components/ui/Tooltip'
 import { useLanguage } from '@/app/i18n/LanguageContext'
@@ -74,7 +75,7 @@ const HIGHLIGHT_COLORS = [
   '#F9CB9C', '#FFE599', '#B6D7A8', '#A2C4C9', '#A4C2F4', '#9FC5E8', '#B4A7D6', '#D5A6BD', '#EA9999'
 ]
 
-export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser }) {
+export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, saving }) {
   const { t } = useLanguage()
   const [showFontFamily, setShowFontFamily] = useState(false)
   const [showFontSize, setShowFontSize] = useState(false)
@@ -1647,6 +1648,21 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser }) {
             <Redo className="w-5 h-5 md:w-4 md:h-4" />
           </button>
         </Tooltip>
+
+        {/* Save button - visible on mobile in toolbar */}
+        {onSave && (
+          <Tooltip label={t?.save || 'Save'} shortcut={['⌘', 'S']}>
+            <button
+              onClick={onSave}
+              disabled={saving}
+              className="ml-1 p-2 md:p-1.5 h-10 md:h-8 px-3 md:px-2 rounded bg-black text-white hover:bg-gray-800 disabled:opacity-50 flex items-center justify-center gap-1"
+              aria-label={t?.save || 'Save'}
+            >
+              <Save className="w-4 h-4 md:w-3.5 md:h-3.5" />
+              <span className="text-xs font-medium hidden sm:inline">{saving ? (t?.saving || 'Saving...') : (t?.save || 'Save')}</span>
+            </button>
+          </Tooltip>
+        )}
       </div>
     </div>
   )

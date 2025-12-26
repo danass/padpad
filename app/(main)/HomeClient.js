@@ -432,7 +432,7 @@ export default function HomeClient({ featuredArticles = [] }) {
           {editor && (
             <>
               <div className="mb-4">
-                <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} />
+                <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} onSave={handleSave} saving={saving} />
               </div>
               <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8 relative">
                 {mounted && <EditorContent editor={editor} />}

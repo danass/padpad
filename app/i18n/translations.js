@@ -33,6 +33,12 @@ export const translations = {
     signIn: 'Sign in',
     signOut: 'Sign out',
 
+    // Navigation
+    navFeed: 'Feed',
+    navFeatured: 'Featured',
+    navFeatures: 'Features',
+    navCredits: 'Credits',
+
     // Home page
     startWriting: 'Start writing...',
     saveDocument: 'Save Document',
@@ -480,6 +486,12 @@ export const translations = {
     settings: 'Paramètres',
     signIn: 'Se connecter',
     signOut: 'Se déconnecter',
+
+    // Navigation
+    navFeed: 'Flux',
+    navFeatured: 'À la une',
+    navFeatures: 'Fonctionnalités',
+    navCredits: 'Crédits',
 
     // Home page
     startWriting: 'Commencez à écrire...',
