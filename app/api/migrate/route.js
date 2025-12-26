@@ -143,7 +143,12 @@ async function runMigrations() {
       `CREATE INDEX IF NOT EXISTS idx_users_archive_id ON users(archive_id) WHERE archive_id IS NOT NULL`,
 
       // Add ipfs_config column to users - IPFS storage configuration
-      `ALTER TABLE users ADD COLUMN IF NOT EXISTS ipfs_config JSONB`
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS ipfs_config JSONB`,
+
+      // Add is_disposable and expires_at to documents
+      `ALTER TABLE documents ADD COLUMN IF NOT EXISTS is_disposable BOOLEAN DEFAULT false`,
+      `ALTER TABLE documents ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZONE`,
+      `CREATE INDEX IF NOT EXISTS idx_documents_expires_at ON documents(expires_at) WHERE expires_at IS NOT NULL`
     ]
 
     // Run all migrations

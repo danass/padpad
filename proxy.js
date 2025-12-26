@@ -108,7 +108,7 @@ export async function proxy(request) {
         '/', '/auth', '/api/auth', '/api/migrate', '/public',
         '/api/public', '/online-text-editor', '/features',
         '/featured', '/robots.txt', '/sitemap.xml', '/privacy', '/terms', '/credits',
-        '/fr', '/en', '/feed', '/api/feed'
+        '/fr', '/en', '/feed', '/api/feed', '/api/documents', '/api/ipfs'
     ]
 
     if (publicPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
@@ -117,6 +117,14 @@ export async function proxy(request) {
 
     // Require authentication for all other pages
     if (!session) {
+        // Return 401 for API routes instead of redirecting
+        if (pathname.startsWith('/api/')) {
+            return applyCors(new NextResponse(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ))
+        }
+
         const signInUrl = new URL('/auth/signin', request.url)
         signInUrl.searchParams.set('callbackUrl', pathname)
         return applyCors(NextResponse.redirect(signInUrl))

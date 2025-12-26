@@ -9,19 +9,19 @@ function extractPlainText(contentJson) {
     if (!contentJson || !contentJson.content) {
       return ''
     }
-    
+
     function extractText(node) {
       if (node.type === 'text') {
         return node.text || ''
       }
-      
+
       if (node.content && Array.isArray(node.content)) {
         return node.content.map(extractText).join(' ')
       }
-      
+
       return ''
     }
-    
+
     return contentJson.content.map(extractText).join(' ').trim()
   } catch (error) {
     console.error('Error extracting plain text:', error)
@@ -32,34 +32,36 @@ function extractPlainText(contentJson) {
 export async function POST(request, { params }) {
   try {
     const userId = await getUserId()
-    if (!userId) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    
     const { id } = await params
     const body = await request.json()
     const { content_json } = body
     const admin = await isAdmin()
-    
-    if (!content_json) {
-      return Response.json(
-        { error: 'Missing content_json' },
-        { status: 400 }
-      )
-    }
-    
-    // Verify document exists - if it has no user_id, assign it to current user
+
+    // Verify document exists
     let docCheck = await sql.query(
-      'SELECT id, user_id FROM documents WHERE id = $1',
+      'SELECT id, user_id, is_disposable, expires_at FROM documents WHERE id = $1',
       [id]
     )
-    
+
     if (docCheck.rows.length === 0) {
       return Response.json({ error: 'Document not found' }, { status: 404 })
     }
-    
+
     const doc = docCheck.rows[0]
-    
+    const isExpired = doc.expires_at && new Date(doc.expires_at) < new Date()
+
+    // If document is disposable and not expired, allow snapshot without auth
+    if (doc.is_disposable && !isExpired) {
+      // Continue to snapshot creation
+    } else if (!userId) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    } else {
+      // Normal auth check
+      if (doc.user_id && doc.user_id !== userId && !admin) {
+        return Response.json({ error: 'Document not found' }, { status: 404 })
+      }
+    }
+
     // If document has no user_id, assign it to current user (migration for old documents)
     // Use atomic UPDATE with WHERE user_id IS NULL to prevent race conditions
     if (!doc.user_id) {
@@ -82,7 +84,7 @@ export async function POST(request, { params }) {
       // Document belongs to another user - only admins can access
       return Response.json({ error: 'Document not found' }, { status: 404 })
     }
-    
+
     // Get the last snapshot to compare
     const lastSnapshotResult = await sql.query(
       `SELECT content_json FROM document_snapshots 
@@ -91,12 +93,12 @@ export async function POST(request, { params }) {
        LIMIT 1`,
       [id]
     )
-    
+
     // Compare with last snapshot
     if (lastSnapshotResult.rows.length > 0) {
       const lastSnapshot = lastSnapshotResult.rows[0]
       let lastContentJson = lastSnapshot.content_json
-      
+
       // Parse if it's a string
       if (typeof lastContentJson === 'string') {
         try {
@@ -105,13 +107,13 @@ export async function POST(request, { params }) {
           console.error('Error parsing last snapshot:', e)
         }
       }
-      
+
       // Normalize both JSON objects for comparison (deep sort and stringify)
       const normalizeJSON = (obj) => {
         if (obj === null || typeof obj !== 'object') {
           return obj
         }
-        
+
         if (Array.isArray(obj)) {
           return obj.map(normalizeJSON).sort((a, b) => {
             const aStr = JSON.stringify(a)
@@ -119,20 +121,20 @@ export async function POST(request, { params }) {
             return aStr < bStr ? -1 : aStr > bStr ? 1 : 0
           })
         }
-        
+
         const sorted = {}
         Object.keys(obj).sort().forEach(key => {
           sorted[key] = normalizeJSON(obj[key])
         })
         return sorted
       }
-      
+
       // Normalize and compare
       const normalizedCurrent = normalizeJSON(content_json)
       const normalizedLast = normalizeJSON(lastContentJson)
       const currentContentStr = JSON.stringify(normalizedCurrent)
       const lastContentStr = JSON.stringify(normalizedLast)
-      
+
       if (currentContentStr === lastContentStr) {
         // Content is identical, don't create a new snapshot
         return Response.json(
@@ -141,16 +143,16 @@ export async function POST(request, { params }) {
         )
       }
     }
-    
+
     // Extract plain text
     const content_text = extractPlainText(content_json)
-    
+
     // Check if content is empty (only empty paragraphs)
     const isEmpty = (content) => {
       if (!content || !content.content || !Array.isArray(content.content)) {
         return true
       }
-      
+
       // Check if all content nodes are empty paragraphs
       const hasNonEmptyContent = content.content.some(node => {
         if (node.type === 'paragraph') {
@@ -169,10 +171,10 @@ export async function POST(request, { params }) {
         // Non-paragraph nodes are considered content
         return true
       })
-      
+
       return !hasNonEmptyContent
     }
-    
+
     // Don't create snapshot if content is empty
     if (isEmpty(content_json)) {
       return Response.json(
@@ -180,7 +182,7 @@ export async function POST(request, { params }) {
         { status: 200 }
       )
     }
-    
+
     // Create snapshot
     const snapshotId = uuidv4()
     const snapshotResult = await sql.query(
@@ -189,7 +191,7 @@ export async function POST(request, { params }) {
        RETURNING *`,
       [snapshotId, id, JSON.stringify(content_json), content_text]
     )
-    
+
     // Update document with snapshot reference and content_text
     await sql.query(
       `UPDATE documents 
@@ -199,7 +201,7 @@ export async function POST(request, { params }) {
        WHERE id = $3`,
       [snapshotId, content_text, id]
     )
-    
+
     return Response.json({ snapshot: snapshotResult.rows[0] }, { status: 201 })
   } catch (error) {
     console.error('Error creating snapshot:', error)

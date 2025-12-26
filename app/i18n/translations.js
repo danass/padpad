@@ -440,6 +440,29 @@ export const translations = {
     termsChangesText: 'We reserve the right to modify these terms at any time. Your continued use of the service after changes constitutes acceptance of the new terms.',
     termsContact: 'Contact Us',
     termsContactText: 'If you have questions about these Terms of Service, please contact us through the settings page.',
+
+    // Features Page
+    featuresTitle: 'Features',
+    featuresSubtitle: 'What Textpad can do',
+    featuresIntro: 'Your private notebook with public options. Write for yourself. Share when you\'re ready.',
+    featureDigitalLegacyTitle: 'Digital Legacy',
+    featureDigitalLegacyDesc: 'Write now, publish on your 99th birthday. Your words live on.',
+    featurePublicBlogTitle: 'Public Blog & Archive',
+    featurePublicBlogDesc: 'Get your own subdomain. Share your writing publicly.',
+    featureShareableLinksTitle: 'Shareable Links',
+    featureShareableLinksDesc: 'Share any document with a simple link.',
+    featureTabsDriveTitle: 'Tabs & Drive',
+    featureTabsDriveDesc: 'Organize documents in folders. Work on multiple files.',
+    featureVersionHistoryTitle: 'Version History',
+    featureVersionHistoryDesc: 'Every save is preserved. Restore any version.',
+    featureImagesDrawingsTitle: 'Images & Drawings',
+    featureImagesDrawingsDesc: 'Add images, resize them, draw directly in your docs.',
+
+    // Disposable/Temp Pad
+    tempPadExpirationBanner: 'This pad will expire in 48 hours.',
+    makePermanent: 'Save Permanently',
+    claimingPad: 'Saving permanently...',
+    padClaimed: 'Pad saved successfully!',
   },
 
   fr: {
@@ -860,6 +883,29 @@ export const translations = {
     termsChangesText: 'Nous nous réservons le droit de modifier ces conditions à tout moment. Votre utilisation continue du service après les modifications constitue une acceptation des nouvelles conditions.',
     termsContact: 'Nous contacter',
     termsContactText: 'Si vous avez des questions sur ces Conditions d\'Utilisation, veuillez nous contacter via la page des paramètres.',
+
+    // Features Page
+    featuresTitle: 'Fonctionnalités',
+    featuresSubtitle: 'Ce que Textpad peut faire',
+    featuresIntro: 'Votre carnet privé avec des options publiques. Écrivez pour vous. Partagez quand vous êtes prêt.',
+    featureDigitalLegacyTitle: 'Héritage Numérique',
+    featureDigitalLegacyDesc: 'Écrivez maintenant, publiez le jour de vos 99 ans. Vos mots perdurent.',
+    featurePublicBlogTitle: 'Blog Public & Archive',
+    featurePublicBlogDesc: 'Obtenez votre propre sous-domaine. Partagez vos écrits publiquement.',
+    featureShareableLinksTitle: 'Liens Partageables',
+    featureShareableLinksDesc: 'Partagez n\'importe quel document avec un simple lien.',
+    featureTabsDriveTitle: 'Onglets & Drive',
+    featureTabsDriveDesc: 'Organisez vos documents dans des dossiers. Travaillez sur plusieurs fichiers.',
+    featureVersionHistoryTitle: 'Historique des Versions',
+    featureVersionHistoryDesc: 'Chaque sauvegarde est préservée. Restaurez n\'importe quelle version.',
+    featureImagesDrawingsTitle: 'Images & Dessins',
+    featureImagesDrawingsDesc: 'Ajoutez des images, redimensionnez-les, dessinez directement dans vos docs.',
+
+    // Disposable/Temp Pad
+    tempPadExpirationBanner: 'Ce pad expirera dans 48 heures.',
+    makePermanent: 'Rendre permanent',
+    claimingPad: 'Sauvegarde permanente...',
+    padClaimed: 'Pad sauvegardé avec succès !',
   },
 
   es: {
@@ -1279,6 +1325,29 @@ export const translations = {
     termsChangesText: 'Nos reservamos el derecho de modificar estos términos en cualquier momento. Su uso continuo del servicio después de los cambios constituye la aceptación de los nuevos términos.',
     termsContact: 'Contáctenos',
     termsContactText: 'Si tiene preguntas sobre estos Términos de Servicio, por favor contáctenos a través de la página de configuración.',
+
+    // Features Page
+    featuresTitle: 'Funcionalidades',
+    featuresSubtitle: 'Lo que Textpad peut hacer',
+    featuresIntro: 'Tu cuaderno privado con opciones públicas. Escribe para ti. Comparte cuando estés listo.',
+    featureDigitalLegacyTitle: 'Legado Digital',
+    featureDigitalLegacyDesc: 'Escribe ahora, publica en tu 99 cumpleaños. Tus palabras perduran.',
+    featurePublicBlogTitle: 'Blog Público y Archivo',
+    featurePublicBlogDesc: 'Obtén tu propio subdominio. Comparte tus escritos públicamente.',
+    featureShareableLinksTitle: 'Enlaces Compartibles',
+    featureShareableLinksDesc: 'Comparte cualquier documento con un simple enlace.',
+    featureTabsDriveTitle: 'Pestañas y Drive',
+    featureTabsDriveDesc: 'Organiza documentos en carpetas. Trabaja en varios archivos.',
+    featureVersionHistoryTitle: 'Historial de Versiones',
+    featureVersionHistoryDesc: 'Cada guardado se conserva. Restaura cualquier versión.',
+    featureImagesDrawingsTitle: 'Imágenes y Dibujos',
+    featureImagesDrawingsDesc: 'Añade imágenes, cámbiales el tamaño, dibuja directamente en tus documentos.',
+
+    // Disposable/Temp Pad
+    tempPadExpirationBanner: 'Este pad expirará en 48 horas.',
+    makePermanent: 'Guardar permanentemente',
+    claimingPad: 'Guardando permanentemente...',
+    padClaimed: '¡Pad guardado con éxito!',
   },
 
   zh: {
@@ -1698,6 +1767,29 @@ export const translations = {
     termsChangesText: '我们保留随时修改这些条款的权利。变更后您继续使用服务即表示接受新条款。',
     termsContact: '联系我们',
     termsContactText: '如果您对这些服务条款有疑问，请通过设置页面联系我们。',
+
+    // Features Page
+    featuresTitle: '功能',
+    featuresSubtitle: 'Textpad 的功能',
+    featuresIntro: '您的私人笔记本，具有公开选项。为您自己而写。准备好后再分享。',
+    featureDigitalLegacyTitle: '数字遗产',
+    featureDigitalLegacyDesc: '现在写作，在 99 岁生日时发布。您的文字将长存。',
+    featurePublicBlogTitle: '公开博客和存档',
+    featurePublicBlogDesc: '获取您自己的子域名。公开分享您的作品。',
+    featureShareableLinksTitle: '可分享链接',
+    featureShareableLinksDesc: '通过简单的链接分享任何文档。',
+    featureTabsDriveTitle: '标签页和驱动器',
+    featureTabsDriveDesc: '在文件夹中组织文档。处理多个文件。',
+    featureVersionHistoryTitle: '版本历史',
+    featureVersionHistoryDesc: '保存的每个版本都会被保留。恢复任何版本。',
+    featureImagesDrawingsTitle: '图像和绘图',
+    featureImagesDrawingsDesc: '添加图像，调整其大小，直接在文档中绘图。',
+
+    // Disposable/Temp Pad
+    tempPadExpirationBanner: '此便笺将在 48 小时后过期。',
+    makePermanent: '永久保存',
+    claimingPad: '正在永久保存...',
+    padClaimed: '便笺已成功保存！',
   },
 
   ru: {
@@ -2117,6 +2209,29 @@ export const translations = {
     termsChangesText: 'Мы оставляем за собой право изменять эти условия в любое время. Ваше дальнейшее использование сервиса после изменений означает принятие новых условий.',
     termsContact: 'Связаться с нами',
     termsContactText: 'Если у вас есть вопросы об этих Условиях использования, пожалуйста, свяжитесь с нами через страницу настроек.',
+
+    // Features Page
+    featuresTitle: 'Функции',
+    featuresSubtitle: 'Что может Textpad',
+    featuresIntro: 'Ваш личный блокнот с публичными опциями. Пишите для себя. Делитесь, когда будете готовы.',
+    featureDigitalLegacyTitle: 'Цифровое наследие',
+    featureDigitalLegacyDesc: 'Пишите сейчас, публикуйте в свой 99-й день рождения. Ваши слова живут.',
+    featurePublicBlogTitle: 'Публичный блог и архив',
+    featurePublicBlogDesc: 'Получите собственный поддомен. Делитесь своими записями публично.',
+    featureShareableLinksTitle: 'Ссылки для общего доступа',
+    featureShareableLinksDesc: 'Поделитесь любым документом с помощью простой ссылки.',
+    featureTabsDriveTitle: 'Вкладки и Диск',
+    featureTabsDriveDesc: 'Организуйте документы в папках. Работайте с несколькими файлами.',
+    featureVersionHistoryTitle: 'История версий',
+    featureVersionHistoryDesc: 'Каждое сохранение сохраняется. Восстановите любую версию.',
+    featureImagesDrawingsTitle: 'Изображения и рисунки',
+    featureImagesDrawingsDesc: 'Добавляйте изображения, меняйте их размер, рисуйте прямо в документах.',
+
+    // Disposable/Temp Pad
+    tempPadExpirationBanner: 'Этот блокнот удалится через 48 часов.',
+    makePermanent: 'Сохранить навсегда',
+    claimingPad: 'Сохранение навсегда...',
+    padClaimed: 'Блокнот успешно сохранен!',
   },
 }
 

@@ -18,7 +18,7 @@ export default function IpfsBrowser({ isOpen, onClose, onSelectFile }) {
         try {
             const response = await fetch('/api/ipfs/config')
             if (response.ok) {
-                const data = await response.json()
+                const data = await response.json().catch(() => ({ providers: [] }))
                 setProviders(data.providers || [])
                 if (data.providers?.length > 0 && !selectedProvider) {
                     setSelectedProvider(data.providers[0])
@@ -51,11 +51,10 @@ export default function IpfsBrowser({ isOpen, onClose, onSelectFile }) {
                 response = await fetch(`/api/ipfs/gateway-files?cid=${selectedProvider.rootCid}&gateway=${selectedProvider.gateway || 'w3s.link'}`)
             }
 
+            const data = await response.json().catch(() => ({}))
             if (!response?.ok) {
-                throw new Error('Failed to load files')
+                throw new Error(data.error || 'Failed to load files')
             }
-
-            const data = await response.json()
             setFiles(data.files || [])
         } catch (err) {
             setError(err.message)
@@ -99,12 +98,11 @@ export default function IpfsBrowser({ isOpen, onClose, onSelectFile }) {
                     }),
                 })
 
+                const urlData = await urlResponse.json().catch(() => ({}))
                 if (!urlResponse.ok) {
-                    const err = await urlResponse.json()
-                    throw new Error(err.error || 'Failed to get upload URL')
+                    throw new Error(urlData.error || 'Failed to get upload URL')
                 }
-
-                const { uploadUrl } = await urlResponse.json()
+                const { uploadUrl } = urlData
 
                 const uploadResponse = await fetch(uploadUrl, {
                     method: 'PUT',

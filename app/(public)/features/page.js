@@ -1,58 +1,44 @@
+'use client'
+
 import Link from 'next/link'
-
-export async function generateMetadata() {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://textpad.cloud'
-
-    return {
-        title: 'Features – What Textpad Can Do | Textpad',
-        description: 'Private writing with public options. Version history, tabs, drawings, digital testament, and more.',
-        openGraph: {
-            type: 'website',
-            url: `${baseUrl}/features`,
-            title: 'Features – What Textpad Can Do | Textpad',
-            description: 'Private writing with public options. Version history, tabs, drawings, digital testament, and more.',
-            images: [{ url: `${baseUrl}/padpad.png`, width: 512, height: 512, alt: 'Textpad' }],
-        },
-        alternates: {
-            canonical: `${baseUrl}/features`,
-        },
-    }
-}
-
-const features = [
-    {
-        title: 'Digital Legacy',
-        description: 'Write now, publish on your 99th birthday. Your words live on.',
-        href: '/features/digital-testament',
-    },
-    {
-        title: 'Public Blog & Archive',
-        description: 'Get your own subdomain. Share your writing publicly.',
-        href: '/features/public-blog',
-    },
-    {
-        title: 'Shareable Links',
-        description: 'Share any document with a simple link.',
-        href: '/features/shareable-links',
-    },
-    {
-        title: 'Tabs & Drive',
-        description: 'Organize documents in folders. Work on multiple files.',
-        href: '/features/tabs-and-drive',
-    },
-    {
-        title: 'Version History',
-        description: 'Every save is preserved. Restore any version.',
-        href: '/features/version-history',
-    },
-    {
-        title: 'Images & Drawings',
-        description: 'Add images, resize them, draw directly in your docs.',
-        href: '/features/images-and-drawings',
-    },
-]
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function FeaturesPage() {
+    const { t } = useLanguage()
+
+    const features = [
+        {
+            title: t.featureDigitalLegacyTitle,
+            description: t.featureDigitalLegacyDesc,
+            href: '/features/digital-testament',
+        },
+        {
+            title: t.featurePublicBlogTitle,
+            description: t.featurePublicBlogDesc,
+            href: '/features/public-blog',
+        },
+        {
+            title: t.featureShareableLinksTitle,
+            description: t.featureShareableLinksDesc,
+            href: '/features/shareable-links',
+        },
+        {
+            title: t.featureTabsDriveTitle,
+            description: t.featureTabsDriveDesc,
+            href: '/features/tabs-and-drive',
+        },
+        {
+            title: t.featureVersionHistoryTitle,
+            description: t.featureVersionHistoryDesc,
+            href: '/features/version-history',
+        },
+        {
+            title: t.featureImagesDrawingsTitle,
+            description: t.featureImagesDrawingsDesc,
+            href: '/features/images-and-drawings',
+        },
+    ]
+
     return (
         <div className="min-h-screen bg-white">
             <div className="max-w-3xl mx-auto px-4 py-12 md:py-20">
@@ -65,15 +51,14 @@ export default function FeaturesPage() {
                     />
                     <div>
                         <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                            Features
+                            {t.featuresTitle}
                         </h1>
-                        <p className="text-gray-500">What Textpad can do</p>
+                        <p className="text-gray-500">{t.featuresSubtitle}</p>
                     </div>
                 </div>
 
                 <p className="text-lg text-gray-700 mb-10">
-                    Your private notebook with public options.
-                    Write for yourself. Share when you're ready.
+                    {t.featuresIntro}
                 </p>
 
                 <div className="grid gap-4">
@@ -101,7 +86,7 @@ export default function FeaturesPage() {
                         href="/"
                         className="inline-block bg-gray-900 text-white px-8 py-3 rounded-lg text-center font-medium hover:bg-gray-800 transition-colors"
                     >
-                        Start Writing
+                        {t.startWriting}
                     </Link>
                 </div>
             </div>

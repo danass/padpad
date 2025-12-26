@@ -334,28 +334,37 @@ export default function HomeClient({ featuredArticles = [] }) {
   }, [])
 
   const handleSave = async () => {
-    if (!session) {
-      // Save content to localStorage with pending save flag
-      if (editor) {
-        const content = editor.getJSON()
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(content))
-          localStorage.setItem(STORAGE_TIMESTAMP_KEY, Date.now().toString())
-          localStorage.setItem(STORAGE_PENDING_SAVE_KEY, 'true')
-        } catch (err) {
-          console.error('Error saving to localStorage:', err)
-        }
-      }
-      // Redirect to signin with callback to root to create document after login
-      router.push('/auth/signin?callbackUrl=/')
-      return
-    }
-
     if (!editor) return
 
     setSaving(true)
     try {
       const content = editor.getJSON()
+
+      if (!session) {
+        // Create a disposable document
+        const response = await fetch('/api/documents/disposable', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: 'Untitled',
+            content: content
+          }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          // Clear localStorage
+          localStorage.removeItem(STORAGE_KEY)
+          localStorage.removeItem(STORAGE_TIMESTAMP_KEY)
+          localStorage.removeItem(STORAGE_PENDING_SAVE_KEY)
+          // Navigate to the temporary pad page
+          router.push(`/public/temp/${data.document.id}`)
+        } else {
+          alert('Failed to save temporary document')
+        }
+        return
+      }
+
       const response = await fetch('/api/documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -385,64 +394,8 @@ export default function HomeClient({ featuredArticles = [] }) {
     }
   }
 
-  // Check for pending save after login
-  useEffect(() => {
-    if (session && editor && !saving) {
-      const pendingSave = localStorage.getItem(STORAGE_PENDING_SAVE_KEY)
-      if (pendingSave === 'true') {
-        // Wait a bit to ensure editor is ready
-        const timer = setTimeout(() => {
-          const saved = localStorage.getItem(STORAGE_KEY)
-          if (saved) {
-            try {
-              const content = JSON.parse(saved)
-              // Only create if there's actual content
-              if (content && (content.content?.length > 0 || editor.getText().trim())) {
-                setSaving(true)
-                // Create document automatically
-                fetch('/api/documents', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    title: 'Untitled',
-                    folder_id: null,
-                    content: content
-                  }),
-                })
-                  .then(response => response.json())
-                  .then(data => {
-                    if (data.document) {
-                      // Clear localStorage
-                      localStorage.removeItem(STORAGE_KEY)
-                      localStorage.removeItem(STORAGE_TIMESTAMP_KEY)
-                      localStorage.removeItem(STORAGE_PENDING_SAVE_KEY)
-                      // Navigate to the new document
-                      router.push(`/doc/${data.document.id}`)
-                    } else {
-                      setSaving(false)
-                    }
-                  })
-                  .catch(error => {
-                    console.error('Error creating document:', error)
-                    localStorage.removeItem(STORAGE_PENDING_SAVE_KEY)
-                    setSaving(false)
-                  })
-              } else {
-                localStorage.removeItem(STORAGE_PENDING_SAVE_KEY)
-              }
-            } catch (error) {
-              console.error('Error parsing saved content:', error)
-              localStorage.removeItem(STORAGE_PENDING_SAVE_KEY)
-            }
-          } else {
-            localStorage.removeItem(STORAGE_PENDING_SAVE_KEY)
-          }
-        }, 500)
-
-        return () => clearTimeout(timer)
-      }
-    }
-  }, [session, editor, router, saving])
+  // Check for pending save after login (Legacy - replaced by Disposable Pads)
+  // This is now handled by the Claim button on the temp page
 
   if (status === 'loading') {
     return (

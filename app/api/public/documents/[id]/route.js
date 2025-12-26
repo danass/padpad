@@ -20,10 +20,15 @@ export async function GET(request, { params }) {
     // Debug log to understand 403 issue
     console.log(`[PUBLIC DOC] ID: ${id}, is_public: ${document.is_public}, type: ${typeof document.is_public}`)
 
-    // Check if document is public
-    if (!document.is_public) {
-      console.log(`[PUBLIC DOC] 403 - is_public falsy: ${document.is_public}`)
-      return Response.json({ error: 'Document is not public' }, { status: 403 })
+    // Check if document is public OR disposable and not expired
+    const isExpired = document.expires_at && new Date(document.expires_at) < new Date()
+
+    if (!document.is_public && !(document.is_disposable && !isExpired)) {
+      console.log(`[PUBLIC DOC] 403 - is_public: ${document.is_public}, is_disposable: ${document.is_disposable}, is_expired: ${isExpired}`)
+      return Response.json({
+        error: isExpired ? 'Document has expired' : 'Document is not public',
+        is_expired: isExpired
+      }, { status: 403 })
     }
 
     // Get latest snapshot if exists
