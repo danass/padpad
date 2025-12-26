@@ -23,11 +23,16 @@ export default function IpfsBrowser({ isOpen, onClose, onSelectFile }) {
                 if (data.providers?.length > 0 && !selectedProvider) {
                     setSelectedProvider(data.providers[0])
                 }
+            } else {
+                // Not logged in or error, just show empty
+                setProviders([])
             }
         } catch (err) {
             console.error('Failed to load providers:', err)
+            setProviders([])
         }
     }, [selectedProvider])
+
 
     // Load files for selected provider
     const loadFiles = useCallback(async () => {
