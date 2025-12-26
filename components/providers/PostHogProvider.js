@@ -10,8 +10,9 @@ export function PostHogProvider({ children }) {
             posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
                 api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://eu.i.posthog.com',
                 person_profiles: 'identified_only',
-                capture_pageview: false, // We'll capture manually for SPA
+                capture_pageview: false,
                 capture_pageleave: true,
+                defaults: '2025-11-30',
                 loaded: (posthog) => {
                     if (process.env.NODE_ENV === 'development') {
                         posthog.debug()
