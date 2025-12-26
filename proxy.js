@@ -8,7 +8,11 @@ export async function proxy(request) {
         'https://textpad.com',
         'https://www.textpad.cloud',
         'https://www.textpad.com',
-        'http://localhost:3000'
+        'http://localhost:3000',
+        // PostHog analytics
+        'https://eu.posthog.com',
+        'https://eu.i.posthog.com',
+        'https://eu-assets.i.posthog.com',
     ]
 
     const isAllowedOrigin = (origin) => {
