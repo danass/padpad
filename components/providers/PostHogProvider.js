@@ -7,11 +7,11 @@ import { useEffect } from 'react'
 export function PostHogProvider({ children }) {
     useEffect(() => {
         const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
-        const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://eu.i.posthog.com'
 
         if (typeof window !== 'undefined' && key) {
             posthog.init(key, {
-                api_host: host,
+                api_host: '/ingest',
+                ui_host: 'https://eu.posthog.com',
                 person_profiles: 'identified_only',
                 capture_pageview: false,
                 capture_pageleave: true,

@@ -48,7 +48,7 @@ export async function generateMetadata() {
     metadataBase: new URL('https://www.textpad.cloud'),
     title: t.title,
     description: t.description,
-    keywords: 'blocnote online, textpad online, online text editor with pictures, free online notepad, personal blog, public blog, text sharing, document editor, free notepad, share text online, version history, bloc-notes en ligne, blocnote en ligne avec images',
+    keywords: 'blocnote online, textpad online, online text editor with pictures, free online notepad, personal blog, public blog, text sharing, document editor, free notepad, share text online, version history, bloc-notes en ligne, blocnote en ligne avec images, notebook++, application note, editeur de texte en ligne, bloc note en ligne, text en ligne, écrire note, bloc-notes télécharger, notepad en ligne, bloc notes gratuit en ligne, online bloc note, bloc note en ligne gratuit, bloc note personnalisable, note gratuit, site de note, bloc note dessin en ligne, prendre des notes en ligne',
     icons: {
       icon: '/favicon.ico',
       apple: '/apple-touch-icon.png',
@@ -71,9 +71,9 @@ export async function generateMetadata() {
     alternates: {
       canonical: '/',
       languages: {
-        'en': '/?locale=en',
-        'fr': '/?locale=fr',
-        'x-default': '/',
+        'en': 'https://www.textpad.cloud/',
+        'fr': 'https://www.textpad.cloud/',
+        'x-default': 'https://www.textpad.cloud/',
       },
     },
   }

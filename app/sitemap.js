@@ -22,18 +22,6 @@ export default async function sitemap() {
       priority: 1,
     },
     {
-      url: `${baseUrl}/?locale=en`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/?locale=fr`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
       url: `${baseUrl}/online-text-editor`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
