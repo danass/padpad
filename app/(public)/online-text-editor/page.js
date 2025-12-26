@@ -77,7 +77,7 @@ export default function OnlineTextEditorPage() {
                     </Link>
                     <div className="text-sm text-gray-500 flex items-center gap-4">
                         <Link href="/features" className="hover:text-black transition-colors underline decoration-gray-300 underline-offset-4">Features</Link>
-                        <Link href="/landing" className="hover:text-black transition-colors underline decoration-gray-300 underline-offset-4">Browse Pads</Link>
+                        <Link href="/feed" className="hover:text-black transition-colors underline decoration-gray-300 underline-offset-4">Browse Feed</Link>
                     </div>
                 </div>
             </div>

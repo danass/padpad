@@ -19,6 +19,14 @@ export async function proxy(request) {
     }
 
     const applyCors = (res) => {
+        // Add Vary header for compression audits
+        const existingVary = res.headers.get('Vary')
+        if (!existingVary) {
+            res.headers.set('Vary', 'Accept-Encoding')
+        } else if (!existingVary.includes('Accept-Encoding')) {
+            res.headers.set('Vary', `${existingVary}, Accept-Encoding`)
+        }
+
         if (isAllowedOrigin(origin)) {
             res.headers.set('Access-Control-Allow-Origin', origin)
             res.headers.set('Access-Control-Allow-Credentials', 'true')
