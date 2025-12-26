@@ -77,6 +77,28 @@ const getTempDocumentData = cache(async (documentId) => {
     }
 })
 
+// Helper to extract text from TipTap JSON content
+function extractTextFromContent(content) {
+    if (!content) return ''
+    let text = ''
+
+    function traverse(node) {
+        if (!node) return
+        if (node.type === 'text' && node.text) {
+            text += node.text + ' '
+        }
+        if (node.content && Array.isArray(node.content)) {
+            for (const child of node.content) {
+                traverse(child)
+                if (text.length > 500) break
+            }
+        }
+    }
+
+    traverse(content)
+    return text.trim().replace(/\s+/g, ' ')
+}
+
 export async function generateMetadata({ params }) {
     const { id } = await params
     const data = await getTempDocumentData(id)
@@ -85,9 +107,20 @@ export async function generateMetadata({ params }) {
         ? data.document.title
         : 'Temporary Pad'
 
+    let description = 'View this temporary document on TextPad. This pad is disposable and will expire automatically.'
+    if (data.content) {
+        const extractedText = extractTextFromContent(data.content)
+        if (extractedText) {
+            description = extractedText.substring(0, 200)
+            if (extractedText.length > 200) {
+                description += '...'
+            }
+        }
+    }
+
     return {
         title: `${title} | TextPad`,
-        description: 'View this temporary document on TextPad. This pad is disposable and will expire automatically.',
+        description,
         alternates: {
             canonical: `/public/temp/${id}`,
         },

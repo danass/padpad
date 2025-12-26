@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic'
 
 // Helper to extract text from TipTap JSON content
 function extractTextFromContent(content) {
+  if (!content) return ''
   let text = ''
 
   function traverse(node) {
@@ -17,28 +18,16 @@ function extractTextFromContent(content) {
       text += node.text + ' '
     }
 
-    if (node.type === 'heading' && node.content) {
+    if (node.content && Array.isArray(node.content)) {
       for (const child of node.content) {
         traverse(child)
-      }
-    }
-
-    if (node.type === 'paragraph' && node.content) {
-      for (const child of node.content) {
-        traverse(child)
-      }
-    }
-
-    if (node.type === 'doc' && node.content) {
-      for (const child of node.content) {
-        traverse(child)
-        if (text.length > 300) return
+        if (text.length > 500) break
       }
     }
   }
 
   traverse(content)
-  return text.trim()
+  return text.trim().replace(/\s+/g, ' ')
 }
 
 // Fetch document data server-side
