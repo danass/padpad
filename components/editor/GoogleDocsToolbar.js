@@ -75,7 +75,7 @@ const HIGHLIGHT_COLORS = [
   '#F9CB9C', '#FFE599', '#B6D7A8', '#A2C4C9', '#A4C2F4', '#9FC5E8', '#B4A7D6', '#D5A6BD', '#EA9999'
 ]
 
-export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, saving }) {
+export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, saving, hasChanges = true }) {
   const { t } = useLanguage()
   const [showFontFamily, setShowFontFamily] = useState(false)
   const [showFontSize, setShowFontSize] = useState(false)
@@ -772,7 +772,7 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
                 setShowFontFamily(false)
               }
             }}
-            className="px-2 py-1.5 h-8 w-[130px] text-left text-xs border-y border-gray-300 hover:bg-gray-50 flex items-center justify-between gap-1"
+            className="px-2 py-1.5 h-8 text-left text-xs border-y border-gray-300 hover:bg-gray-50 flex items-center justify-between gap-1"
             title={currentFontFamily}
             aria-label={`Font family: ${currentFontFamily}`}
           >
@@ -972,8 +972,8 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
         </button>
       </div>
 
-      {/* Paint Mode Toggle */}
-      <div className="relative">
+      {/* Paint Mode Toggle - hidden on mobile */}
+      <div className="relative hidden xs:block">
         <Tooltip label={t?.brushMode || 'Brush mode'}>
           <button
             onClick={togglePaintMode}
@@ -1026,7 +1026,7 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
             setActiveStyle(prev => ({ ...prev, bold: newBold }))
             shouldApplyActiveStyleRef.current = true
           }}
-          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('bold') ? 'bg-gray-200' : ''
+          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('bold') ? 'bg-blue-100 text-blue-600' : ''
             }`}
           aria-label={t?.bold || 'Bold'}
         >
@@ -1034,35 +1034,41 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
         </button>
       </Tooltip>
 
-      <Tooltip label={t?.italic || 'Italic'} shortcut={['⌘', 'I']}>
-        <button
-          onClick={() => {
-            const newItalic = !editor.isActive('italic')
-            editor.chain().focus().toggleItalic().run()
-            setActiveStyle(prev => ({ ...prev, italic: newItalic }))
-            shouldApplyActiveStyleRef.current = true
-          }}
-          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('italic') ? 'bg-gray-200' : ''
-            }`}
-          aria-label={t?.italic || 'Italic'}
-        >
-          <Italic className="w-5 h-5 md:w-4 md:h-4" />
-        </button>
-      </Tooltip>
+      {/* Italic - hidden on mobile */}
+      <div className="hidden xs:block">
+        <Tooltip label={t?.italic || 'Italic'} shortcut={['⌘', 'I']}>
+          <button
+            onClick={() => {
+              const newItalic = !editor.isActive('italic')
+              editor.chain().focus().toggleItalic().run()
+              setActiveStyle(prev => ({ ...prev, italic: newItalic }))
+              shouldApplyActiveStyleRef.current = true
+            }}
+            className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('italic') ? 'bg-blue-100 text-blue-600' : ''
+              }`}
+            aria-label={t?.italic || 'Italic'}
+          >
+            <Italic className="w-5 h-5 md:w-4 md:h-4" />
+          </button>
+        </Tooltip>
+      </div>
 
-      <Tooltip label={t?.underline || 'Underline'} shortcut={['⌘', 'U']}>
-        <button
-          onClick={() => {
-            const newUnderline = !editor.isActive('underline')
-            editor.chain().focus().toggleUnderline().run()
-          }}
-          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('underline') ? 'bg-gray-200' : ''
-            }`}
-          aria-label={t?.underline || 'Underline'}
-        >
-          <Underline className="w-5 h-5 md:w-4 md:h-4" />
-        </button>
-      </Tooltip>
+      {/* Underline - hidden on mobile */}
+      <div className="hidden xs:block">
+        <Tooltip label={t?.underline || 'Underline'} shortcut={['⌘', 'U']}>
+          <button
+            onClick={() => {
+              const newUnderline = !editor.isActive('underline')
+              editor.chain().focus().toggleUnderline().run()
+            }}
+            className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('underline') ? 'bg-blue-100 text-blue-600' : ''
+              }`}
+            aria-label={t?.underline || 'Underline'}
+          >
+            <Underline className="w-5 h-5 md:w-4 md:h-4" />
+          </button>
+        </Tooltip>
+      </div>
 
       <Tooltip label={t?.clearFormatting || 'Clear formatting'}>
         <button
@@ -1317,10 +1323,10 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
         )}
       </div>
 
-      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
+      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5 hidden xs:block" />
 
-      {/* Alignment */}
-      <div className="relative" ref={alignRef}>
+      {/* Alignment - hidden on mobile */}
+      <div className="relative hidden xs:block" ref={alignRef}>
         <Tooltip label={t?.alignment || 'Alignment'}>
           <button
             onClick={() => {
@@ -1398,30 +1404,32 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
         )}
       </div>
 
-      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
+      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5 hidden xs:block" />
 
-      {/* Lists */}
-      <Tooltip label={t?.bulletList || 'Bullet list'} shortcut={['⌘', '⇧', '8']}>
-        <button
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('bulletList') ? 'bg-gray-200' : ''
-            }`}
-          aria-label={t?.bulletList || 'Bullet list'}
-        >
-          <List className="w-5 h-5 md:w-4 md:h-4" />
-        </button>
-      </Tooltip>
+      {/* Lists - hidden on mobile */}
+      <div className="hidden xs:flex items-center">
+        <Tooltip label={t?.bulletList || 'Bullet list'} shortcut={['⌘', '⇧', '8']}>
+          <button
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('bulletList') ? 'bg-gray-200' : ''
+              }`}
+            aria-label={t?.bulletList || 'Bullet list'}
+          >
+            <List className="w-5 h-5 md:w-4 md:h-4" />
+          </button>
+        </Tooltip>
 
-      <Tooltip label={t?.numberedList || 'Numbered list'} shortcut={['⌘', '⇧', '7']}>
-        <button
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('orderedList') ? 'bg-gray-200' : ''
-            }`}
-          aria-label={t?.numberedList || 'Numbered list'}
-        >
-          <ListOrdered className="w-5 h-5 md:w-4 md:h-4" />
-        </button>
-      </Tooltip>
+        <Tooltip label={t?.numberedList || 'Numbered list'} shortcut={['⌘', '⇧', '7']}>
+          <button
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('orderedList') ? 'bg-gray-200' : ''
+              }`}
+            aria-label={t?.numberedList || 'Numbered list'}
+          >
+            <ListOrdered className="w-5 h-5 md:w-4 md:h-4" />
+          </button>
+        </Tooltip>
+      </div>
 
       <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
 
@@ -1519,64 +1527,68 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
         </button>
       </Tooltip>
 
-      {/* IPFS Storage */}
-      <Tooltip label="IPFS Storage">
-        <button
-          aria-label="IPFS Storage"
-          onClick={onOpenIpfsBrowser}
-          className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
-        >
-          <HardDrive className="w-4 h-4 text-purple-600" />
-        </button>
-      </Tooltip>
+      {/* IPFS Storage - hidden on mobile */}
+      <div className="hidden xs:block">
+        <Tooltip label="IPFS Storage">
+          <button
+            aria-label="IPFS Storage"
+            onClick={onOpenIpfsBrowser}
+            className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
+          >
+            <HardDrive className="w-4 h-4 text-purple-600" />
+          </button>
+        </Tooltip>
+      </div>
 
-      {/* Import Instagram Chat */}
-      <Tooltip label={t?.importInstagramChat || 'Import Instagram Chat'}>
-        <button
-          aria-label={t?.importInstagramChat || 'Import Instagram Chat'}
-          onClick={() => {
-            const input = document.createElement('input')
-            input.type = 'file'
-            input.accept = '.json'
-            input.onchange = async (e) => {
-              const file = e.target.files?.[0]
-              if (!file) return
+      {/* Import Instagram Chat - hidden on mobile */}
+      <div className="hidden xs:block">
+        <Tooltip label={t?.importInstagramChat || 'Import Instagram Chat'}>
+          <button
+            aria-label={t?.importInstagramChat || 'Import Instagram Chat'}
+            onClick={() => {
+              const input = document.createElement('input')
+              input.type = 'file'
+              input.accept = '.json'
+              input.onchange = async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
 
-              try {
-                const text = await file.text()
-                const data = JSON.parse(text)
+                try {
+                  const text = await file.text()
+                  const data = JSON.parse(text)
 
-                // Decode Instagram's encoding
-                const { decodeInstagramObject } = await import('@/lib/utils/instagram-decoder')
-                const decoded = decodeInstagramObject(data)
+                  // Decode Instagram's encoding
+                  const { decodeInstagramObject } = await import('@/lib/utils/instagram-decoder')
+                  const decoded = decodeInstagramObject(data)
 
-                if (editor && editor.can().setChatConversation) {
-                  editor.chain().focus().setChatConversation({
-                    messages: decoded.messages || [],
-                    participants: decoded.participants || [],
-                    title: decoded.title || null,
-                    currentUser: 'Daniel',
-                  }).run()
-                } else {
-                  console.warn('ChatConversation extension not available')
+                  if (editor && editor.can().setChatConversation) {
+                    editor.chain().focus().setChatConversation({
+                      messages: decoded.messages || [],
+                      participants: decoded.participants || [],
+                      title: decoded.title || null,
+                      currentUser: 'Daniel',
+                    }).run()
+                  } else {
+                    console.warn('ChatConversation extension not available')
+                  }
+                } catch (err) {
+                  console.error('Error importing Instagram chat:', err)
+                  alert('Failed to import chat: ' + err.message)
                 }
-              } catch (err) {
-                console.error('Error importing Instagram chat:', err)
-                alert('Failed to import chat: ' + err.message)
               }
-            }
-            setTimeout(() => {
-              input.click()
-            }, 100)
-          }}
-          className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
-        >
-          {/* Instagram-style chat icon */}
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      </Tooltip>
+              setTimeout(() => {
+                input.click()
+              }, 100)
+            }}
+            className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
+          >
+            {/* Instagram-style chat icon */}
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </Tooltip>
+      </div>
 
       {/* Link */}
       <Tooltip label={t?.insertLink || 'Insert link'} shortcut={['⌘', 'K']}>
@@ -1649,21 +1661,28 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
           </button>
         </Tooltip>
 
-        {/* Save button - visible on mobile in toolbar */}
-        {onSave && (
-          <Tooltip label={t?.save || 'Save'} shortcut={['⌘', 'S']}>
+        <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
+
+      </div>
+
+      {/* Save button - icon only, aligned right */}
+      {onSave && (
+        <div className="ml-auto">
+          <Tooltip label={hasChanges ? (t?.save || 'Save') : (t?.noChanges || 'No changes to save')} shortcut={hasChanges ? ['⌘', 'S'] : undefined}>
             <button
               onClick={onSave}
-              disabled={saving}
-              className="ml-1 p-2 md:p-1.5 h-10 md:h-8 px-3 md:px-2 rounded bg-black text-white hover:bg-gray-800 disabled:opacity-50 flex items-center justify-center gap-1"
+              disabled={saving || !hasChanges}
+              className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded flex items-center justify-center ${hasChanges
+                  ? 'bg-black text-white hover:bg-gray-800 disabled:opacity-50'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
               aria-label={t?.save || 'Save'}
             >
-              <Save className="w-4 h-4 md:w-3.5 md:h-3.5" />
-              <span className="text-xs font-medium hidden sm:inline">{saving ? (t?.saving || 'Saving...') : (t?.save || 'Save')}</span>
+              <Save className="w-4 h-4" />
             </button>
           </Tooltip>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

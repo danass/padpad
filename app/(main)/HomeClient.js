@@ -49,6 +49,7 @@ export default function HomeClient({ featuredArticles = [] }) {
   const { t } = useLanguage()
   const [saving, setSaving] = useState(false)
   const [hasEverHadContent, setHasEverHadContent] = useState(false)
+  const [hasContent, setHasContent] = useState(false) // Track if there's content to save
   const [mounted, setMounted] = useState(false)
   const [linkEditorPosition, setLinkEditorPosition] = useState(null)
   const [showIpfsBrowser, setShowIpfsBrowser] = useState(false)
@@ -160,6 +161,40 @@ export default function HomeClient({ featuredArticles = [] }) {
       }
     },
   })
+
+  // Track if editor has content for save button state
+  useEffect(() => {
+    if (!editor) return
+
+    const checkEditorContent = () => {
+      const text = editor.getText().trim()
+      const json = editor.getJSON()
+      const hasText = text.length > 0
+
+      // Check for images or other non-empty nodes
+      let hasImages = false
+      let hasOtherContent = false
+      if (json?.content && Array.isArray(json.content)) {
+        json.content.forEach(node => {
+          if (node.type === 'image') {
+            hasImages = true
+          } else if (node.type !== 'paragraph' || (node.content && node.content.length > 0 && node.content.some(n => n.type !== 'hardBreak' && (n.text || n.type === 'image')))) {
+            hasOtherContent = true
+          }
+        })
+      }
+
+      setHasContent(hasText || hasImages || hasOtherContent)
+    }
+
+    // Check immediately and on updates
+    checkEditorContent()
+    editor.on('update', checkEditorContent)
+
+    return () => {
+      editor.off('update', checkEditorContent)
+    }
+  }, [editor])
 
   // Check if editor is empty to show/hide watermark (only for non-logged users on home page)
   useEffect(() => {
@@ -414,25 +449,11 @@ export default function HomeClient({ featuredArticles = [] }) {
       <main className="min-h-screen bg-white">
         <h1 className="absolute opacity-0 pointer-events-none">Blocnote Online - Textpad Online Text Editor with Pictures</h1>
         <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-8">
-          <div className="mb-4 md:mb-6 flex items-center justify-end">
-            <button
-              onClick={handleSave}
-              disabled={saving || !editor || (() => {
-                const json = editor.getJSON()
-                const hasText = editor.getText().trim().length > 0
-                const hasContent = json?.content && Array.isArray(json.content) && json.content.length > 0
-                return !hasText && !hasContent
-              })()}
-              className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors fixed bottom-4 right-4 z-50 shadow-lg md:static md:shadow-none"
-            >
-              {saving ? (t?.saving || 'Saving...') : session ? (t?.saveDocument || 'Save Document') : (t?.save || 'Save')}
-            </button>
-          </div>
 
           {editor && (
             <>
               <div className="mb-4">
-                <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} onSave={handleSave} saving={saving} />
+                <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} onSave={handleSave} saving={saving} hasChanges={hasContent} />
               </div>
               <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8 relative">
                 {mounted && <EditorContent editor={editor} />}

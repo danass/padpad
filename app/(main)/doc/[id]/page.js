@@ -78,6 +78,7 @@ export default function DocumentPage() {
   const [isFeatured, setIsFeatured] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false) // Track if there are unsaved changes for UI
   const autosaveTimeoutRef = useRef(null)
   const snapshotIntervalRef = useRef(null)
   const lastSnapshotContentRef = useRef(null)
@@ -504,6 +505,7 @@ export default function DocumentPage() {
 
     const handleUpdate = () => {
       hasChangesRef.current = true
+      setHasChanges(true)
     }
 
     editor.on('update', handleUpdate)
@@ -649,6 +651,7 @@ export default function DocumentPage() {
           lastSnapshotContentRef.current = JSON.stringify(normalizedContent)
           lastSavedContentRef.current = JSON.stringify(currentContent)
           hasChangesRef.current = false
+          setHasChanges(false)
           markSaved()
           showToast('Document saved', 'success')
         } else {
@@ -1442,7 +1445,7 @@ export default function DocumentPage() {
         {editor && (
           <>
             <div className="mb-4">
-              <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} onSave={handleManualSave} saving={saving} />
+              <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} onSave={handleManualSave} saving={saving} hasChanges={hasChanges} />
             </div>
             <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8 relative">
               {mounted && <EditorContent editor={editor} />}

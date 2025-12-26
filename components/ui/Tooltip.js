@@ -15,7 +15,7 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(
-        'ontouchstart' in window || 
+        'ontouchstart' in window ||
         navigator.maxTouchPoints > 0 ||
         window.innerWidth < 768
       )
@@ -27,13 +27,13 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
 
   const calculatePosition = useCallback(() => {
     if (!triggerRef.current) return null
-    
+
     const triggerRect = triggerRef.current.getBoundingClientRect()
-    
+
     // Estimate tooltip size (will be refined after render)
     const estimatedWidth = 150
     const estimatedHeight = 32
-    
+
     let top, left
 
     switch (position) {
@@ -62,16 +62,15 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
   const showTooltip = () => {
     // Don't show tooltips on mobile/touch devices
     if (isMobile) return
-    
+
     // Calculate position before showing
     const initialPos = calculatePosition()
     if (initialPos) {
       setCoords(initialPos)
     }
-    
-    timeoutRef.current = setTimeout(() => {
-      setIsVisible(true)
-    }, 200) // Reduced delay
+
+    // Show tooltip immediately (no delay)
+    setIsVisible(true)
   }
 
   const hideTooltip = () => {
@@ -87,7 +86,7 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
     if (isVisible && triggerRef.current && tooltipRef.current) {
       const triggerRect = triggerRef.current.getBoundingClientRect()
       const tooltipRect = tooltipRef.current.getBoundingClientRect()
-      
+
       let top, left
 
       switch (position) {
@@ -116,7 +115,7 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
         left = window.innerWidth - tooltipRect.width - 8
       }
       if (top < 8) top = triggerRect.bottom + 8
-      
+
       setCoords({ top, left })
       setIsPositioned(true)
     }
@@ -131,7 +130,7 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
   }, [])
 
   return (
-    <div 
+    <div
       ref={triggerRef}
       onMouseEnter={showTooltip}
       onMouseLeave={hideTooltip}
@@ -158,8 +157,8 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
                 <span className="text-gray-300">·</span>
                 <span className="flex items-center gap-0.5 text-gray-400">
                   {shortcut.map((key, i) => (
-                    <kbd 
-                      key={i} 
+                    <kbd
+                      key={i}
                       className="inline-flex items-center justify-center min-w-[20px] h-5 px-1 bg-gray-100 border border-gray-200 rounded text-xs font-medium"
                     >
                       {key}

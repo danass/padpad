@@ -10,21 +10,21 @@ import { useLanguage } from '@/app/i18n/LanguageContext'
 // Helper to get document stats
 const getDocumentStats = (item) => {
   if (item.type === 'folder') return null
-  
+
   const stats = {
     characters: 0,
     words: 0,
     images: 0,
     drawings: 0
   }
-  
+
   // Get character and word count from content_text
   if (item.content_text) {
     stats.characters = item.content_text.length
     const words = item.content_text.trim().split(/\s+/).filter(w => w.length > 0)
     stats.words = words.length
   }
-  
+
   // Count images and drawings from content if available
   // This requires the content JSON which we'll need to fetch
   // For now, we'll add this info to the API response
@@ -34,16 +34,16 @@ const getDocumentStats = (item) => {
   if (item.drawing_count !== undefined) {
     stats.drawings = item.drawing_count
   }
-  
+
   return stats
 }
 
 // Format stats for display - économique
 const formatStats = (stats) => {
   if (!stats) return null
-  
+
   const parts = []
-  
+
   // Priority: show most relevant stats
   if (stats.characters > 0) {
     if (stats.words > 0) {
@@ -51,20 +51,20 @@ const formatStats = (stats) => {
     }
     parts.push(`${stats.characters} car.`)
   }
-  
+
   if (stats.images > 0) {
     parts.push(`${stats.images} image${stats.images > 1 ? 's' : ''}`)
   }
-  
+
   if (stats.drawings > 0) {
     parts.push(`${stats.drawings} dessin${stats.drawings > 1 ? 's' : ''}`)
   }
-  
+
   // If nothing, show "vide"
   if (parts.length === 0) {
     return 'Vide'
   }
-  
+
   return parts.join(' • ')
 }
 
@@ -91,19 +91,19 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
   const [sortBy, setSortBy] = useState('date') // 'date', 'name', 'type', 'visibility'
   const [sortDirection, setSortDirection] = useState('desc') // 'asc', 'desc'
   const [selectedItems, setSelectedItems] = useState(new Set()) // Multiple select
-  
+
   // Build folder map for quick lookup
   const folderMap = useMemo(() => {
     const map = new Map()
     allFolders.forEach(f => map.set(f.id, f))
     return map
   }, [allFolders])
-  
+
   // Sort documents based on sortBy option and direction
   const sortedDocuments = useMemo(() => {
     const sorted = [...documents]
     const direction = sortDirection === 'asc' ? 1 : -1
-    
+
     if (sortBy === 'name') {
       return sorted.sort((a, b) => {
         const nameA = (a.type === 'folder' ? a.name : a.title) || ''
@@ -137,7 +137,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
       })
     }
   }, [documents, sortBy, sortDirection])
-  
+
   const handleSort = (column) => {
     if (sortBy === column) {
       // Toggle direction if same column
@@ -148,7 +148,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
       setSortDirection('desc')
     }
   }
-  
+
   // Toggle selection
   const toggleSelection = (itemId) => {
     setSelectedItems(prev => {
@@ -193,21 +193,21 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
     })
     setSelectedItems(new Set())
   }
-  
+
   // Build tree structure with hierarchy (only for list-no-icons view)
   const buildTree = useMemo(() => {
     if (viewMode === 'compact') {
       return sortedDocuments.map(item => ({ ...item, children: [] }))
     }
-    
+
     const rootItems = []
     const itemMap = new Map()
-    
+
     // First, create map of all items
     sortedDocuments.forEach(item => {
       itemMap.set(item.id, { ...item, children: [] })
     })
-    
+
     // Then build tree structure
     sortedDocuments.forEach(item => {
       const parentId = item.type === 'folder' ? item.parent_id : item.folder_id
@@ -217,16 +217,16 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
         rootItems.push(itemMap.get(item.id))
       }
     })
-    
+
     // Don't re-sort - already sorted in sortedDocuments
     // Just maintain the order from sortedDocuments
     return rootItems
   }, [sortedDocuments, viewMode])
-  
+
   // Render item for compact grid view
   const renderCompactGridItem = (item) => {
     const isDragging = draggedItem?.id === item.id
-    
+
     return (
       <div
         key={item.id}
@@ -238,9 +238,8 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
         }}
         onDragEnd={() => setDraggedItem(null)}
         onContextMenu={(e) => handleContextMenu(e, item)}
-        className={`p-3 border border-gray-200 rounded-md hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer ${
-          isDragging ? 'opacity-50' : ''
-        }`}
+        className={`p-3 border border-gray-200 rounded-md hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer ${isDragging ? 'opacity-50' : ''
+          }`}
       >
         {item.type === 'folder' ? (
           <Link href={`/drive/folder/${item.id}`} className="block">
@@ -266,13 +265,13 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
       </div>
     )
   }
-  
+
   // Render item for list view (with icons)
   const renderListNoIconsItem = (item, level = 0) => {
     const isDragging = draggedItem?.id === item.id
     const isDragOver = dragOverFolder === item.id && item.type === 'folder'
     const isSelected = selectedItems.has(item.id)
-    
+
     return (
       <div key={item.id}>
         <div
@@ -309,23 +308,22 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                 if (folder.parent_id === folderId) return true
                 return isDescendant(folderId, folder.parent_id)
               }
-              
+
               if (draggedItem.type === 'folder' && isDescendant(draggedItem.id, item.id)) {
                 alert(t?.cannotMoveFolder || 'Cannot move folder into its own subfolder')
                 setDragOverFolder(null)
                 setDraggedItem(null)
                 return
               }
-              
+
               onMove(draggedItem.id, draggedItem.type, item.id)
               setDraggedItem(null)
             }
             setDragOverFolder(null)
           }}
           onContextMenu={(e) => handleContextMenu(e, item)}
-          className={`grid grid-cols-12 gap-1 md:gap-4 items-center px-2 md:px-4 py-2.5 md:py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 group transition-colors cursor-pointer ${
-            isDragging ? 'opacity-50' : ''
-          } ${isDragOver ? 'bg-blue-50 border-blue-200' : ''} ${isSelected ? 'bg-blue-50' : ''}`}
+          className={`grid grid-cols-12 gap-1 md:gap-4 items-center px-2 md:px-4 py-2.5 md:py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 group transition-colors cursor-pointer ${isDragging ? 'opacity-50' : ''
+            } ${isDragOver ? 'bg-blue-50 border-blue-200' : ''} ${isSelected ? 'bg-blue-50' : ''}`}
         >
           <div className="col-span-1 flex items-center gap-1">
             <input
@@ -374,11 +372,10 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                   e.stopPropagation()
                   onTogglePublic(item.id, !item.is_public)
                 }}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                  item.is_public 
-                    ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${item.is_public
+                    ? 'bg-green-100 text-green-600 hover:bg-green-200'
                     : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                }`}
+                  }`}
                 title={item.is_public ? (t?.publicClickPrivate || 'Public - Click to make private') : (t?.privateClickPublic || 'Private - Click to make public')}
               >
                 {item.is_public ? (
@@ -412,7 +409,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
             </button>
           </div>
         </div>
-        
+
         {/* Render children recursively */}
         {item.children && item.children.length > 0 && (
           <div>
@@ -422,7 +419,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
       </div>
     )
   }
-  
+
   if (!documents || documents.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -431,12 +428,12 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
       </div>
     )
   }
-  
+
   const handleContextMenu = (e, item) => {
     e.preventDefault()
     setContextMenu({ x: e.clientX, y: e.clientY, item })
   }
-  
+
   const handleCreateFolder = async () => {
     if (!newFolderName.trim() || !onCreateFolder) return
     setCreatingFolder(true)
@@ -450,7 +447,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
       setCreatingFolder(false)
     }
   }
-  
+
   return (
     <>
       {/* View and Sort Controls */}
@@ -458,8 +455,8 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
         <div className="flex items-center gap-2 flex-wrap">
           {selectedItems.size > 0 && (
             <>
-            <button
-              onClick={handleDeleteSelected}
+              <button
+                onClick={handleDeleteSelected}
                 className="px-2 py-1 text-xs bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
               >
                 {t?.delete || 'Delete'} ({selectedItems.size})
@@ -479,7 +476,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                     title={t?.makePrivate || 'Make selected documents private'}
                   >
                     {t?.privateLabel || 'Private'}
-            </button>
+                  </button>
                 </>
               )}
             </>
@@ -487,26 +484,24 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
           <span className="text-xs md:text-sm text-gray-600">{t?.view || 'View'}:</span>
           <button
             onClick={() => setViewMode('compact')}
-            className={`p-2.5 md:p-2 rounded transition-colors ${
-              viewMode === 'compact' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
-            }`}
+            className={`p-2.5 md:p-2 rounded transition-colors ${viewMode === 'compact' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
+              }`}
             title={t?.gridView || 'Compact grid view'}
           >
             <Grid className="w-5 h-5 md:w-4 md:h-4" />
           </button>
           <button
             onClick={() => setViewMode('list-no-icons')}
-            className={`p-2.5 md:p-2 rounded transition-colors ${
-              viewMode === 'list-no-icons' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
-            }`}
+            className={`p-2.5 md:p-2 rounded transition-colors ${viewMode === 'list-no-icons' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
+              }`}
             title={t?.listView || 'List view'}
           >
             <List className="w-5 h-5 md:w-4 md:h-4" />
           </button>
         </div>
       </div>
-      
-      <div 
+
+      <div
         className={viewMode === 'compact' ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3' : ''}
         onDragOver={(e) => {
           if (draggedItem && onMove) {
@@ -598,14 +593,14 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
           </div>
         )}
       </div>
-      
+
       {contextMenu && (
         <>
-          <div 
-            className="fixed inset-0 z-40" 
+          <div
+            className="fixed inset-0 z-40"
             onClick={() => setContextMenu(null)}
           />
-          <div 
+          <div
             className="fixed z-50 bg-white border border-gray-200 rounded-md shadow-lg py-1 min-w-[160px]"
             style={{ left: contextMenu.x, top: contextMenu.y }}
           >
@@ -625,7 +620,8 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                 </button>
                 <div className="border-t border-gray-100 my-1" />
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation()
                     if (confirm(t?.deleteConfirm || 'Delete this folder?')) {
                       onDelete(contextMenu.item.id)
                     }
@@ -707,7 +703,8 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                 </div>
                 <div className="border-t border-gray-100 my-1" />
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation()
                     if (confirm(t?.deleteConfirm || 'Delete this document?')) {
                       onDelete(contextMenu.item.id)
                     }

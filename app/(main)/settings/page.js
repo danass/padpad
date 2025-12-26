@@ -381,6 +381,18 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
+
+            {/* Email - Read only */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <input
+                type="email"
+                value={session?.user?.email || ''}
+                disabled
+                className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-500 text-sm cursor-not-allowed"
+              />
+              <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
+            </div>
           </div>
         </div>
 
