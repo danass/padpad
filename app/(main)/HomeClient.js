@@ -57,6 +57,7 @@ export default function HomeClient({ featuredArticles = [] }) {
     extensions: [
       StarterKit.configure({
         codeBlock: false,
+        dropcursor: false,
       }),
       Placeholder.configure({
         placeholder: 'Start typing... Create your document here',
