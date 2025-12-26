@@ -188,12 +188,9 @@ export default function HomeClient({ featuredArticles = [] }) {
       if (hasContent) {
         setHasEverHadContent(true)
       }
-      // Show watermark only if no content AND never had content
-      setShowWatermark(!hasContent && !hasEverHadContent)
     }
 
     const handleFocus = () => {
-      setShowWatermark(false)
     }
 
     const handleBlur = () => {
@@ -216,7 +213,6 @@ export default function HomeClient({ featuredArticles = [] }) {
 
       const hasContent = hasText || hasImages || hasOtherContent
       if (!hasContent && !hasEverHadContent) {
-        setShowWatermark(true)
       }
     }
 

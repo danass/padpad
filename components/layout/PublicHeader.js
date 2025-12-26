@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 
 // Check if we're on a subdomain
@@ -15,6 +16,7 @@ function checkIsSubdomain() {
 // Header for public pages - shows different content based on domain
 export default function PublicHeader() {
     const { data: session, status } = useSession() || {}
+    const pathname = usePathname()
     const [isSubdomain, setIsSubdomain] = useState(false)
     const [checked, setChecked] = useState(false)
 
@@ -76,14 +78,27 @@ export default function PublicHeader() {
         <header className="border-b border-gray-200 bg-white relative z-[100]">
             <div className="max-w-full mx-auto">
                 <div className="flex items-center justify-between px-6 h-16">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-8">
                         <Link href="/" className="flex items-center gap-2" title="Textpad">
-                            <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
-                                <img src="/padpad.svg" alt="textpad logo" className="w-full h-full object-cover" />
-                            </div>
-                            <span className="text-sm font-medium text-gray-900">textpad</span>
+                            <span className="text-sm font-semibold text-gray-900 uppercase tracking-widest">textpad</span>
                         </Link>
+
+                        <nav className="hidden md:flex items-center gap-6">
+                            <Link href="/feed" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/feed' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Feed</Link>
+                            <Link href="/featured" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/featured' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Featured</Link>
+                            <Link href="/features" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/features' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Features</Link>
+                            <Link href="/credits" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/credits' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Credits</Link>
+                        </nav>
                     </div>
+
+                    {/* Center title for current page */}
+                    {(pathname === '/feed' || pathname === '/featured' || pathname === '/features' || pathname === '/credits') && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-900">
+                                {pathname.substring(1)}
+                            </h1>
+                        </div>
+                    )}
                     <div className="flex items-center gap-3">
                         {status === 'loading' ? (
                             <div className="w-8 h-8 rounded-full bg-gray-100 animate-pulse" />

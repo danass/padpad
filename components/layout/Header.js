@@ -151,17 +151,30 @@ export default function Header() {
       <div className="max-w-full mx-auto">
         <div className="flex items-center justify-between px-6 h-16">
           {/* Left side - Logo and project name */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-2" title={t?.appName || 'TextPad - Online Text Pad'}>
-              <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
-                <img
-                  src="/padpad.svg"
-                  alt="textpad logo"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <span className="text-sm font-medium text-gray-900">textpad</span>
+              <span className="text-sm font-semibold text-gray-900 uppercase tracking-widest">textpad</span>
             </Link>
+
+            <nav className="hidden md:flex items-center gap-6">
+              <Link href="/feed" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/feed' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Feed</Link>
+              <Link href="/featured" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/featured' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Featured</Link>
+              <Link href="/features" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/features' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Features</Link>
+              <Link href="/credits" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/credits' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Credits</Link>
+            </nav>
+          </div>
+
+          {/* Center title for current page */}
+          {(pathname === '/feed' || pathname === '/featured' || pathname === '/features' || pathname === '/credits') && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-900 pointer-events-auto">
+                {pathname.substring(1)}
+              </h1>
+            </div>
+          )}
+
+          {/* Right side - Actions */}
+          <div className="flex items-center gap-3">
             {session && isDrive && (
               <Link
                 href="/"
@@ -184,10 +197,6 @@ export default function Header() {
                 </svg>
               </Link>
             )}
-          </div>
-
-          {/* Right side - Actions */}
-          <div className="flex items-center gap-3">
             {!session && (
               <Link
                 href="/auth/signin"
@@ -295,7 +304,7 @@ export default function Header() {
           </nav>
         )}
       </div>
-    </header>
+    </header >
   )
 }
 

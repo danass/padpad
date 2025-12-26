@@ -25,9 +25,11 @@ export async function GET(request) {
                 d.created_at,
                 d.updated_at,
                 u.avatar_url as author_avatar,
-                u.testament_username as author_username
+                u.testament_username as author_username,
+                s.content_json
             FROM documents d
             LEFT JOIN users u ON d.user_id = u.id
+            LEFT JOIN document_snapshots s ON d.current_snapshot_id = s.id
             WHERE d.is_public = true
             ORDER BY d.updated_at DESC
             LIMIT ${limit} OFFSET ${offset}
