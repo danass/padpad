@@ -18,14 +18,12 @@ export async function GET(request) {
         const total = parseInt(countResult.rows[0]?.total || 0)
         const totalPages = Math.ceil(total / limit)
 
-        // Get paginated public documents with author info
         const result = await sql`
             SELECT 
                 d.id,
                 d.title,
                 d.created_at,
                 d.updated_at,
-                u.name as author_name,
                 u.avatar_url as author_avatar,
                 u.testament_username as author_username
             FROM documents d

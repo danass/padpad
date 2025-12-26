@@ -40,29 +40,14 @@ export default function FeedPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-            {/* Header */}
-            <header className="bg-white border-b shadow-sm sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <NextLink href="/" className="flex items-center gap-2 text-gray-900 hover:text-gray-600">
-                        <FileText className="w-6 h-6" />
-                        <span className="font-semibold text-lg">Textpad</span>
-                    </NextLink>
-                    <h1 className="text-xl font-bold text-gray-900">Feed</h1>
-                    <NextLink
-                        href="/drive"
-                        className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800"
-                    >
-                        My Drive
-                    </NextLink>
-                </div>
-            </header>
-
+        <div className="min-h-screen bg-white">
             {/* Content */}
             <main className="max-w-4xl mx-auto px-4 py-8">
-                <div className="mb-8">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">Latest Publications</h2>
-                    <p className="text-gray-600">Discover the newest articles from the community</p>
+                <div className="mb-12 flex items-center justify-between border-b pb-4">
+                    <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-wider">Feed</h1>
+                    <NextLink href="/" className="text-sm text-gray-500 hover:text-black transition-colors">
+                        ← Back
+                    </NextLink>
                 </div>
 
                 {loading ? (
@@ -83,7 +68,7 @@ export default function FeedPage() {
                                 <NextLink
                                     key={article.id}
                                     href={`/public/doc/${article.id}`}
-                                    className="block bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-gray-300 transition-all"
+                                    className="block bg-white rounded-xl border border-gray-100 p-6 hover:border-gray-300 transition-all"
                                 >
                                     <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
                                         {article.title || 'Untitled'}
@@ -95,16 +80,18 @@ export default function FeedPage() {
                                             {article.author_avatar ? (
                                                 <img
                                                     src={article.author_avatar}
-                                                    alt={article.author_name}
+                                                    alt={article.author_username}
                                                     className="w-6 h-6 rounded-full object-cover"
                                                 />
                                             ) : (
-                                                <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                                                <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
                                                     <User className="w-4 h-4 text-gray-400" />
                                                 </div>
                                             )}
-                                            <span>{article.author_username || article.author_name || 'Anonymous'}</span>
+                                            <span className="font-medium text-gray-700">@{article.author_username || 'anonymous'}</span>
                                         </div>
+
+                                        <div className="w-1 h-1 rounded-full bg-gray-300" />
 
                                         {/* Date */}
                                         <div className="flex items-center gap-1">
@@ -144,8 +131,8 @@ export default function FeedPage() {
                                                 key={pageNum}
                                                 onClick={() => setPage(pageNum)}
                                                 className={`w-10 h-10 rounded-lg text-sm font-medium ${page === pageNum
-                                                        ? 'bg-black text-white'
-                                                        : 'border border-gray-300 hover:bg-gray-50'
+                                                    ? 'bg-black text-white'
+                                                    : 'border border-gray-300 hover:bg-gray-50'
                                                     }`}
                                             >
                                                 {pageNum}

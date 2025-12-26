@@ -48,7 +48,6 @@ export default function HomeClient({ featuredArticles = [] }) {
   const router = useRouter()
   const { t } = useLanguage()
   const [saving, setSaving] = useState(false)
-  const [showWatermark, setShowWatermark] = useState(true)
   const [hasEverHadContent, setHasEverHadContent] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [linkEditorPosition, setLinkEditorPosition] = useState(null)
@@ -486,20 +485,6 @@ export default function HomeClient({ featuredArticles = [] }) {
                 <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} />
               </div>
               <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8 relative">
-                {/* Watermark logo - only for non-logged users */}
-                {!session && (
-                  <div
-                    className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500"
-                    style={{ opacity: showWatermark ? 0.08 : 0 }}
-                  >
-                    <img
-                      src="/padpad.svg"
-                      fetchPriority="high"
-                      // alt="textpad watermark" 
-                      className="w-64 h-64 md:w-96 md:h-96 object-contain"
-                    />
-                  </div>
-                )}
                 {mounted && <EditorContent editor={editor} />}
                 <ContextMenu editor={editor} />
                 {linkEditorPosition && (
