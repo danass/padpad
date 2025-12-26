@@ -200,9 +200,9 @@ export default function UniversalHeader() {
                     {/* Center title */}
                     {(pathname === '/feed' || pathname === '/featured' || pathname === '/features' || pathname === '/credits') && (
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-900 pointer-events-auto">
+                            <div className="text-sm font-bold uppercase tracking-[0.2em] text-gray-900 pointer-events-auto">
                                 {pathname.substring(1)}
-                            </h1>
+                            </div>
                         </div>
                     )}
 

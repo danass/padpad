@@ -145,6 +145,7 @@ export default function FeedClient({ initialData }) {
         <div className="min-h-screen bg-white">
             {/* Content */}
             <main className="max-w-3xl mx-auto px-6 py-12">
+                <h1 className="text-3xl font-bold text-gray-900 mb-12">Feed</h1>
                 {loading ? (
                     <div className="flex items-center justify-center py-24">
                         <Loader2 className="w-6 h-6 animate-spin text-gray-300" />

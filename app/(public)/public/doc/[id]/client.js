@@ -169,9 +169,9 @@ export default function PublicDocumentClient({ serverData }) {
                         </NextLink>
                     </div>
                 )}
-                {title && title !== 'Untitled' && (
-                    <h1 className="text-4xl font-bold text-gray-900 mb-8">{title}</h1>
-                )}
+                <h1 className="text-4xl font-bold text-gray-900 mb-8">
+                    {title && title !== 'Untitled' ? title : (t?.untitledPad || 'Untitled Pad')}
+                </h1>
                 <div className="max-w-none">
                     {mounted && <EditorContent editor={editor} />}
                 </div>
