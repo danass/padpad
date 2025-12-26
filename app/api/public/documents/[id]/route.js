@@ -1,6 +1,8 @@
 import { sql } from '@vercel/postgres'
 import { replayHistory } from '@/lib/editor/history-replay'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request, { params }) {
   try {
     const { id } = await params

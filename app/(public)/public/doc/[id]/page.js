@@ -58,32 +58,47 @@ async function getDocumentData(documentId) {
       return { error: 'not_public' }
     }
 
-    // Get latest snapshot
-    const userId = document.user_id
-    let content = null
-    if (document.current_snapshot_id) {
-      const snapshotResult = await sql.query(
-        'SELECT * FROM document_snapshots WHERE id = $1',
-        [document.current_snapshot_id]
-      )
-      if (snapshotResult.rows.length > 0) {
-        let snapshot = snapshotResult.rows[0]
-        if (snapshot.content_json && typeof snapshot.content_json === 'string') {
-          try { snapshot.content_json = JSON.parse(snapshot.content_json) } catch (e) { }
-        }
+    // Get latest snapshot directly from the snapshots table (source of truth)
+    const latestSnapshotResult = await sql.query(
+      `SELECT * FROM document_snapshots 
+       WHERE document_id = $1 
+       ORDER BY created_at DESC 
+       LIMIT 1`,
+      [documentId]
+    )
 
-        const eventsResult = await sql.query(
-          'SELECT * FROM document_events WHERE document_id = $1 AND created_at > $2 ORDER BY created_at ASC',
-          [documentId, snapshot.created_at]
-        )
-        const events = eventsResult.rows.map(event => ({
-          ...event,
-          payload: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload
-        }))
-
-        content = replayHistory(snapshot, events)
+    let snapshot = null
+    if (latestSnapshotResult.rows.length > 0) {
+      snapshot = latestSnapshotResult.rows[0]
+      if (snapshot.content_json && typeof snapshot.content_json === 'string') {
+        try { snapshot.content_json = JSON.parse(snapshot.content_json) } catch (e) { }
       }
     }
+
+    // Get events after snapshot (or all events if no snapshot)
+    let events = []
+    if (snapshot) {
+      const eventsResult = await sql.query(
+        'SELECT * FROM document_events WHERE document_id = $1 AND created_at > $2 ORDER BY version ASC, created_at ASC',
+        [documentId, snapshot.created_at]
+      )
+      events = eventsResult.rows.map(event => ({
+        ...event,
+        payload: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload
+      }))
+    } else {
+      const eventsResult = await sql.query(
+        'SELECT * FROM document_events WHERE document_id = $1 ORDER BY version ASC, created_at ASC',
+        [documentId]
+      )
+      events = eventsResult.rows.map(event => ({
+        ...event,
+        payload: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload
+      }))
+    }
+
+    // Reconstruct content
+    const content = replayHistory(snapshot, events)
 
     // Get navigation (prev/next public docs from same user)
     let navigation = { prev: null, next: null }
@@ -133,7 +148,7 @@ async function getDocumentData(documentId) {
         is_full_width: document.is_full_width || false,
         archive_id: archiveId,
         author_name: authorName,
-        user_id: userId,
+        user_id: document.user_id,
       },
       content,
       navigation

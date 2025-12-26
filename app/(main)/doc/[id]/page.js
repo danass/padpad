@@ -84,6 +84,8 @@ export default function DocumentPage() {
   const lastSavedContentRef = useRef(null) // Track last saved content to prevent duplicate saves
   const pendingContentRef = useRef(null) // Store content to load when editor is ready
   const isDocumentDeletedRef = useRef(false) // Track if document was deleted
+  const isLoadedRef = useRef(false) // Track if initial document content is loaded
+  const hasChangesRef = useRef(false) // Track if there are unsaved changes for snapshot
   const { showToast } = useToast()
 
   const {
@@ -96,7 +98,7 @@ export default function DocumentPage() {
 
   // Debounced autosave - increased debounce time and prevent multiple saves
   const handleAutosave = useCallback(async (content) => {
-    if (!documentId || saving || isDocumentDeletedRef.current || !isOwner) return
+    if (!documentId || loading || !isLoadedRef.current || isDocumentDeletedRef.current || !isOwner) return
 
     // Check if content actually changed
     const contentStr = JSON.stringify(content)
@@ -111,8 +113,15 @@ export default function DocumentPage() {
 
     // Set new timeout - increased to 2 seconds to batch changes
     autosaveTimeoutRef.current = setTimeout(async () => {
+      // If already saving, reschedule this check
+      if (saving) {
+        handleAutosave(content)
+        return
+      }
+
       // Double check content hasn't changed during timeout
-      const currentContentStr = JSON.stringify(useEditorStore.getState().currentContent)
+      const currentState = useEditorStore.getState()
+      const currentContentStr = JSON.stringify(currentState.currentContent)
       if (lastSavedContentRef.current === currentContentStr) {
         return // Content was already saved
       }
@@ -161,75 +170,10 @@ export default function DocumentPage() {
 
         // Mark as saved and update last saved content
         lastSavedContentRef.current = currentContentStr
+        // Content is saved in an event, no need for immediate snapshot anymore
+        // This was redundant and causing DB bloat. Snapshots occur every 10 mins.
         markSaved()
-
-        // Also create a snapshot immediately after saving event (to ensure content is persisted)
-        // This ensures content is available even if user refreshes before the 1-minute interval
-        // But only if content is not empty
-        const isContentEmpty = (content) => {
-          if (!content || !content.content || !Array.isArray(content.content)) {
-            return true
-          }
-          const hasNonEmptyContent = content.content.some(node => {
-            if (node.type === 'paragraph') {
-              if (!node.content || node.content.length === 0) {
-                return false
-              }
-              return node.content.some(textNode => {
-                if (textNode.type === 'text' && textNode.text && textNode.text.trim().length > 0) {
-                  return true
-                }
-                return false
-              })
-            }
-            return true
-          })
-          return !hasNonEmptyContent
-        }
-
-        // Only create snapshot if content is not empty
-        if (!isContentEmpty(content)) {
-          try {
-            const snapshotResponse = await fetch(`/api/documents/${documentId}/snapshot`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content_json: content })
-            })
-
-            if (snapshotResponse.ok) {
-              const snapshotResult = await snapshotResponse.json()
-              if (!snapshotResult.skipped) {
-                // Update lastSnapshotContentRef with normalized content
-                const normalizeJSON = (obj) => {
-                  if (obj === null || typeof obj !== 'object') {
-                    return obj
-                  }
-                  if (Array.isArray(obj)) {
-                    return obj.map(normalizeJSON).sort((a, b) => {
-                      const aStr = JSON.stringify(a)
-                      const bStr = JSON.stringify(b)
-                      return aStr < bStr ? -1 : aStr > bStr ? 1 : 0
-                    })
-                  }
-                  const sorted = {}
-                  Object.keys(obj).sort().forEach(key => {
-                    sorted[key] = normalizeJSON(obj[key])
-                  })
-                  return sorted
-                }
-                const normalizedContent = normalizeJSON(content)
-                lastSnapshotContentRef.current = JSON.stringify(normalizedContent)
-                hasChangesRef.current = false
-              }
-            }
-          } catch (snapshotErr) {
-            // Don't fail autosave if snapshot creation fails, just log it
-            console.error('Error creating snapshot after autosave:', snapshotErr)
-          }
-        } else {
-          // Content is empty, reset hasChanges flag
-          hasChangesRef.current = false
-        }
+        hasChangesRef.current = true
       } catch (err) {
         console.error('Autosave error:', err)
         setError(err.message)
@@ -237,8 +181,8 @@ export default function DocumentPage() {
       } finally {
         setSaving(false)
       }
-    }, 2000) // Increased from 500ms to 2 seconds
-  }, [documentId, saving, markSaved, showToast, router, isOwner])
+    }, 800) // Reduced from 2s to 800ms for better responsiveness
+  }, [documentId, loading, saving, markSaved, showToast, router, isOwner])
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -404,14 +348,28 @@ export default function DocumentPage() {
       },
     },
     onUpdate: ({ editor }) => {
+      // Content changes are handled in a separate useEffect
+    },
+  })
+
+  // Handle updates in a separate effect to ensure handleAutosave is fresh
+  useEffect(() => {
+    if (!editor) return
+
+    const handleUpdate = () => {
       const content = editor.getJSON()
       // Use queueMicrotask to avoid flushSync error during render
       queueMicrotask(() => {
         setCurrentContent(content)
         handleAutosave(content)
       })
-    },
-  })
+    }
+
+    editor.on('update', handleUpdate)
+    return () => {
+      editor.off('update', handleUpdate)
+    }
+  }, [editor, handleAutosave, setCurrentContent])
 
   // Set mounted state to prevent flushSync errors during hydration
   useEffect(() => {
@@ -539,7 +497,6 @@ export default function DocumentPage() {
   }, [editor, showHistory, handleAutosave])
 
   // Track if content has changed since last snapshot
-  const hasChangesRef = useRef(false)
 
   // Update hasChanges when content changes
   useEffect(() => {
@@ -646,7 +603,7 @@ export default function DocumentPage() {
       } catch (err) {
         console.error('Error creating snapshot:', err)
       }
-    }, 60000) // Every minute
+    }, 600000) // Every 10 minutes
 
     return () => {
       if (snapshotIntervalRef.current) {
@@ -748,8 +705,19 @@ export default function DocumentPage() {
         // Reconstruct content using replayHistory
         let content = replayHistory(snapshot, events)
 
+        // Helper to check if content is essentially empty
+        const isEssentiallyEmpty = (c) => {
+          if (!c || c.type !== 'doc' || !c.content || c.content.length === 0) return true
+          if (c.content.length > 1) return false
+          const firstNode = c.content[0]
+          if (firstNode.type === 'paragraph' || firstNode.type === 'heading') {
+            return !firstNode.content || firstNode.content.length === 0
+          }
+          return false
+        }
+
         // If content is empty, try to get latest snapshot with actual content
-        if (!content || content.type !== 'doc' || !content.content || content.content.length === 0) {
+        if (isEssentiallyEmpty(content)) {
           // Try to fetch all snapshots and find one with content
           try {
             const snapshotResponse = await fetch(`/api/documents/${documentId}/history`)
@@ -777,14 +745,19 @@ export default function DocumentPage() {
                     const hasRealContent = snapContent.content.some(node => {
                       // Check if node has text content
                       if (node.type === 'paragraph' || node.type === 'heading') {
-                        return node.content && Array.isArray(node.content) &&
-                          node.content.some(child => child.type === 'text' && child.text && child.text.trim().length > 0)
+                        // A paragraph with 0 sub-nodes is "empty"
+                        if (!node.content || node.content.length === 0) return false
+
+                        return node.content.some(child =>
+                          (child.type === 'text' && child.text && child.text.trim().length > 0) ||
+                          (child.type !== 'text') // images, etc are real content
+                        )
                       }
-                      // For other node types, just check if they exist
+                      // Non-paragraph nodes are considered content
                       return true
                     })
 
-                    if (hasRealContent || snapContent.content.length > 1) {
+                    if (hasRealContent) {
                       content = snapContent
                       break
                     }
@@ -878,6 +851,7 @@ export default function DocumentPage() {
                   editor.commands.setContent(content)
                   setCurrentContent(content)
                   lastSnapshotContentRef.current = contentStr
+                  isLoadedRef.current = true // Mark as loaded once initial content is set
                 })
               })
               pendingContentRef.current = null // Clear pending content
@@ -885,6 +859,7 @@ export default function DocumentPage() {
             } else {
               pendingContentRef.current = null
               setPendingContentReady(false)
+              isLoadedRef.current = true // Still mark as loaded even if no change needed
             }
           } catch (error) {
             console.error('Error setting editor content:', error)
@@ -997,6 +972,7 @@ export default function DocumentPage() {
                 editor.commands.setContent(content)
                 setCurrentContent(content)
                 lastSnapshotContentRef.current = contentStr
+                isLoadedRef.current = true // Mark as loaded once initial content is set
               })
             })
 
@@ -1005,6 +981,7 @@ export default function DocumentPage() {
           } else {
             pendingContentRef.current = null
             setPendingContentReady(false)
+            isLoadedRef.current = true // Still mark as loaded
           }
         } else {
           // Retry after delay

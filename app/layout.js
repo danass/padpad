@@ -50,11 +50,11 @@ export async function generateMetadata() {
       title: t.title,
       description: t.description,
       type: 'website',
-      url: 'https://textpad.cloud',
+      url: 'https://www.textpad.cloud',
       siteName: 'Textpad',
       locale: locale === 'fr' ? 'fr_FR' : 'en_US',
       alternateLocale: locale === 'fr' ? ['en_US'] : ['fr_FR'],
-      images: [{ url: 'https://textpad.cloud/padpad.png', width: 512, height: 512, alt: 'Textpad Logo' }],
+      images: [{ url: 'https://www.textpad.cloud/padpad.png', width: 512, height: 512, alt: 'Textpad Logo' }],
     },
     twitter: {
       card: 'summary_large_image',
@@ -62,11 +62,11 @@ export async function generateMetadata() {
       description: t.description,
     },
     alternates: {
-      canonical: 'https://textpad.cloud',
+      canonical: 'https://www.textpad.cloud',
       languages: {
-        'en': 'https://textpad.cloud/en',
-        'fr': 'https://textpad.cloud/fr',
-        'x-default': 'https://textpad.cloud',
+        'en': 'https://www.textpad.cloud/?locale=en',
+        'fr': 'https://www.textpad.cloud/?locale=fr',
+        'x-default': 'https://www.textpad.cloud',
       },
     },
   }
@@ -82,7 +82,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'Textpad',
-  url: 'https://textpad.cloud',
+  url: 'https://www.textpad.cloud',
   description: 'Free online text editor with personal blog, document sharing, version history and folder organization.',
   applicationCategory: 'Productivity',
   operatingSystem: 'Any',

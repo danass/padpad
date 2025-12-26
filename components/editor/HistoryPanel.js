@@ -208,6 +208,40 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
     }
   }
 
+  const eventsCount = useMemo(() => {
+    return (history?.events || []).length
+  }, [history])
+
+  const handleClearEvents = async () => {
+    if (!confirm(t?.confirmClearEvents || 'Clear all incremental changes? High-level snapshots will be kept.')) {
+      return
+    }
+
+    setDeleting('events')
+
+    try {
+      const response = await fetch(`/api/documents/${documentId}/history`, {
+        method: 'DELETE'
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to clear events')
+      }
+
+      // Reload history
+      const historyResponse = await fetch(`/api/documents/${documentId}/history`)
+      if (historyResponse.ok) {
+        const data = await historyResponse.json()
+        setHistory(data)
+      }
+    } catch (error) {
+      console.error('Error clearing events:', error)
+      alert((t?.failedToDelete || 'Failed to delete') + ': ' + error.message)
+    } finally {
+      setDeleting(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="fixed inset-y-0 right-0 w-96 bg-white border-l border-gray-200 shadow-lg z-[200] p-6">
@@ -247,6 +281,18 @@ export default function HistoryPanel({ documentId, onRestore, onClose }) {
                   className="text-xs text-gray-600 hover:text-gray-800 underline disabled:opacity-50"
                 >
                   {deleting === 'all' ? (t?.deleting || 'Deleting...') : (t?.keepOnlyLast || 'Keep only last')}
+                </button>
+              )}
+              {eventsCount > 0 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleClearEvents()
+                  }}
+                  disabled={deleting === 'events'}
+                  className="text-xs text-blue-600 hover:text-blue-700 underline disabled:opacity-50"
+                >
+                  {deleting === 'events' ? (t?.clearingEvents || 'Clearing...') : (t?.clearEvents || `Clear ${eventsCount} events`)}
                 </button>
               )}
               {emptyCount > 0 && (

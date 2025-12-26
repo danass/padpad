@@ -221,6 +221,10 @@ export const translations = {
     confirmDeleteEmptySnapshots: 'Are you sure you want to delete {count} empty snapshot(s)?',
     failedToDelete: 'Failed to delete',
     completeSave: 'Complete save. Click to restore.',
+    clearEvents: 'Clear event history',
+    clearingEvents: 'Clearing events...',
+    eventsCleared: 'Events cleared',
+    confirmClearEvents: 'Clear all incremental changes? High-level snapshots will be kept.',
 
     // Drawing Component
     undoLastStroke: 'Undo last stroke',
@@ -665,6 +669,10 @@ export const translations = {
     confirmDeleteEmptySnapshots: 'Êtes-vous sûr de vouloir supprimer {count} snapshot(s) vide(s) ?',
     failedToDelete: 'Échec de la suppression',
     completeSave: 'Sauvegarde complète. Cliquez pour restaurer.',
+    clearEvents: 'Effacer l\'historique des événements',
+    clearingEvents: 'Effacement des événements...',
+    eventsCleared: 'Événements effacés',
+    confirmClearEvents: 'Effacer toutes les modifications incrémentales ? Les snapshots principaux seront conservés.',
 
     // Drawing Component
     undoLastStroke: 'Annuler le dernier trait',

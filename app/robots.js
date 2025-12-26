@@ -1,6 +1,6 @@
 export default function robots() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://textpad.cloud'
-  
+  const baseUrl = 'https://www.textpad.cloud'
+
   return {
     rules: [
       {
@@ -12,4 +12,5 @@ export default function robots() {
     sitemap: `${baseUrl}/sitemap.xml`,
   }
 }
+
 
