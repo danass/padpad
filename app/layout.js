@@ -61,7 +61,7 @@ export async function generateMetadata() {
       siteName: 'Textpad',
       locale: locale === 'fr' ? 'fr_FR' : 'en_US',
       alternateLocale: locale === 'fr' ? ['en_US'] : ['fr_FR'],
-      images: [{ url: '/padpad.png', width: 512, height: 512, alt: 'Textpad Logo' }],
+      images: [{ url: '/padpad.webp', width: 512, height: 512, alt: 'Textpad Logo' }],
     },
     twitter: {
       card: 'summary_large_image',
