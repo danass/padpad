@@ -3,6 +3,8 @@ import { LanguageProvider } from '@/app/i18n/LanguageContext'
 import { cookies, headers } from 'next/headers'
 import { auth } from '@/auth'
 import SessionProvider from '@/components/providers/SessionProvider'
+import UniversalHeader from '@/components/layout/UniversalHeader'
+import Footer from '@/components/layout/Footer'
 
 // SEO translations
 const seoTranslations = {
@@ -123,7 +125,9 @@ export default async function RootLayout({ children }) {
       <body className="bg-white min-h-screen flex flex-col" suppressHydrationWarning>
         <SessionProvider session={session}>
           <LanguageProvider initialLocale={locale}>
+            <UniversalHeader />
             {children}
+            <Footer />
           </LanguageProvider>
         </SessionProvider>
       </body>

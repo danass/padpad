@@ -101,13 +101,17 @@ function ArticleRenderer({ content, title, author, date }) {
     )
 }
 
-export default function FeedClient() {
-    const [articles, setArticles] = useState([])
-    const [pagination, setPagination] = useState(null)
-    const [loading, setLoading] = useState(true)
+export default function FeedClient({ initialData }) {
+    const [articles, setArticles] = useState(initialData?.articles || [])
+    const [pagination, setPagination] = useState(initialData?.pagination || null)
+    const [loading, setLoading] = useState(!initialData)
     const [page, setPage] = useState(1)
 
     useEffect(() => {
+        // Skip initial fetch if we already have data from the server
+        if (initialData && page === 1 && articles.length > 0) {
+            return
+        }
         loadFeed(page)
     }, [page])
 
