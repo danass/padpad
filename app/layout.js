@@ -5,6 +5,8 @@ import { auth } from '@/auth'
 import SessionProvider from '@/components/providers/SessionProvider'
 import UniversalHeader from '@/components/layout/UniversalHeader'
 import Footer from '@/components/layout/Footer'
+import { PostHogProvider } from '@/components/providers/PostHogProvider'
+import { PostHogPageView } from '@/components/providers/PostHogPageView'
 
 // SEO translations
 const seoTranslations = {
@@ -123,13 +125,16 @@ export default async function RootLayout({ children }) {
         />
       </head>
       <body className="bg-white min-h-screen flex flex-col" suppressHydrationWarning>
-        <SessionProvider session={session}>
-          <LanguageProvider initialLocale={locale}>
-            <UniversalHeader />
-            {children}
-            <Footer />
-          </LanguageProvider>
-        </SessionProvider>
+        <PostHogProvider>
+          <SessionProvider session={session}>
+            <LanguageProvider initialLocale={locale}>
+              <PostHogPageView />
+              <UniversalHeader />
+              {children}
+              <Footer />
+            </LanguageProvider>
+          </SessionProvider>
+        </PostHogProvider>
       </body>
     </html>
   )
