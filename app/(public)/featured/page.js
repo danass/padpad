@@ -267,7 +267,7 @@ export default async function FeaturedPage({ searchParams }) {
                                                 {article.keywords.slice(0, 3).map((k) => (
                                                     <Link
                                                         key={k}
-                                                        href={`/featured?keyword=${encodeURIComponent(k)}`}
+                                                        href={`/feed?keyword=${encodeURIComponent(k)}`}
                                                         className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full hover:bg-gray-200 transition-colors"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >

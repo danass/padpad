@@ -179,7 +179,7 @@ export default function PublicDocumentClient({ serverData }) {
                         {document.keywords.map((k) => (
                             <NextLink
                                 key={k}
-                                href={`/featured?keyword=${encodeURIComponent(k)}`}
+                                href={`/feed?keyword=${encodeURIComponent(k)}`}
                                 className="px-3 py-1 bg-indigo-50 text-indigo-700 text-sm rounded-full hover:bg-indigo-100 transition-colors"
                             >
                                 #{k}
