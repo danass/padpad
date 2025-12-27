@@ -77,6 +77,8 @@ export default function DocumentPage() {
   const [isOwner, setIsOwner] = useState(true) // Default to true, will be set from API
   const [isFeatured, setIsFeatured] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [keywords, setKeywords] = useState([]) // Document keywords
+  const [keywordInput, setKeywordInput] = useState('') // Input for adding keywords
   const [mounted, setMounted] = useState(false)
   const [hasChanges, setHasChanges] = useState(false) // Track if there are unsaved changes for UI
   const autosaveTimeoutRef = useRef(null)
@@ -704,6 +706,7 @@ export default function DocumentPage() {
         setIsOwner(ownerFlag !== false) // Default to true if not specified
         setIsFeatured(document.is_featured || false)
         setIsAdmin(adminFlag || false)
+        setKeywords(document.keywords || [])
 
         // Reconstruct content using replayHistory
         let content = replayHistory(snapshot, events)
@@ -1163,7 +1166,7 @@ export default function DocumentPage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 sm:py-8">
         {/* Header with title and action buttons */}
-        <div className="mb-4 relative z-40">
+        <div className="mb-4 relative z-[60]">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             {/* Title */}
             <div className="flex-1">
@@ -1327,6 +1330,125 @@ export default function DocumentPage() {
                       </svg>
                     )}
                   </button>
+                )}
+
+                {/* Keywords - Only for owners */}
+                {isOwner && (
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        const dropdown = e.currentTarget.nextElementSibling
+                        dropdown.classList.toggle('hidden')
+                      }}
+                      className={`p-1.5 border rounded-md transition-colors ${keywords.length > 0
+                        ? 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                        : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      title={keywords.length > 0 ? `Keywords: ${keywords.join(', ')}` : 'Add keywords'}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                    </button>
+                    <div className="hidden absolute top-full right-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg p-3" style={{ zIndex: 10001 }}>
+                      <p className="text-xs text-gray-500 mb-2">Keywords (press Enter to add)</p>
+                      <div className="flex gap-1 mb-2">
+                        <input
+                          type="text"
+                          value={keywordInput}
+                          onChange={(e) => setKeywordInput(e.target.value.toLowerCase())}
+                          onKeyDown={(e) => {
+                            e.stopPropagation()
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              const newKeyword = keywordInput.trim()
+                              if (newKeyword && !keywords.includes(newKeyword)) {
+                                const newKeywords = [...keywords, newKeyword]
+                                fetch(`/api/documents/${documentId}`, {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ keywords: newKeywords })
+                                }).then(response => {
+                                  if (response.ok) {
+                                    setKeywords(newKeywords)
+                                    setKeywordInput('')
+                                    showToast('Keyword added', 'success')
+                                  }
+                                }).catch(() => {
+                                  showToast('Failed to add keyword', 'error')
+                                })
+                              } else if (newKeyword) {
+                                setKeywordInput('')
+                              }
+                            }
+                          }}
+                          placeholder="Add keyword..."
+                          className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newKeyword = keywordInput.trim()
+                            if (newKeyword && !keywords.includes(newKeyword)) {
+                              const newKeywords = [...keywords, newKeyword]
+                              fetch(`/api/documents/${documentId}`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ keywords: newKeywords })
+                              }).then(response => {
+                                if (response.ok) {
+                                  setKeywords(newKeywords)
+                                  setKeywordInput('')
+                                  showToast('Keyword added', 'success')
+                                }
+                              }).catch(() => {
+                                showToast('Failed to add keyword', 'error')
+                              })
+                            }
+                          }}
+                          className="px-2 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                        >
+                          +
+                        </button>
+                      </div>
+                      {keywords.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {keywords.map((keyword) => (
+                            <span
+                              key={keyword}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded-full"
+                            >
+                              {keyword}
+                              <button
+                                onClick={async () => {
+                                  const newKeywords = keywords.filter(k => k !== keyword)
+                                  try {
+                                    const response = await fetch(`/api/documents/${documentId}`, {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ keywords: newKeywords })
+                                    })
+                                    if (response.ok) {
+                                      setKeywords(newKeywords)
+                                      showToast('Keyword removed', 'success')
+                                    }
+                                  } catch (err) {
+                                    showToast('Failed to remove keyword', 'error')
+                                  }
+                                }}
+                                className="text-indigo-500 hover:text-indigo-700"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400 italic">No keywords yet</p>
+                      )}
+                    </div>
+                  </div>
                 )}
 
                 {/* Export */}

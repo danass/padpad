@@ -169,9 +169,25 @@ export default function PublicDocumentClient({ serverData }) {
                         </NextLink>
                     </div>
                 )}
-                <h1 className="text-4xl font-bold text-gray-900 mb-8">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">
                     {title && title !== 'Untitled' ? title : (t?.untitledPad || 'Untitled Pad')}
                 </h1>
+
+                {/* Keywords/Tags */}
+                {document?.keywords && document.keywords.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-8">
+                        {document.keywords.map((k) => (
+                            <NextLink
+                                key={k}
+                                href={`/featured?keyword=${encodeURIComponent(k)}`}
+                                className="px-3 py-1 bg-indigo-50 text-indigo-700 text-sm rounded-full hover:bg-indigo-100 transition-colors"
+                            >
+                                #{k}
+                            </NextLink>
+                        ))}
+                    </div>
+                )}
+
                 <div className="max-w-none">
                     {mounted && <EditorContent editor={editor} />}
                 </div>

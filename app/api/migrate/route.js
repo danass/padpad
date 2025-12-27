@@ -148,7 +148,11 @@ async function runMigrations() {
       // Add is_disposable and expires_at to documents
       `ALTER TABLE documents ADD COLUMN IF NOT EXISTS is_disposable BOOLEAN DEFAULT false`,
       `ALTER TABLE documents ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZONE`,
-      `CREATE INDEX IF NOT EXISTS idx_documents_expires_at ON documents(expires_at) WHERE expires_at IS NOT NULL`
+      `CREATE INDEX IF NOT EXISTS idx_documents_expires_at ON documents(expires_at) WHERE expires_at IS NOT NULL`,
+
+      // Add keywords column to documents (array of text)
+      `ALTER TABLE documents ADD COLUMN IF NOT EXISTS keywords TEXT[]`,
+      `CREATE INDEX IF NOT EXISTS idx_documents_keywords ON documents USING gin(keywords) WHERE keywords IS NOT NULL`
     ]
 
     // Run all migrations

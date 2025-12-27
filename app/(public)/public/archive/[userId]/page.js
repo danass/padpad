@@ -35,7 +35,7 @@ const getDocuments = cache(async (userId) => {
 
     // Also fetch content_text for fallback title
     const result = await sql.query(
-      `SELECT d.id, d.title, d.content_text, d.created_at, d.updated_at
+      `SELECT d.id, d.title, d.content_text, d.created_at, d.updated_at, d.keywords
        FROM documents d
        WHERE d.user_id = $1 AND d.is_public = true
        ORDER BY d.updated_at DESC`,
@@ -59,7 +59,8 @@ const getDocuments = cache(async (userId) => {
         return {
           id: doc.id,
           title: displayTitle,
-          updated_at: doc.updated_at
+          updated_at: doc.updated_at,
+          keywords: doc.keywords || []
         }
       }),
       username: username || userId,
@@ -149,6 +150,18 @@ export default async function PublicArchivePage({ params }) {
                   <span className="text-gray-900 group-hover:text-black transition-colors truncate">
                     {doc.title || <span className="italic text-gray-400">Sans titre</span>}
                   </span>
+                  {doc.keywords && doc.keywords.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 sm:mt-0 sm:ml-2">
+                      {doc.keywords.slice(0, 2).map((k) => (
+                        <span key={k} className="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded-full">
+                          {k}
+                        </span>
+                      ))}
+                      {doc.keywords.length > 2 && (
+                        <span className="text-[10px] text-gray-400">+{doc.keywords.length - 2}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <span className="text-xs text-gray-400 flex-shrink-0 ml-4">
                   {format(new Date(doc.updated_at), 'd MMM yyyy', { locale: fr })}

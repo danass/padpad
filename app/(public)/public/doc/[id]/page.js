@@ -136,6 +136,7 @@ const getDocumentData = cache(async (documentId) => {
         id: document.id,
         title: document.title || '',
         is_full_width: document.is_full_width || false,
+        keywords: document.keywords || [],
         archive_id: archiveId,
         author_name: authorName,
         user_id: document.user_id,

@@ -12,24 +12,44 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic'
 
-async function getFeaturedArticles(page = 1, limit = 20) {
+async function getFeaturedArticles(page = 1, limit = 8, keyword = null) {
     try {
         const offset = (page - 1) * limit
+
+        // Build query with optional keyword filter
+        let whereClause = 'd.is_featured = true AND d.is_public = true'
+        const queryParams = []
+        let paramCount = 1
+
+        if (keyword) {
+            whereClause += ` AND $${paramCount++} = ANY(d.keywords)`
+            queryParams.push(keyword.toLowerCase().trim())
+        }
 
         const result = await sql.query(
             `SELECT d.*, u.testament_username, u.avatar_url, u.archive_id
              FROM documents d
              LEFT JOIN users u ON d.user_id = u.id
-             WHERE d.is_featured = true AND d.is_public = true
+             WHERE ${whereClause}
              ORDER BY d.featured_at DESC NULLS LAST, d.updated_at DESC
-             LIMIT $1 OFFSET $2`,
-            [limit, offset]
+             LIMIT $${paramCount++} OFFSET $${paramCount}`,
+            [...queryParams, limit, offset]
         )
 
         const countResult = await sql.query(
-            `SELECT COUNT(*) as total FROM documents WHERE is_featured = true AND is_public = true`
+            `SELECT COUNT(*) as total FROM documents d WHERE ${whereClause}`,
+            queryParams
         )
         const total = parseInt(countResult.rows[0].total)
+
+        // Get all unique keywords from featured public documents
+        const keywordsResult = await sql.query(
+            `SELECT DISTINCT unnest(keywords) as keyword 
+             FROM documents 
+             WHERE is_featured = true AND is_public = true AND keywords IS NOT NULL
+             ORDER BY keyword`
+        )
+        const allKeywords = keywordsResult.rows.map(r => r.keyword)
 
         const articles = await Promise.all(result.rows.map(async (doc) => {
             const snapshotResult = await sql.query(
@@ -88,6 +108,7 @@ async function getFeaturedArticles(page = 1, limit = 20) {
                 title: doc.title || 'Untitled',
                 textPreview: textPreview.trim().substring(0, 200),
                 firstImage,
+                keywords: doc.keywords || [],
                 updatedAt: doc.updated_at,
                 featuredAt: doc.featured_at,
                 author: {
@@ -101,6 +122,7 @@ async function getFeaturedArticles(page = 1, limit = 20) {
 
         return {
             articles,
+            allKeywords,
             total,
             totalPages: Math.ceil(total / limit),
             dbError: false
@@ -114,7 +136,8 @@ async function getFeaturedArticles(page = 1, limit = 20) {
 export default async function FeaturedPage({ searchParams }) {
     const params = await searchParams
     const page = parseInt(params?.page || '1')
-    const { articles, totalPages, dbError } = await getFeaturedArticles(page)
+    const keyword = params?.keyword || null
+    const { articles, allKeywords, totalPages, dbError } = await getFeaturedArticles(page, 8, keyword)
 
     // Show error message if database is unavailable
     if (dbError) {
@@ -151,9 +174,38 @@ export default async function FeaturedPage({ searchParams }) {
 
             {/* Articles Grid */}
             <main className="max-w-6xl mx-auto px-6 py-12">
+                {/* Keyword Filters */}
+                {allKeywords && allKeywords.length > 0 && (
+                    <div className="mb-8">
+                        <div className="flex flex-wrap gap-2 items-center">
+                            <span className="text-sm text-gray-500 mr-2">Filter by:</span>
+                            <Link
+                                href="/featured"
+                                className={`px-3 py-1.5 rounded-full text-sm transition-colors ${!keyword ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                            >
+                                All
+                            </Link>
+                            {allKeywords.map((k) => (
+                                <Link
+                                    key={k}
+                                    href={`/featured?keyword=${encodeURIComponent(k)}`}
+                                    className={`px-3 py-1.5 rounded-full text-sm transition-colors ${keyword === k ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                >
+                                    {k}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {articles.length === 0 ? (
                     <div className="text-center py-16">
-                        <p className="text-gray-500 text-lg">No featured articles yet.</p>
+                        <p className="text-gray-500 text-lg">{keyword ? `No articles with "${keyword}" keyword.` : 'No featured articles yet.'}</p>
+                        {keyword && (
+                            <Link href="/featured" className="text-blue-600 hover:underline mt-2 inline-block">
+                                Clear filter
+                            </Link>
+                        )}
                     </div>
                 ) : (
                     <>
@@ -209,6 +261,25 @@ export default async function FeaturedPage({ searchParams }) {
                                             </p>
                                         )}
 
+                                        {/* Keywords */}
+                                        {article.keywords && article.keywords.length > 0 && (
+                                            <div className="flex flex-wrap gap-1 mb-2">
+                                                {article.keywords.slice(0, 3).map((k) => (
+                                                    <Link
+                                                        key={k}
+                                                        href={`/featured?keyword=${encodeURIComponent(k)}`}
+                                                        className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full hover:bg-gray-200 transition-colors"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        {k}
+                                                    </Link>
+                                                ))}
+                                                {article.keywords.length > 3 && (
+                                                    <span className="text-xs text-gray-400">+{article.keywords.length - 3}</span>
+                                                )}
+                                            </div>
+                                        )}
+
                                         {/* Date */}
                                         <p className="text-xs text-gray-400">
                                             {new Date(article.featuredAt || article.updatedAt).toLocaleDateString('en-US', {
@@ -226,7 +297,7 @@ export default async function FeaturedPage({ searchParams }) {
                         {totalPages > 1 && (
                             <div className="flex justify-center gap-2 mt-12">
                                 <Link
-                                    href={`/featured?page=${Math.max(1, page - 1)}`}
+                                    href={`/featured?page=${Math.max(1, page - 1)}${keyword ? `&keyword=${encodeURIComponent(keyword)}` : ''}`}
                                     className={`px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 ${page === 1 ? 'opacity-50 pointer-events-none' : ''}`}
                                 >
                                     Previous
@@ -235,7 +306,7 @@ export default async function FeaturedPage({ searchParams }) {
                                     Page {page} of {totalPages}
                                 </span>
                                 <Link
-                                    href={`/featured?page=${Math.min(totalPages, page + 1)}`}
+                                    href={`/featured?page=${Math.min(totalPages, page + 1)}${keyword ? `&keyword=${encodeURIComponent(keyword)}` : ''}`}
                                     className={`px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 ${page === totalPages ? 'opacity-50 pointer-events-none' : ''}`}
                                 >
                                     Next

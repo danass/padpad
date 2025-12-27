@@ -132,17 +132,47 @@ export default function VideoComponent({ node, updateAttributes, deleteNode }) {
                 {/* Video Element */}
                 <video
                     ref={videoRef}
-                    src={src}
                     controls={controls}
                     loop={loop}
                     muted={muted}
                     autoPlay={autoplay}
-                    className={`rounded-lg ${alignClass}`}
-                    style={{ maxWidth: '100%', width: width ? `${width}px` : '100%' }}
+                    playsInline
+                    preload="metadata"
+                    crossOrigin="anonymous"
+                    className={`rounded-lg ${alignClass} bg-black`}
+                    style={{ maxWidth: '100%', width: width ? `${width}px` : '100%', minHeight: '100px' }}
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                     onEnded={() => setIsPlaying(false)}
-                />
+                    onError={(e) => {
+                        console.error('Video error:', e)
+                    }}
+                >
+                    <source src={src} type={(() => {
+                        if (!src) return undefined
+                        const path = src.split(/[?#]/)[0].toLowerCase()
+                        if (path.endsWith('.mp4')) return 'video/mp4'
+                        if (path.endsWith('.webm')) return 'video/webm'
+                        if (path.endsWith('.ogg')) return 'video/ogg'
+                        if (path.endsWith('.mov')) return 'video/quicktime'
+                        return undefined
+                    })()} />
+                    Your browser does not support the video tag.
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white p-4 text-center rounded-lg">
+                        <p className="text-sm mb-2 text-gray-400">Unable to play video in editor</p>
+                        <a
+                            href={src}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1.5"
+                        >
+                            Open Direct Link
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                    </div>
+                </video>
             </div>
         </NodeViewWrapper>
     )

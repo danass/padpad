@@ -39,12 +39,28 @@ export async function GET(request) {
         const files = []
 
         // Match links in the HTML (various gateway formats)
-        const linkRegex = /<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>/gi
+        // This handles double quotes, single quotes, and unquoted hrefs
+        const linkRegex = /<a\s+[^>]*href=(?:"([^"]*)"|'([^']*)'|([^>\s]+))[^>]*>([\s\S]*?)<\/a>/gi
         let match
 
+        const decodeEntities = (text) => {
+            if (!text) return ''
+            return text
+                .replace(/&amp;/g, '&')
+                .replace(/&quot;/g, '"')
+                .replace(/&apos;/g, "'")
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))
+                .replace(/&#x([0-9a-f]+);/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
+        }
+
         while ((match = linkRegex.exec(html)) !== null) {
-            const href = match[1]
-            const name = match[2]
+            const rawHref = match[1] || match[2] || match[3] || ''
+            const rawName = match[4] || ''
+
+            const href = decodeEntities(rawHref)
+            const name = decodeEntities(rawName)
 
             // Skip parent directory and other navigation links
             if (name === '..' || name === '../' || href.startsWith('?') || href.startsWith('#')) {
@@ -52,18 +68,20 @@ export async function GET(request) {
             }
 
             // Clean up the filename
-            const cleanName = decodeURIComponent(name.replace(/\/$/, ''))
+            const cleanName = decodeURIComponent(name.replace(/\/$/, '').replace(/<[^>]*>/g, '').trim())
 
             // Build the gateway URL for this file
-            const fileUrl = href.startsWith('http')
-                ? href
-                : `https://${rootCid}.ipfs.${gateway}${href.startsWith('/') ? href : '/' + href}`
+            let fileUrl = href
+            if (!href.startsWith('http')) {
+                const path = href.startsWith('/') ? href : '/' + href
+                fileUrl = `https://${rootCid}.ipfs.${gateway}${path}`
+            }
 
             // Determine file type from extension
             const ext = cleanName.split('.').pop()?.toLowerCase() || ''
             const isDirectory = href.endsWith('/')
 
-            if (!isDirectory && cleanName) {
+            if (!isDirectory && cleanName && cleanName !== 'Index of') {
                 files.push({
                     key: cleanName,
                     gatewayUrl: fileUrl,

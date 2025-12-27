@@ -134,7 +134,7 @@ export async function PATCH(request, { params }) {
 
     const { id } = await params
     const body = await request.json()
-    const { title, folder_id, is_full_width } = body
+    const { title, folder_id, is_full_width, keywords } = body
 
     const updates = []
     const values = []
@@ -153,6 +153,15 @@ export async function PATCH(request, { params }) {
     if (is_full_width !== undefined) {
       updates.push(`is_full_width = $${paramCount++}`)
       values.push(is_full_width === true)
+    }
+
+    if (keywords !== undefined) {
+      updates.push(`keywords = $${paramCount++}`)
+      // Ensure keywords is an array of trimmed, lowercase strings
+      const cleanKeywords = Array.isArray(keywords)
+        ? keywords.map(k => k.trim().toLowerCase()).filter(k => k.length > 0)
+        : []
+      values.push(cleanKeywords.length > 0 ? cleanKeywords : null)
     }
 
     if (updates.length === 0) {
