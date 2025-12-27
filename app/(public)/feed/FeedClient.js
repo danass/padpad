@@ -86,9 +86,9 @@ function ArticleRenderer({ id, content, title, author, date, keywords }) {
     if (!editor) return null
 
     return (
-        <article className="py-12 border-b border-gray-100 last:border-0">
-            <header className="mb-8">
-                <div className="flex flex-wrap gap-2 mb-4">
+        <article className="py-8 border-b border-gray-100 last:border-0">
+            <header className="mb-6">
+                <div className="flex flex-wrap gap-2 mb-3">
                     {keywords && keywords.map(tag => (
                         <NextLink
                             key={tag}
@@ -100,7 +100,7 @@ function ArticleRenderer({ id, content, title, author, date, keywords }) {
                     ))}
                 </div>
 
-                <h2 className="text-4xl font-bold text-gray-900 mb-4 hover:text-blue-600 transition-colors">
+                <h2 className="text-3xl font-bold text-gray-900 mb-3 hover:text-blue-600 transition-colors">
                     <NextLink href={`/public/doc/${id}`}>{title || 'Untitled'}</NextLink>
                 </h2>
 
@@ -124,17 +124,6 @@ function ArticleRenderer({ id, content, title, author, date, keywords }) {
             </header>
             <div className="prose max-w-none">
                 {mounted && <EditorContent editor={editor} />}
-            </div>
-            <div className="mt-8">
-                <NextLink
-                    href={`/public/doc/${id}`}
-                    className="inline-flex items-center gap-1 text-sm text-blue-600 font-medium hover:underline"
-                >
-                    View individual page
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                </NextLink>
             </div>
         </article>
     )
