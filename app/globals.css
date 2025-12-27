@@ -22,6 +22,19 @@ body {
   position: relative;
 }
 
+.ProseMirror .ProseMirror-cursor {
+  border-left: 2px solid #000;
+  border-right: none;
+  margin-left: -1px;
+}
+
+@media (max-width: 768px) {
+  .ProseMirror .ProseMirror-cursor {
+    border-left-width: 3px;
+    height: 1.2em;
+  }
+}
+
 /* Preserve inline styles - ensure they take precedence */
 .ProseMirror span[style],
 .ProseMirror p[style],

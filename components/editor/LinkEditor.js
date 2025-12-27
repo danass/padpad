@@ -1,30 +1,69 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Link as LinkIcon, Pencil, Unlink } from 'lucide-react'
+import { Link as LinkIcon, Pencil, Unlink, Youtube, ExternalLink } from 'lucide-react'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 
-export default function LinkEditor({ editor, position, onClose }) {
+export default function LinkEditor({ editor, position, mode = 'link', onClose }) {
   const { t } = useLanguage()
   const [url, setUrl] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const inputRef = useRef(null)
   const containerRef = useRef(null)
 
-  useEffect(() => {
-    if (editor && position) {
-      const attrs = editor.getAttributes('link')
-      setUrl(attrs.href || '')
-      setIsEditing(false)
+  // Determine placeholder and title based on mode
+  const getPlaceholder = () => {
+    switch (mode) {
+      case 'video':
+        return t?.enterVideoUrl || 'Enter video URL (YouTube, Vimeo, etc.)'
+      case 'linkPreview':
+        return t?.enterUrlForPreview || 'Enter URL for link preview'
+      default:
+        return t?.enterUrl || 'Enter URL'
     }
-  }, [editor, position])
+  }
+
+  const getTitle = () => {
+    switch (mode) {
+      case 'video':
+        return t?.addVideo || 'Add Video'
+      case 'linkPreview':
+        return t?.addLinkPreview || 'Add Link Preview'
+      default:
+        return t?.addLink || 'Add Link'
+    }
+  }
+
+  const getIcon = () => {
+    switch (mode) {
+      case 'video':
+        return <Youtube className="w-4 h-4 text-gray-500" />
+      case 'linkPreview':
+        return <ExternalLink className="w-4 h-4 text-gray-500" />
+      default:
+        return <LinkIcon className="w-4 h-4 text-gray-500" />
+    }
+  }
 
   useEffect(() => {
-    if (inputRef.current && position && isEditing) {
-      inputRef.current.focus()
-      inputRef.current.select()
+    if (editor && position) {
+      // For video and linkPreview modes, start with empty URL
+      if (mode === 'video' || mode === 'linkPreview') {
+        setUrl('')
+        setIsEditing(true)
+      } else {
+        const attrs = editor.getAttributes('link')
+        setUrl(attrs.href || '')
+        setIsEditing(false)
+      }
     }
-  }, [position, isEditing])
+  }, [editor, position, mode])
+
+  useEffect(() => {
+    if (inputRef.current && position && (isEditing || mode === 'video' || mode === 'linkPreview')) {
+      inputRef.current.focus()
+    }
+  }, [position, isEditing, mode])
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -41,18 +80,30 @@ export default function LinkEditor({ editor, position, onClose }) {
 
   const handleSave = () => {
     let finalUrl = url.trim()
-    if (finalUrl) {
-      // Auto-add https:// if no protocol is specified
-      if (!finalUrl.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//)) {
-        // Check if it looks like a URL (contains a dot)
-        if (finalUrl.includes('.')) {
-          finalUrl = 'https://' + finalUrl
-        }
-      }
-      editor.chain().focus().setLink({ href: finalUrl }).run()
-    } else {
-      editor.chain().focus().unsetLink().run()
+    if (!finalUrl) {
+      onClose()
+      return
     }
+
+    // Auto-add https:// if no protocol is specified
+    if (!finalUrl.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//)) {
+      if (finalUrl.includes('.')) {
+        finalUrl = 'https://' + finalUrl
+      }
+    }
+
+    switch (mode) {
+      case 'video':
+        editor.chain().focus().setVideo({ src: finalUrl }).run()
+        break
+      case 'linkPreview':
+        editor.chain().focus().setLinkPreview({ url: finalUrl }).run()
+        break
+      default:
+        editor.chain().focus().setLink({ href: finalUrl }).run()
+        break
+    }
+
     setIsEditing(false)
     onClose()
   }
@@ -75,7 +126,7 @@ export default function LinkEditor({ editor, position, onClose }) {
 
   if (!position) return null
 
-  const hasExistingLink = editor.getAttributes('link')?.href
+  const hasExistingLink = mode === 'link' && editor.getAttributes('link')?.href
 
   const handleModify = () => {
     setIsEditing(true)
@@ -90,6 +141,51 @@ export default function LinkEditor({ editor, position, onClose }) {
   const handleBreakLink = () => {
     editor.chain().focus().unsetLink().run()
     onClose()
+  }
+
+  // For video and linkPreview modes, show simple input form
+  if (mode === 'video' || mode === 'linkPreview') {
+    return (
+      <div
+        ref={containerRef}
+        className="absolute z-[10005] bg-white border border-gray-200 rounded-lg shadow-lg"
+        style={{
+          top: `${position.top}px`,
+          left: `${position.left}px`,
+          minWidth: '320px',
+        }}
+      >
+        <div className="p-3">
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+            {getTitle()}
+          </div>
+          <div className="flex items-center gap-2 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="pl-3 pr-2 py-2">
+              {getIcon()}
+            </div>
+            <div className="flex-1 px-2 py-2 text-sm text-gray-900 border-l border-gray-200">
+              <input
+                ref={inputRef}
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={getPlaceholder()}
+                className="w-full bg-transparent border-none outline-none text-sm"
+              />
+            </div>
+            <div className="flex items-center gap-1 pr-2 border-l border-gray-200">
+              <button
+                onClick={handleSave}
+                className="px-3 py-1.5 text-sm bg-gray-800 text-white rounded-md hover:bg-gray-900 transition-colors"
+              >
+                {t?.add || 'Add'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -219,7 +315,7 @@ export default function LinkEditor({ editor, position, onClose }) {
                 onClick={handleSave}
                 className="px-3 py-1.5 text-sm bg-gray-800 text-white rounded-md hover:bg-gray-900 transition-colors"
               >
-                Sauvegarder
+                {t?.save || 'Save'}
               </button>
             </div>
           </div>
@@ -228,4 +324,3 @@ export default function LinkEditor({ editor, position, onClose }) {
     </div>
   )
 }
-

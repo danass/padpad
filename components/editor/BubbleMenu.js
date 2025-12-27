@@ -2,16 +2,16 @@
 
 import { BubbleMenu as TiptapBubbleMenu } from '@tiptap/react'
 import { useState, useRef, useEffect } from 'react'
-import { 
-  Bold, 
-  Italic, 
-  Underline, 
-  Strikethrough, 
-  Code, 
-  Link, 
-  AlignLeft, 
-  AlignCenter, 
-  AlignRight, 
+import {
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  Code,
+  Link,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
   AlignJustify,
   MoreHorizontal,
   Subscript,
@@ -28,7 +28,7 @@ export default function BubbleMenu({ editor }) {
 
   const [showMoreOptions, setShowMoreOptions] = useState(false)
   const instanceRef = useRef(null)
-  
+
   // Suppress tippy warnings in development
   useEffect(() => {
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
@@ -40,7 +40,7 @@ export default function BubbleMenu({ editor }) {
         }
         originalWarn.apply(console, args)
       }
-      
+
       return () => {
         console.warn = originalWarn
       }
@@ -59,24 +59,23 @@ export default function BubbleMenu({ editor }) {
     <TiptapBubbleMenu
       editor={editor}
       shouldShow={({ editor, view, state, oldState, from, to }) => {
-        // Don't show bubble menu for images
-        const { selection } = state
-        const { $from } = selection
-        const node = $from.node()
-        if (node && node.type && node.type.name === 'image') {
-          return false
-        }
-        // Check if selection is inside an image node
-        let isInImage = false
+        // Only show if there's a text selection and no media nodes involved
+        if (from === to) return false
+
+        // List of media/block nodes to exclude
+        const mediaNodes = ['resizableImage', 'video', 'youtube', 'audio', 'drawing', 'linkPreview', 'image']
+
+        let hasMedia = false
         state.doc.nodesBetween(from, to, (node) => {
-          if (node.type && node.type.name === 'image') {
-            isInImage = true
+          if (mediaNodes.includes(node.type.name)) {
+            hasMedia = true
             return false
           }
         })
-        return !isInImage && from !== to
+
+        return !hasMedia && !editor.isActive('link') // Additional check if needed, but the loop covers it
       }}
-      tippyOptions={{ 
+      tippyOptions={{
         duration: 100,
         maxWidth: 'none',
         placement: 'top-end',
@@ -125,11 +124,10 @@ export default function BubbleMenu({ editor }) {
         <div className="flex items-center gap-0.5">
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`p-1.5 rounded-md transition-all ${
-              editor.isActive('bold')
+            className={`p-1.5 rounded-md transition-all ${editor.isActive('bold')
                 ? 'bg-gray-100 text-gray-900'
                 : 'hover:bg-gray-100 text-gray-700'
-            } active:scale-95`}
+              } active:scale-95`}
             title={`${t?.bold || 'Bold'} (Ctrl+B)`}
           >
             <Bold className="w-4 h-4" />
@@ -137,11 +135,10 @@ export default function BubbleMenu({ editor }) {
 
           <button
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`p-1.5 rounded-md transition-all ${
-              editor.isActive('italic')
+            className={`p-1.5 rounded-md transition-all ${editor.isActive('italic')
                 ? 'bg-gray-100 text-gray-900'
                 : 'hover:bg-gray-100 text-gray-700'
-            } active:scale-95`}
+              } active:scale-95`}
             title={`${t?.italic || 'Italic'} (Ctrl+I)`}
           >
             <Italic className="w-4 h-4" />
@@ -149,11 +146,10 @@ export default function BubbleMenu({ editor }) {
 
           <button
             onClick={() => editor.chain().focus().toggleUnderline().run()}
-            className={`p-1.5 rounded-md transition-all ${
-              editor.isActive('underline')
+            className={`p-1.5 rounded-md transition-all ${editor.isActive('underline')
                 ? 'bg-gray-100 text-gray-900'
                 : 'hover:bg-gray-100 text-gray-700'
-            } active:scale-95`}
+              } active:scale-95`}
             title={`${t?.underline || 'Underline'} (Ctrl+U)`}
           >
             <Underline className="w-4 h-4" />
@@ -161,11 +157,10 @@ export default function BubbleMenu({ editor }) {
 
           <button
             onClick={() => editor.chain().focus().toggleStrike().run()}
-            className={`p-1.5 rounded-md transition-all ${
-              editor.isActive('strike')
+            className={`p-1.5 rounded-md transition-all ${editor.isActive('strike')
                 ? 'bg-gray-100 text-gray-900'
                 : 'hover:bg-gray-100 text-gray-700'
-            } active:scale-95`}
+              } active:scale-95`}
             title={t?.strikethrough || 'Strikethrough'}
           >
             <Strikethrough className="w-4 h-4" />
@@ -173,11 +168,10 @@ export default function BubbleMenu({ editor }) {
 
           <button
             onClick={() => editor.chain().focus().toggleCode().run()}
-            className={`p-1.5 rounded-md transition-all ${
-              editor.isActive('code')
+            className={`p-1.5 rounded-md transition-all ${editor.isActive('code')
                 ? 'bg-gray-100 text-gray-900'
                 : 'hover:bg-gray-100 text-gray-700'
-            } active:scale-95`}
+              } active:scale-95`}
             title={t?.inlineCode || 'Inline Code'}
           >
             <Code className="w-4 h-4" />
@@ -198,12 +192,11 @@ export default function BubbleMenu({ editor }) {
               }
             }
           }}
-          className={`p-1.5 rounded-md transition-all ${
-            editor.isActive('link')
+          className={`p-1.5 rounded-md transition-all ${editor.isActive('link')
               ? 'bg-gray-100 text-gray-900'
               : 'hover:bg-gray-100 text-gray-700'
-          } active:scale-95`}
-            title={`${t?.link || 'Link'} (Ctrl+K)`}
+            } active:scale-95`}
+          title={`${t?.link || 'Link'} (Ctrl+K)`}
         >
           <Link className="w-4 h-4" />
         </button>
@@ -229,11 +222,10 @@ export default function BubbleMenu({ editor }) {
         <div className="relative">
           <button
             onClick={() => setShowMoreOptions(!showMoreOptions)}
-            className={`p-1.5 rounded-md transition-all ${
-              showMoreOptions
+            className={`p-1.5 rounded-md transition-all ${showMoreOptions
                 ? 'bg-gray-100'
                 : 'hover:bg-gray-100'
-            } text-gray-700 active:scale-95`}
+              } text-gray-700 active:scale-95`}
             title={t?.other || 'More options'}
           >
             <MoreHorizontal className="w-4 h-4" />
@@ -241,8 +233,8 @@ export default function BubbleMenu({ editor }) {
 
           {showMoreOptions && (
             <>
-              <div 
-                className="fixed inset-0 z-40" 
+              <div
+                className="fixed inset-0 z-40"
                 onClick={() => setShowMoreOptions(false)}
               />
               <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 min-w-[200px] py-1">
@@ -251,11 +243,10 @@ export default function BubbleMenu({ editor }) {
                     editor.chain().focus().toggleSubscript().run()
                     setShowMoreOptions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${
-                    editor.isActive('subscript')
+                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive('subscript')
                       ? 'bg-gray-100 text-gray-900'
                       : 'hover:bg-gray-50 text-gray-700'
-                  }`}
+                    }`}
                 >
                   <Subscript className="w-4 h-4" />
                   <span>{t?.subscript || 'Subscript'}</span>
@@ -265,11 +256,10 @@ export default function BubbleMenu({ editor }) {
                     editor.chain().focus().toggleSuperscript().run()
                     setShowMoreOptions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${
-                    editor.isActive('superscript')
+                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive('superscript')
                       ? 'bg-gray-100 text-gray-900'
                       : 'hover:bg-gray-50 text-gray-700'
-                  }`}
+                    }`}
                 >
                   <Superscript className="w-4 h-4" />
                   <span>{t?.superscript || 'Superscript'}</span>
@@ -280,11 +270,10 @@ export default function BubbleMenu({ editor }) {
                     editor.chain().focus().setTextAlign('left').run()
                     setShowMoreOptions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${
-                    editor.isActive({ textAlign: 'left' })
+                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive({ textAlign: 'left' })
                       ? 'bg-gray-100 text-gray-900'
                       : 'hover:bg-gray-50 text-gray-700'
-                  }`}
+                    }`}
                 >
                   <AlignLeft className="w-4 h-4" />
                   <span>{t?.alignLeft || 'Align Left'}</span>
@@ -294,11 +283,10 @@ export default function BubbleMenu({ editor }) {
                     editor.chain().focus().setTextAlign('center').run()
                     setShowMoreOptions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${
-                    editor.isActive({ textAlign: 'center' })
+                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive({ textAlign: 'center' })
                       ? 'bg-gray-100 text-gray-900'
                       : 'hover:bg-gray-50 text-gray-700'
-                  }`}
+                    }`}
                 >
                   <AlignCenter className="w-4 h-4" />
                   <span>{t?.alignCenter || 'Align Center'}</span>
@@ -308,11 +296,10 @@ export default function BubbleMenu({ editor }) {
                     editor.chain().focus().setTextAlign('right').run()
                     setShowMoreOptions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${
-                    editor.isActive({ textAlign: 'right' })
+                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive({ textAlign: 'right' })
                       ? 'bg-gray-100 text-gray-900'
                       : 'hover:bg-gray-50 text-gray-700'
-                  }`}
+                    }`}
                 >
                   <AlignRight className="w-4 h-4" />
                   <span>{t?.alignRight || 'Align Right'}</span>
@@ -322,11 +309,10 @@ export default function BubbleMenu({ editor }) {
                     editor.chain().focus().setTextAlign('justify').run()
                     setShowMoreOptions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${
-                    editor.isActive({ textAlign: 'justify' })
+                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive({ textAlign: 'justify' })
                       ? 'bg-gray-100 text-gray-900'
                       : 'hover:bg-gray-50 text-gray-700'
-                  }`}
+                    }`}
                 >
                   <AlignJustify className="w-4 h-4" />
                   <span>{t?.alignJustify || 'Justify'}</span>

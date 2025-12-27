@@ -183,7 +183,7 @@ export default function IpfsBrowser({ isOpen, onClose, onSelectFile }) {
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
@@ -199,7 +199,7 @@ export default function IpfsBrowser({ isOpen, onClose, onSelectFile }) {
                                 onClick={() => setShowProviderDropdown(!showProviderDropdown)}
                                 className="flex items-center gap-2 px-3 py-1.5 border rounded-md text-sm hover:bg-gray-50"
                             >
-                                <span className="max-w-[150px] truncate">{selectedProvider?.name || 'Select storage'}</span>
+                                <span className="max-w-[150px] truncate">{selectedProvider?.name || (selectedProvider?.provider === 'filebase' ? 'Filebase' : selectedProvider?.provider) || 'Select storage'}</span>
                                 <ChevronDown className="w-4 h-4" />
                             </button>
 

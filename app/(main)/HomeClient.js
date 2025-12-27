@@ -54,6 +54,7 @@ export default function HomeClient({ featuredArticles = [] }) {
   const [hasContent, setHasContent] = useState(false) // Track if there's content to save
   const [mounted, setMounted] = useState(false)
   const [linkEditorPosition, setLinkEditorPosition] = useState(null)
+  const [linkEditorMode, setLinkEditorMode] = useState(null)
   const [showIpfsBrowser, setShowIpfsBrowser] = useState(false)
   const editor = useEditor({
     immediatelyRender: false,
@@ -356,6 +357,7 @@ export default function HomeClient({ featuredArticles = [] }) {
   useEffect(() => {
     const handleShowLinkEditor = (e) => {
       setLinkEditorPosition(e.detail.position)
+      setLinkEditorMode(e.detail.mode || 'link')
     }
 
     window.addEventListener('showLinkEditor', handleShowLinkEditor)
@@ -511,7 +513,11 @@ export default function HomeClient({ featuredArticles = [] }) {
                   <LinkEditor
                     editor={editor}
                     position={linkEditorPosition}
-                    onClose={() => setLinkEditorPosition(null)}
+                    mode={linkEditorMode}
+                    onClose={() => {
+                      setLinkEditorPosition(null)
+                      setLinkEditorMode(null)
+                    }}
                   />
                 )}
               </div>

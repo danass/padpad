@@ -76,6 +76,7 @@ export default function DocumentPage() {
   const [birthDate, setBirthDate] = useState(null)
   const [showAutoPublicModal, setShowAutoPublicModal] = useState(false)
   const [linkEditorPosition, setLinkEditorPosition] = useState(null)
+  const [linkEditorMode, setLinkEditorMode] = useState(null) // 'link', 'video', or 'linkPreview'
   const [isOwner, setIsOwner] = useState(true) // Default to true, will be set from API
   const [isFeatured, setIsFeatured] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -84,6 +85,7 @@ export default function DocumentPage() {
   const [keywordInput, setKeywordInput] = useState('') // Input for adding keywords
   const [mounted, setMounted] = useState(false)
   const [showKeywordsDropdown, setShowKeywordsDropdown] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const keywordsDropdownRef = useRef(null)
   const [hasChanges, setHasChanges] = useState(false) // Track if there are unsaved changes for UI
   const autosaveTimeoutRef = useRef(null)
@@ -194,6 +196,7 @@ export default function DocumentPage() {
 
   const editor = useEditor({
     immediatelyRender: false,
+    autofocus: 'end',
     extensions: [
       StarterKit.configure({
         paragraph: false, // We use DraggableParagraph instead
@@ -404,6 +407,7 @@ export default function DocumentPage() {
   useEffect(() => {
     const handleShowLinkEditor = (e) => {
       setLinkEditorPosition(e.detail.position)
+      setLinkEditorMode(e.detail.mode || 'link')
     }
 
     window.addEventListener('showLinkEditor', handleShowLinkEditor)
@@ -1078,14 +1082,15 @@ export default function DocumentPage() {
     window.open(url, '_blank')
   }
 
-  // Delete document
-  const handleDelete = async () => {
+  // Delete document - shows confirmation modal first
+  const handleDelete = () => {
     if (!documentId) return
+    setShowDeleteModal(true)
+  }
 
-    if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
-      return
-    }
-
+  // Actual delete after confirmation
+  const confirmDelete = async () => {
+    setShowDeleteModal(false)
     try {
       const response = await fetch(`/api/documents/${documentId}`, {
         method: 'DELETE'
@@ -1530,7 +1535,11 @@ export default function DocumentPage() {
 
                 {/* Delete */}
                 <button
-                  onClick={handleDelete}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleDelete()
+                  }}
                   className="p-1.5 border border-red-200 text-red-600 hover:bg-red-50 rounded-md transition-colors"
                   title="Delete"
                 >
@@ -1566,14 +1575,86 @@ export default function DocumentPage() {
             <div className="mb-4">
               <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} onSave={handleManualSave} saving={saving} hasChanges={hasChanges} />
             </div>
-            <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-0 transition-all pb-20 md:pb-8 relative">
+            <div
+              className="prose max-w-none min-h-[500px] p-4 md:p-0 transition-all pb-24 md:pb-32 relative cursor-text"
+              onClick={(e) => {
+                // Only handle clicks directly on the prose container (empty space below content)
+                if (e.target === e.currentTarget && editor) {
+                  const { state } = editor
+                  const { doc } = state
+                  const lastNode = doc.lastChild
+
+                  // If there's already an empty paragraph at the end, just focus it
+                  if (lastNode?.type.name === 'paragraph' && lastNode.content.size === 0) {
+                    editor.chain().focus('end').run()
+                  } else {
+                    // Insert a new paragraph at the END of the document (not replacing selection)
+                    const endPos = doc.content.size
+                    editor.chain()
+                      .insertContentAt(endPos, { type: 'paragraph' })
+                      .focus('end')
+                      .run()
+                  }
+                }
+              }}
+            >
               {mounted && editor && (
                 <>
-                  <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+                  <BubbleMenu
+                    editor={editor}
+                    tippyOptions={{ duration: 100 }}
+                    shouldShow={({ state, from, to }) => {
+                      // Only show if there's a text selection and no media nodes involved
+                      if (from === to) return false
+
+                      const mediaNodes = ['resizableImage', 'video', 'youtube', 'audio', 'drawing', 'linkPreview', 'image']
+
+                      // Check if it's a node selection (clicking on a node)
+                      if (state.selection.node) {
+                        if (mediaNodes.includes(state.selection.node.type.name)) {
+                          return false
+                        }
+                      }
+
+                      // Check if the selection is inside a media node (check $from)
+                      const $from = state.selection.$from
+                      for (let d = $from.depth; d >= 0; d--) {
+                        const node = $from.node(d)
+                        if (mediaNodes.includes(node.type.name)) {
+                          return false
+                        }
+                      }
+
+                      // Check $to position as well
+                      const $to = state.selection.$to
+                      for (let d = $to.depth; d >= 0; d--) {
+                        const node = $to.node(d)
+                        if (mediaNodes.includes(node.type.name)) {
+                          return false
+                        }
+                      }
+
+                      // Check the node directly at the from position
+                      const nodeAtFrom = state.doc.nodeAt(from)
+                      if (nodeAtFrom && mediaNodes.includes(nodeAtFrom.type.name)) {
+                        return false
+                      }
+
+                      // Check if selection contains any media nodes
+                      let hasMedia = false
+                      state.doc.nodesBetween(from, to, (node) => {
+                        if (mediaNodes.includes(node.type.name)) {
+                          hasMedia = true
+                          return false
+                        }
+                      })
+
+                      return !hasMedia
+                    }}
+                  >
                     <BubbleToolbar
                       editor={editor}
                       onOpenLinkEditor={() => {
-                        // Logic to open link editor at current selection
                         const { view } = editor
                         const { state } = view
                         const { selection } = state
@@ -1597,8 +1678,8 @@ export default function DocumentPage() {
                     tippyOptions={{ duration: 100 }}
                     shouldShow={({ state }) => {
                       const { selection } = state
-                      const { $from } = selection
-                      return $from.parent.content.size === 0
+                      const { $from, empty } = selection
+                      return empty && $from.parent.type.name === 'paragraph' && $from.parent.content.size === 0
                     }}
                   >
                     <FloatingToolbar
@@ -1615,7 +1696,11 @@ export default function DocumentPage() {
                 <LinkEditor
                   editor={editor}
                   position={linkEditorPosition}
-                  onClose={() => setLinkEditorPosition(null)}
+                  mode={linkEditorMode}
+                  onClose={() => {
+                    setLinkEditorPosition(null)
+                    setLinkEditorMode(null)
+                  }}
                 />
               )}
             </div>
@@ -1669,6 +1754,36 @@ export default function DocumentPage() {
           setShowIpfsBrowser(false)
         }}
       />
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-[9999]"
+            onClick={() => setShowDeleteModal(false)}
+          />
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-6 z-[10000] w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Document</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this document? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

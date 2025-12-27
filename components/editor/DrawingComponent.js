@@ -100,10 +100,19 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
 
     window.addEventListener('textColorChanged', handleColorChange)
 
+    const handleToggleMoveMode = (e) => {
+      const { pos } = e.detail
+      if (typeof getPos === 'function' && pos === getPos()) {
+        setMoveMode(prev => !prev)
+      }
+    }
+    window.addEventListener('toggleDrawingMoveMode', handleToggleMoveMode)
+
     return () => {
       window.removeEventListener('textColorChanged', handleColorChange)
+      window.removeEventListener('toggleDrawingMoveMode', handleToggleMoveMode)
     }
-  }, [isSelected])
+  }, [isSelected, getPos])
 
   // Draw all paths on canvas - ensure permanent rendering
   useEffect(() => {
@@ -392,24 +401,8 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
     }, 'image/png')
   }
 
-  // Delete on Backspace/Delete
-  useEffect(() => {
-    if (!editor.isEditable) return
-
-    const handleKeyDown = (e) => {
-      if ((e.key === 'Backspace' || e.key === 'Delete') && editor.isActive('drawing')) {
-        e.preventDefault()
-        deleteNode()
-      }
-    }
-
-    const editorElement = editor.view.dom
-    editorElement.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      editorElement.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [editor, deleteNode])
+  // NOTE: Keyboard delete removed - let Tiptap's default selection+delete work naturally
+  // Users can still delete via hover menu or context menu
 
   // Resize handlers
   const startResize = (e, corner) => {
@@ -538,18 +531,7 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
               display: 'block',
             }}
             onContextMenu={(e) => {
-              if (!editor.isEditable) return
-              e.preventDefault()
-              e.stopPropagation()
-              // Show custom context menu for drawing
-              const rect = containerRef.current?.getBoundingClientRect()
-              if (rect) {
-                setContextMenuPos({
-                  x: e.clientX - rect.left,
-                  y: e.clientY - rect.top
-                })
-                setShowContextMenu(true)
-              }
+              // Local context menu removed in favor of global editor context menu
             }}
             onMouseDown={(e) => {
               // Check if clicking on resize handle - now for ALL drawings
@@ -635,6 +617,13 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
             }}
             className={`transition-all ${editor.isEditable ? 'group-hover:ring-2 group-hover:ring-blue-400' : ''}`}
           />
+
+          {/* Move Mode Tooltip */}
+          {editor.isEditable && isAbsolute && moveMode && (
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600/90 text-white px-4 py-2 rounded-lg text-sm font-medium z-30 pointer-events-none shadow-xl backdrop-blur-sm animate-in fade-in zoom-in duration-200">
+              {t?.moveHint || 'Hold and drag to move'}
+            </div>
+          )}
 
           {/* Resize handles - show for both absolute and normal */}
           {editor.isEditable && (

@@ -20,16 +20,27 @@ import {
   Highlighter,
   Superscript,
   Subscript,
-  X
+  X,
+  Trash2,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Maximize2,
+  Minimize2,
+  ExternalLink
 } from 'lucide-react'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function ContextMenu({ editor }) {
   const { t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
-  const [menuMode, setMenuMode] = useState('selection') // 'selection' or 'insertion'
+  const [menuMode, setMenuMode] = useState('selection') // 'selection', 'insertion', or 'node'
+  const [targetNode, setTargetNode] = useState(null)
+  const [targetPos, setTargetPos] = useState(null)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const menuRef = useRef(null)
+
+  if (!editor || !editor.isEditable) return null
 
   useEffect(() => {
     if (!editor) return
@@ -37,12 +48,46 @@ export default function ContextMenu({ editor }) {
     const handleContextMenu = (event) => {
       event.preventDefault()
 
+      // Find node at click coordinates
+      const pos = editor.view.posAtCoords({ left: event.clientX, top: event.clientY })
+      let detectedNode = null
+      let detectedPos = null
+
+      if (pos) {
+        const $pos = editor.state.doc.resolve(pos.pos)
+        // Check if we clicked on an atom node (image, video, etc)
+        const node = $pos.nodeAfter || $pos.nodeBefore
+        if (node && (node.type.name === 'image' || node.type.name === 'video' || node.type.name === 'drawing' || node.type.name === 'resizableImage' || node.type.name === 'linkPreview')) {
+          detectedNode = node
+          // Ensure detectedPos is the start of the node
+          detectedPos = $pos.nodeBefore === node ? $pos.pos - node.nodeSize : $pos.pos
+        } else {
+          // Check parent nodes for specific types if not directly on the element
+          for (let d = $pos.depth; d > 0; d--) {
+            const parent = $pos.node(d)
+            if (parent.type.name === 'image' || parent.type.name === 'video' || parent.type.name === 'drawing' || parent.type.name === 'resizableImage' || parent.type.name === 'linkPreview') {
+              detectedNode = parent
+              detectedPos = $pos.before(d)
+              break
+            }
+          }
+        }
+      }
+
+      setTargetNode(detectedNode)
+      setTargetPos(detectedPos)
+
       // Detect if there's a selection
       const { selection } = editor.state
       const hasSelection = !selection.empty
 
       // Set menu mode
-      setMenuMode(hasSelection ? 'selection' : 'insertion')
+      if (detectedNode) {
+        setMenuMode('node')
+      } else {
+        // If no node detected, we are either in a text selection or insertion
+        setMenuMode(hasSelection ? 'selection' : 'insertion')
+      }
 
       // Get initial position
       let x = event.clientX
@@ -71,6 +116,15 @@ export default function ContextMenu({ editor }) {
 
       setPosition({ x: Math.max(10, x), y: Math.max(10, y) })
       setIsOpen(true)
+
+      // Immediate selection for nodes on right-click
+      if (detectedNode && detectedPos !== null && editor) {
+        try {
+          editor.chain().focus().setNodeSelection(detectedPos).run()
+        } catch (e) {
+          console.error('Failed to set node selection in ContextMenu:', e)
+        }
+      }
     }
 
     const handleClick = (event) => {
@@ -141,20 +195,6 @@ export default function ContextMenu({ editor }) {
       label: t?.formatting || 'Formatting',
       items: [
         {
-          icon: <Bold className="w-4 h-4" />,
-          label: t?.bold || 'Bold',
-          action: () => editor.chain().focus().toggleBold().run(),
-          isActive: editor?.isActive('bold'),
-          shortcut: '⌘B',
-        },
-        {
-          icon: <Italic className="w-4 h-4" />,
-          label: t?.italic || 'Italic',
-          action: () => editor.chain().focus().toggleItalic().run(),
-          isActive: editor?.isActive('italic'),
-          shortcut: '⌘I',
-        },
-        {
           icon: <Underline className="w-4 h-4" />,
           label: t?.underline || 'Underline',
           action: () => editor.chain().focus().toggleUnderline().run(),
@@ -188,7 +228,7 @@ export default function ContextMenu({ editor }) {
       ]
     },
     {
-      label: t?.codeAndLink || 'Code & Link',
+      label: t?.codeAndLink || 'Code',
       items: [
         {
           icon: <Code className="w-4 h-4" />,
@@ -196,15 +236,52 @@ export default function ContextMenu({ editor }) {
           action: () => editor.chain().focus().toggleCode().run(),
           isActive: editor?.isActive('code'),
         },
+      ]
+    },
+    {
+      label: t?.alignment || 'Alignment',
+      items: [
         {
-          icon: <Link className="w-4 h-4" />,
-          label: t?.link || 'Link',
-          action: handleLinkAction,
-          isActive: editor?.isActive('link'),
+          icon: <AlignLeft className="w-4 h-4" />,
+          label: t?.alignLeft || 'Align Left',
+          action: () => editor.chain().focus().setTextAlign('left').run(),
+          isActive: editor?.isActive({ textAlign: 'left' }),
+        },
+        {
+          icon: <AlignCenter className="w-4 h-4" />,
+          label: t?.alignCenter || 'Align Center',
+          action: () => editor.chain().focus().setTextAlign('center').run(),
+          isActive: editor?.isActive({ textAlign: 'center' }),
+        },
+        {
+          icon: <AlignRight className="w-4 h-4" />,
+          label: t?.alignRight || 'Align Right',
+          action: () => editor.chain().focus().setTextAlign('right').run(),
+          isActive: editor?.isActive({ textAlign: 'right' }),
         },
       ]
     },
   ]
+
+  // Link editing (if selection is a link)
+  const isLink = editor?.isActive('link')
+  if (isLink) {
+    selectionMenuItems.push({
+      label: t?.linkActions || 'Link Actions',
+      items: [
+        {
+          icon: <ExternalLink className="w-4 h-4" />,
+          label: t?.editLink || 'Edit Link',
+          action: handleLinkAction,
+        },
+        {
+          icon: <Trash2 className="w-4 h-4" />,
+          label: t?.removeLink || 'Remove Link',
+          action: () => editor.chain().focus().unsetLink().run(),
+        }
+      ]
+    })
+  }
 
   // Insertion menu - insert new content
   const insertionMenuItems = [
@@ -280,15 +357,124 @@ export default function ContextMenu({ editor }) {
     },
   ]
 
-  if (!isOpen || !editor) return null
+  // Node specific menu (for images, videos, etc)
+  const nodeMenuItems = targetNode ? [
+    // Only show alignment for linkPreview when size is m or full (not inline sizes like text, xs, s)
+    ...((targetNode.attrs.width !== null || (targetNode.type.name === 'linkPreview' && ['m', 'full'].includes(targetNode.attrs.size))) ? [{
+      label: t?.alignment || 'Alignment',
+      items: [
+        {
+          icon: <AlignLeft className="w-4 h-4" />,
+          label: t?.alignLeft || 'Align Left',
+          action: () => editor.chain().focus().updateAttributes(targetNode.type.name, { [targetNode.type.name === 'linkPreview' ? 'textAlign' : 'align']: 'left' }).run(),
+          isActive: (targetNode.type.name === 'linkPreview' ? targetNode.attrs.textAlign : targetNode.attrs.align) === 'left',
+        },
+        {
+          icon: <AlignCenter className="w-4 h-4" />,
+          label: t?.alignCenter || 'Align Center',
+          action: () => editor.chain().focus().updateAttributes(targetNode.type.name, { [targetNode.type.name === 'linkPreview' ? 'textAlign' : 'align']: 'center' }).run(),
+          isActive: (targetNode.type.name === 'linkPreview' ? targetNode.attrs.textAlign : targetNode.attrs.align) === 'center' || !(targetNode.type.name === 'linkPreview' ? targetNode.attrs.textAlign : targetNode.attrs.align),
+        },
+        {
+          icon: <AlignRight className="w-4 h-4" />,
+          label: t?.alignRight || 'Align Right',
+          action: () => editor.chain().focus().updateAttributes(targetNode.type.name, { [targetNode.type.name === 'linkPreview' ? 'textAlign' : 'align']: 'right' }).run(),
+          isActive: (targetNode.type.name === 'linkPreview' ? targetNode.attrs.textAlign : targetNode.attrs.align) === 'right',
+        },
+      ]
+    }] : []),
+    {
+      label: t?.size || 'Size',
+      items: [
+        ...(targetNode.type.name === 'linkPreview' ? [
+          {
+            icon: <Minimize2 className="w-4 h-4" />,
+            label: 'Small',
+            action: () => editor.chain().focus().updateAttributes('linkPreview', { size: 'm' }).run(),
+            isActive: targetNode.attrs.size === 'm',
+          },
+          {
+            icon: <Maximize2 className="w-4 h-4" />,
+            label: 'Full',
+            action: () => editor.chain().focus().updateAttributes('linkPreview', { size: 'full' }).run(),
+            isActive: targetNode.attrs.size === 'full' || !targetNode.attrs.size,
+          }
+        ] : [
+          {
+            icon: <Minimize2 className="w-4 h-4" />,
+            label: t?.small || 'Small',
+            action: () => editor.chain().focus().updateAttributes(targetNode.type.name, { width: 300 }).run(),
+            isActive: targetNode.attrs.width === 300,
+          },
+          {
+            icon: <Maximize2 className="w-4 h-4" />,
+            label: t?.fullWidth || 'Full Width',
+            action: () => editor.chain().focus().updateAttributes(targetNode.type.name, { width: null }).run(),
+            isActive: !targetNode.attrs.width,
+          }
+        ])
+      ]
+    },
+    {
+      label: t?.dangerZone || 'Danger Zone',
+      items: [
+        ...(targetNode.type.name === 'linkPreview' ? [
+          {
+            icon: <ExternalLink className="w-4 h-4" />,
+            label: t?.editLink || 'Edit Link',
+            action: () => {
+              const newUrl = window.prompt('Edit URL:', targetNode.attrs.url || '')
+              if (newUrl !== null && newUrl.trim()) {
+                editor.chain().focus().updateAttributes('linkPreview', { url: newUrl.trim(), loading: true, title: null, description: null, image: null }).run()
+              }
+            },
+          },
+          {
+            icon: <Trash2 className="w-4 h-4" />,
+            label: 'Break Link',
+            action: () => {
+              if (targetPos !== null && targetNode.attrs.url) {
+                const url = targetNode.attrs.url
+                editor.chain().focus().setNodeSelection(targetPos).deleteSelection().insertContent(url).run()
+              }
+            },
+          }
+        ] : []),
+        ...(targetNode.type.name === 'drawing' && targetNode.attrs.x !== null ? [
+          {
+            icon: <Move className="w-4 h-4" />,
+            label: 'Toggle Move Mode',
+            action: () => {
+              window.dispatchEvent(new CustomEvent('toggleDrawingMoveMode', {
+                detail: { pos: targetPos }
+              }))
+            }
+          }
+        ] : []),
+        {
+          icon: <Trash2 className="w-4 h-4 text-red-500" />,
+          label: t?.delete || 'Delete',
+          action: () => {
+            if (targetPos !== null) {
+              editor.chain().focus().setNodeSelection(targetPos).deleteSelection().run()
+            }
+          },
+        }
+      ]
+    }
+  ] : []
 
-  const menuItems = menuMode === 'selection' ? selectionMenuItems : insertionMenuItems
-  const headerText = menuMode === 'selection'
-    ? (t?.formatSelection || 'Format selection')
-    : (t?.insertOrTransform || 'Insert / Transform')
+  if (!isOpen || !editor) return null
 
   // Calculate max height based on available space
   const maxHeight = Math.min(window.innerHeight - position.y - 20, 400)
+
+  // CRITICAL: If we're in node mode, we ONLY want to show nodeMenuItems.
+  // We ensure no selection/insertion items leak through.
+  const menuItems = menuMode === 'node' ? nodeMenuItems : (menuMode === 'selection' ? selectionMenuItems : insertionMenuItems)
+  const headerText = menuMode === 'node'
+    ? (targetNode?.type?.name?.toUpperCase() || 'ELEMENT')
+    : (menuMode === 'selection' ? (t?.formatSelection || 'Format selection') : (t?.insertOrTransform || 'Insert / Transform'))
 
   return (
     <div
@@ -312,38 +498,63 @@ export default function ContextMenu({ editor }) {
         </button>
       </div>
 
-      {/* Menu items */}
-      <div>
-        {menuItems.map((section, sectionIndex) => (
-          <div key={section.label}>
-            {sectionIndex > 0 && <div className="border-t border-gray-100 my-1" />}
-            <div className="px-3 py-1">
-              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{section.label}</span>
+      {/* Menu items - Icon Grid for selection mode */}
+      {menuMode === 'selection' ? (
+        <div className="p-2">
+          {menuItems.map((section, sectionIndex) => (
+            <div key={section.label}>
+              <div className="flex flex-wrap gap-1 justify-center">
+                {section.items.map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={() => handleAction(item.action)}
+                    className={`p-2 rounded-md transition-colors ${item.isActive
+                      ? 'bg-blue-100 text-blue-600'
+                      : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    title={item.label + (item.shortcut ? ` (${item.shortcut})` : '')}
+                  >
+                    {item.icon}
+                  </button>
+                ))}
+              </div>
+              {sectionIndex < menuItems.length - 1 && <div className="border-t border-gray-100 my-2" />}
             </div>
-            {section.items.map((item) => (
-              <button
-                key={item.label}
-                onClick={() => handleAction(item.action)}
-                className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${item.isActive
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-              >
-                <span className={item.isActive ? 'text-blue-600' : 'text-gray-500'}>
-                  {item.icon}
-                </span>
-                <span className="flex-1">{item.label}</span>
-                {item.shortcut && (
-                  <span className="text-xs text-gray-400">{item.shortcut}</span>
-                )}
-                {item.isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                )}
-              </button>
-            ))}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div>
+          {menuItems.map((section, sectionIndex) => (
+            <div key={section.label}>
+              <div className="px-3 py-1">
+                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{section.label}</span>
+              </div>
+              {section.items.map((item) => (
+                <button
+                  key={item.label}
+                  onClick={() => handleAction(item.action)}
+                  className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${item.isActive
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                >
+                  <span className={item.isActive ? 'text-blue-600' : 'text-gray-500'}>
+                    {item.icon}
+                  </span>
+                  <span className="flex-1">{item.label}</span>
+                  {item.shortcut && (
+                    <span className="text-xs text-gray-400">{item.shortcut}</span>
+                  )}
+                  {item.isActive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  )}
+                </button>
+              ))}
+              {sectionIndex < menuItems.length - 1 && <div className="border-t border-gray-100 my-1" />}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

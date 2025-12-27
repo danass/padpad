@@ -38,19 +38,23 @@ export default function BubbleToolbar({ editor, onOpenLinkEditor }) {
                 <Italic className="w-4 h-4" />
             </button>
 
-            <button
-                onClick={() => {
-                    if (isLink) {
-                        editor.chain().focus().unsetLink().run()
-                    } else {
-                        onOpenLinkEditor()
-                    }
-                }}
-                className={`p-2 hover:bg-gray-800 rounded transition-colors ${isLink ? 'text-blue-400' : 'text-gray-200'}`}
-                title="Link"
-            >
-                <LinkIcon className="w-4 h-4" />
-            </button>
+            <div className="hidden xs:block">
+                <button
+                    onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        if (isLink) {
+                            editor.chain().focus().unsetLink().run()
+                        } else {
+                            onOpenLinkEditor()
+                        }
+                    }}
+                    className={`p-2 hover:bg-gray-800 rounded transition-colors ${isLink ? 'text-blue-400' : 'text-gray-200'}`}
+                    title="Link"
+                >
+                    <LinkIcon className="w-4 h-4" />
+                </button>
+            </div>
 
             <div className="w-px h-4 bg-gray-700 mx-1" />
 

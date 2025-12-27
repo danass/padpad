@@ -972,6 +972,9 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
         </button>
       </div>
 
+      {/* Line break on mobile - font and size on first row, rest on second row */}
+      <div className="w-full md:hidden" />
+
       {/* Paint Mode Toggle - hidden on mobile */}
       <div className="relative hidden xs:block">
         <Tooltip label={t?.brushMode || 'Brush mode'}>
@@ -1015,24 +1018,26 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
         )}
       </div>
 
-      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
+      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5 hidden md:block" />
 
       {/* Formatting Buttons */}
-      <Tooltip label={t?.bold || 'Bold'} shortcut={['⌘', 'B']}>
-        <button
-          onClick={() => {
-            const newBold = !editor.isActive('bold')
-            editor.chain().focus().toggleBold().run()
-            setActiveStyle(prev => ({ ...prev, bold: newBold }))
-            shouldApplyActiveStyleRef.current = true
-          }}
-          className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('bold') ? 'bg-blue-100 text-blue-600' : ''
-            }`}
-          aria-label={t?.bold || 'Bold'}
-        >
-          <Bold className="w-5 h-5 md:w-4 md:h-4" />
-        </button>
-      </Tooltip>
+      <div className="hidden xs:block">
+        <Tooltip label={t?.bold || 'Bold'} shortcut={['⌘', 'B']}>
+          <button
+            onClick={() => {
+              const newBold = !editor.isActive('bold')
+              editor.chain().focus().toggleBold().run()
+              setActiveStyle(prev => ({ ...prev, bold: newBold }))
+              shouldApplyActiveStyleRef.current = true
+            }}
+            className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('bold') ? 'bg-blue-100 text-blue-600' : ''
+              }`}
+            aria-label={t?.bold || 'Bold'}
+          >
+            <Bold className="w-5 h-5 md:w-4 md:h-4" />
+          </button>
+        </Tooltip>
+      </div>
 
       {/* Italic - hidden on mobile */}
       <div className="hidden xs:block">
@@ -1591,51 +1596,52 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
       </div>
 
       {/* Link */}
-      <Tooltip label={t?.insertLink || 'Insert link'} shortcut={['⌘', 'K']}>
-        <button
-          aria-label={t?.insertLink || 'Insert link'}
-          onClick={() => {
-            // Get selection position to show LinkEditor
-            const { selection } = editor.state
-            const { $from, $to } = selection
+      <div className="hidden xs:block">
+        <Tooltip label={t?.insertLink || 'Insert link'} shortcut={['⌘', 'K']}>
+          <button
+            aria-label={t?.insertLink || 'Insert link'}
+            onClick={() => {
+              // Get selection position to show LinkEditor
+              const { selection } = editor.state
+              const { $from, $to } = selection
 
-            // If no text is selected, insert a link at cursor position
-            if ($from.pos === $to.pos) {
-              // No selection - create empty link
-              editor.chain().focus().setLink({ href: '' }).run()
-            }
-
-            const coords = editor.view.coordsAtPos($from.pos)
-            const editorContainer = editor.view.dom.closest('.prose') || editor.view.dom.parentElement
-            const containerRect = editorContainer?.getBoundingClientRect()
-
-            let position
-            if (containerRect) {
-              position = {
-                top: coords.bottom - containerRect.top + 8,
-                left: coords.left - containerRect.left,
+              // If no text is selected, insert a link at cursor position
+              if ($from.pos === $to.pos) {
+                // No selection - create empty link
+                editor.chain().focus().setLink({ href: '' }).run()
               }
-            } else {
-              position = {
-                top: coords.bottom + 8,
-                left: coords.left,
+
+              const coords = editor.view.coordsAtPos($from.pos)
+              const editorContainer = editor.view.dom.closest('.prose') || editor.view.dom.parentElement
+              const containerRect = editorContainer?.getBoundingClientRect()
+
+              let position
+              if (containerRect) {
+                position = {
+                  top: coords.bottom - containerRect.top + 8,
+                  left: coords.left - containerRect.left,
+                }
+              } else {
+                position = {
+                  top: coords.bottom + 8,
+                  left: coords.left,
+                }
               }
-            }
 
-            // Dispatch custom event to show LinkEditor
-            window.dispatchEvent(new CustomEvent('showLinkEditor', {
-              detail: { position }
-            }))
-          }}
-          className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('link') ? 'bg-gray-200' : ''
-            }`}
-        >
-          <Link className="w-5 h-5 md:w-4 md:h-4" />
-        </button>
-      </Tooltip>
+              // Dispatch custom event to show LinkEditor
+              window.dispatchEvent(new CustomEvent('showLinkEditor', {
+                detail: { position }
+              }))
+            }}
+            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('link') ? 'bg-gray-200' : ''
+              }`}
+          >
+            <Link className="w-5 h-5 md:w-4 md:h-4" />
+          </button>
+        </Tooltip>
+      </div>
 
-
-      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
+      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5 hidden md:block" />
 
       {/* Undo/Redo - Wrapped together */}
       <div className="flex items-center flex-nowrap">
@@ -1661,8 +1667,6 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
           </button>
         </Tooltip>
 
-        <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
-
       </div>
 
       {/* Save button - icon only, aligned right */}
@@ -1672,13 +1676,13 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
             <button
               onClick={onSave}
               disabled={saving || !hasChanges}
-              className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded flex items-center justify-center ${hasChanges
-                  ? 'bg-black text-white hover:bg-gray-800 disabled:opacity-50'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              className={`p-1.5 xs:p-2 md:p-1.5 h-8 w-8 xs:h-10 xs:w-10 md:h-8 md:w-8 rounded flex items-center justify-center ${hasChanges
+                ? 'bg-black text-white hover:bg-gray-800 disabled:opacity-50'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
               aria-label={t?.save || 'Save'}
             >
-              <Save className="w-4 h-4" />
+              <Save className="w-5 h-5 xs:w-6 xs:h-6 md:w-4 md:h-4" />
             </button>
           </Tooltip>
         </div>

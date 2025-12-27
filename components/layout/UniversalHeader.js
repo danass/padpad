@@ -140,7 +140,7 @@ export default function UniversalHeader() {
         return (
             <header className="border-b border-gray-200 bg-white relative z-[100]">
                 <div className="max-w-full mx-auto">
-                    <div className="flex items-center justify-between px-6 h-16">
+                    <div className="flex items-center justify-between px-6 h-12 md:h-16">
                         <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-gray-900 uppercase tracking-widest">textpad</span>
                         </div>
@@ -155,7 +155,7 @@ export default function UniversalHeader() {
         return (
             <header className="border-b border-gray-200 bg-white relative z-[100]">
                 <div className="max-w-full mx-auto">
-                    <div className="flex items-center justify-between px-6 h-16">
+                    <div className="flex items-center justify-between px-6 h-12 md:h-16">
                         <div className="flex items-center gap-3">
                             <a href="https://www.textpad.cloud" className="flex items-center gap-2" title="Textpad">
                                 <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
@@ -180,9 +180,9 @@ export default function UniversalHeader() {
 
     // MAIN DOMAIN HEADER
     return (
-        <header className="border-b border-gray-200 bg-white relative z-[100] hidden xs:block">
+        <header className={`border-b border-gray-200 bg-white relative z-[100] ${session ? '' : 'hidden xs:block'}`}>
             <div className="max-w-full mx-auto">
-                <div className="flex items-center justify-between px-6 h-16">
+                <div className="flex items-center justify-between px-6 h-12 md:h-16">
                     {/* Left side */}
                     <div className="flex items-center gap-8">
                         <Link href="/" className="flex items-center gap-2" title={t?.appName || 'TextPad'}>
@@ -257,7 +257,7 @@ export default function UniversalHeader() {
                                     )}
                                 </div>
                             </>
-                        ) : (
+                        ) : pathname !== '/auth/signin' && (
                             <Link href="/auth/signin" className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium">Sign in</Link>
                         )}
                     </div>
@@ -265,7 +265,7 @@ export default function UniversalHeader() {
 
                 {/* Drive Tabs */}
                 {session && (isDrive || isDoc) && (
-                    <nav className="flex items-center gap-1 px-6 border-t border-gray-100 overflow-x-auto">
+                    <nav className="flex items-center gap-1 px-6 border-t border-gray-100 overflow-x-auto h-10 md:h-auto">
                         <Link
                             href="/drive"
                             className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 flex-shrink-0 ${isDrive && !isDoc ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-600 hover:text-gray-900'}`}

@@ -18,18 +18,17 @@ export async function POST(request, { params }) {
     }
 
     if (setAdmin) {
-      // Add to admins table (ignore if already exists)
-      try {
-        await sql.query(
-          'INSERT INTO admins (email) VALUES ($1) ON CONFLICT (email) DO NOTHING',
-          [email]
-        )
-      } catch (error) {
-        // Ignore duplicate key errors
-        if (!error.message.includes('duplicate') && !error.message.includes('unique')) {
-          throw error
-        }
-      }
+      // Add to admins table
+      await sql.query(
+        'INSERT INTO admins (email) VALUES ($1) ON CONFLICT (email) DO NOTHING',
+        [email]
+      )
+    } else {
+      // Remove from admins table
+      await sql.query(
+        'DELETE FROM admins WHERE email = $1',
+        [email]
+      )
     }
 
     // Update role in users table if provided
