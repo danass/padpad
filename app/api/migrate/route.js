@@ -152,7 +152,11 @@ async function runMigrations() {
 
       // Add keywords column to documents (array of text)
       `ALTER TABLE documents ADD COLUMN IF NOT EXISTS keywords TEXT[]`,
-      `CREATE INDEX IF NOT EXISTS idx_documents_keywords ON documents USING gin(keywords) WHERE keywords IS NOT NULL`
+      `CREATE INDEX IF NOT EXISTS idx_documents_keywords ON documents USING gin(keywords) WHERE keywords IS NOT NULL`,
+
+      // Add role column to users
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user'`,
+      `CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)`
     ]
 
     // Run all migrations

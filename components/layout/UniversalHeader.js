@@ -192,19 +192,15 @@ export default function UniversalHeader() {
                         <nav className="hidden md:flex items-center gap-6">
                             <Link href="/feed" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/feed' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeed || 'Feed'}</Link>
                             <Link href="/featured" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/featured' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeatured || 'Featured'}</Link>
-                            <Link href="/features" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/features' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeatures || 'Features'}</Link>
-                            <Link href="/credits" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/credits' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navCredits || 'Credits'}</Link>
                         </nav>
                     </div>
 
                     {/* Center title */}
-                    {(pathname === '/feed' || pathname === '/featured' || pathname === '/features' || pathname === '/credits') && (
+                    {(pathname === '/feed' || pathname === '/featured') && (
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className="text-sm font-bold uppercase tracking-[0.2em] text-gray-900 pointer-events-auto">
                                 {pathname === '/feed' ? (t?.navFeed || 'Feed') :
-                                    pathname === '/featured' ? (t?.navFeatured || 'Featured') :
-                                        pathname === '/features' ? (t?.navFeatures || 'Features') :
-                                            (t?.navCredits || 'Credits')}
+                                    (t?.navFeatured || 'Featured')}
                             </div>
                         </div>
                     )}
@@ -280,6 +276,6 @@ export default function UniversalHeader() {
                     </nav>
                 )}
             </div>
-        </header>
+        </header >
     )
 }

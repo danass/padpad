@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
@@ -52,6 +52,8 @@ import ContextMenu from '@/components/editor/ContextMenu'
 import HistoryPanel from '@/components/editor/HistoryPanel'
 import LinkEditor from '@/components/editor/LinkEditor'
 import IpfsBrowser from '@/components/ipfs/IpfsBrowser'
+import BubbleToolbar from '@/components/editor/BubbleToolbar'
+import FloatingToolbar from '@/components/editor/FloatingToolbar'
 import { useEditorStore } from '@/store/editorStore'
 import { useToast } from '@/components/ui/toast'
 import { replayHistory } from '@/lib/editor/history-replay'
@@ -77,9 +79,12 @@ export default function DocumentPage() {
   const [isOwner, setIsOwner] = useState(true) // Default to true, will be set from API
   const [isFeatured, setIsFeatured] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isCurator, setIsCurator] = useState(false)
   const [keywords, setKeywords] = useState([]) // Document keywords
   const [keywordInput, setKeywordInput] = useState('') // Input for adding keywords
   const [mounted, setMounted] = useState(false)
+  const [showKeywordsDropdown, setShowKeywordsDropdown] = useState(false)
+  const keywordsDropdownRef = useRef(null)
   const [hasChanges, setHasChanges] = useState(false) // Track if there are unsaved changes for UI
   const autosaveTimeoutRef = useRef(null)
   const snapshotIntervalRef = useRef(null)
@@ -101,7 +106,7 @@ export default function DocumentPage() {
 
   // Debounced autosave - increased debounce time and prevent multiple saves
   const handleAutosave = useCallback(async (content) => {
-    if (!documentId || loading || !isLoadedRef.current || isDocumentDeletedRef.current || !isOwner) return
+    if (!documentId || loading || !isLoadedRef.current || isDocumentDeletedRef.current || (!isOwner && !isAdmin)) return
 
     // Check if content actually changed
     const contentStr = JSON.stringify(content)
@@ -207,7 +212,12 @@ export default function DocumentPage() {
       DraggableOrderedList,
       DraggableBlockquote,
       Placeholder.configure({
-        placeholder: 'Start typing... Type / for commands',
+        placeholder: ({ node }) => {
+          if (node.type.name === 'heading') {
+            return 'Title'
+          }
+          return 'Tell your story...'
+        },
       }),
       ResizableImage.configure({
         inline: false,
@@ -377,6 +387,17 @@ export default function DocumentPage() {
   // Set mounted state to prevent flushSync errors during hydration
   useEffect(() => {
     setMounted(true)
+  }, [])
+
+  // Close keywords dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (keywordsDropdownRef.current && !keywordsDropdownRef.current.contains(event.target)) {
+        setShowKeywordsDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   // Listen for showLinkEditor event from toolbar
@@ -697,7 +718,7 @@ export default function DocumentPage() {
         }
 
         const data = await response.json()
-        const { document, snapshot, events, isOwner: ownerFlag, isAdmin: adminFlag } = data
+        const { document, snapshot, events, isOwner: ownerFlag, isAdmin: adminFlag, isCurator: curatorFlag } = data
 
         setCurrentDocument(document)
         setTitle(document.title)
@@ -706,6 +727,7 @@ export default function DocumentPage() {
         setIsOwner(ownerFlag !== false) // Default to true if not specified
         setIsFeatured(document.is_featured || false)
         setIsAdmin(adminFlag || false)
+        setIsCurator(curatorFlag || adminFlag || false)
         setKeywords(document.keywords || [])
 
         // Reconstruct content using replayHistory
@@ -1332,15 +1354,11 @@ export default function DocumentPage() {
                   </button>
                 )}
 
-                {/* Keywords - Only for owners */}
-                {isOwner && (
-                  <div className="relative">
+                {/* Keywords - For owners and curators */}
+                {(isOwner || isCurator) && (
+                  <div className="relative" ref={keywordsDropdownRef}>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        const dropdown = e.currentTarget.nextElementSibling
-                        dropdown.classList.toggle('hidden')
-                      }}
+                      onClick={() => setShowKeywordsDropdown(!showKeywordsDropdown)}
                       className={`p-1.5 border rounded-md transition-colors ${keywords.length > 0
                         ? 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
                         : 'border-gray-200 text-gray-700 hover:bg-gray-50'
@@ -1351,103 +1369,82 @@ export default function DocumentPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                       </svg>
                     </button>
-                    <div className="hidden absolute top-full right-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg p-3" style={{ zIndex: 10001 }}>
-                      <p className="text-xs text-gray-500 mb-2">Keywords (press Enter to add)</p>
-                      <div className="flex gap-1 mb-2">
-                        <input
-                          type="text"
-                          value={keywordInput}
-                          onChange={(e) => setKeywordInput(e.target.value.toLowerCase())}
-                          onKeyDown={(e) => {
-                            e.stopPropagation()
-                            if (e.key === 'Enter') {
-                              e.preventDefault()
-                              const newKeyword = keywordInput.trim()
-                              if (newKeyword && !keywords.includes(newKeyword)) {
-                                const newKeywords = [...keywords, newKeyword]
-                                fetch(`/api/documents/${documentId}`, {
-                                  method: 'PATCH',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ keywords: newKeywords })
-                                }).then(response => {
-                                  if (response.ok) {
-                                    setKeywords(newKeywords)
-                                    setKeywordInput('')
-                                    showToast('Keyword added', 'success')
-                                  }
-                                }).catch(() => {
-                                  showToast('Failed to add keyword', 'error')
-                                })
-                              } else if (newKeyword) {
-                                setKeywordInput('')
-                              }
-                            }
-                          }}
-                          placeholder="Add keyword..."
-                          className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newKeyword = keywordInput.trim()
-                            if (newKeyword && !keywords.includes(newKeyword)) {
-                              const newKeywords = [...keywords, newKeyword]
-                              fetch(`/api/documents/${documentId}`, {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ keywords: newKeywords })
-                              }).then(response => {
-                                if (response.ok) {
-                                  setKeywords(newKeywords)
-                                  setKeywordInput('')
-                                  showToast('Keyword added', 'success')
-                                }
-                              }).catch(() => {
-                                showToast('Failed to add keyword', 'error')
-                              })
-                            }
-                          }}
-                          className="px-2 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                        >
-                          +
-                        </button>
-                      </div>
-                      {keywords.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {keywords.map((keyword) => (
-                            <span
-                              key={keyword}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded-full"
-                            >
-                              {keyword}
-                              <button
-                                onClick={async () => {
-                                  const newKeywords = keywords.filter(k => k !== keyword)
-                                  try {
-                                    const response = await fetch(`/api/documents/${documentId}`, {
-                                      method: 'PATCH',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ keywords: newKeywords })
-                                    })
+                    {showKeywordsDropdown && (
+                      <div className="absolute top-full right-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg p-3" style={{ zIndex: 10001 }}>
+                        <p className="text-xs text-gray-500 mb-2 font-medium">Keywords</p>
+                        <div className="flex gap-1 mb-3">
+                          <input
+                            type="text"
+                            value={keywordInput}
+                            autoFocus
+                            onChange={(e) => setKeywordInput(e.target.value.toLowerCase())}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                const newKeyword = keywordInput.trim()
+                                if (newKeyword && !keywords.includes(newKeyword)) {
+                                  const newKeywords = [...keywords, newKeyword]
+                                  fetch(`/api/documents/${documentId}`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ keywords: newKeywords })
+                                  }).then(response => {
                                     if (response.ok) {
                                       setKeywords(newKeywords)
-                                      showToast('Keyword removed', 'success')
+                                      setKeywordInput('')
+                                      showToast('Keyword added', 'success')
                                     }
-                                  } catch (err) {
-                                    showToast('Failed to remove keyword', 'error')
-                                  }
-                                }}
-                                className="text-indigo-500 hover:text-indigo-700"
-                              >
-                                ×
-                              </button>
-                            </span>
-                          ))}
+                                  }).catch(() => {
+                                    showToast('Failed to add keyword', 'error')
+                                  })
+                                } else if (newKeyword) {
+                                  setKeywordInput('')
+                                }
+                              }
+                            }}
+                            placeholder="Add keyword (Enter)..."
+                            className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                          />
                         </div>
-                      ) : (
-                        <p className="text-xs text-gray-400 italic">No keywords yet</p>
-                      )}
-                    </div>
+                        {keywords.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {keywords.map((keyword) => (
+                              <span
+                                key={keyword}
+                                className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full border border-indigo-100"
+                              >
+                                {keyword}
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation()
+                                    const newKeywords = keywords.filter(k => k !== keyword)
+                                    try {
+                                      const response = await fetch(`/api/documents/${documentId}`, {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ keywords: newKeywords })
+                                      })
+                                      if (response.ok) {
+                                        setKeywords(newKeywords)
+                                        showToast('Keyword removed', 'success')
+                                      }
+                                    } catch (err) {
+                                      showToast('Failed to remove keyword', 'error')
+                                    }
+                                  }}
+                                  className="text-indigo-400 hover:text-indigo-600 transition-colors"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-400 italic py-1">No keywords yet</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1501,8 +1498,8 @@ export default function DocumentPage() {
                   )}
                 </div>
 
-                {/* Feature toggle - Admin only */}
-                {isAdmin && (
+                {/* Feature toggle - Admin and Curators only */}
+                {(isAdmin || isCurator) && (
                   <button
                     onClick={async () => {
                       try {
@@ -1569,8 +1566,50 @@ export default function DocumentPage() {
             <div className="mb-4">
               <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} onSave={handleManualSave} saving={saving} hasChanges={hasChanges} />
             </div>
-            <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8 relative">
-              {mounted && <EditorContent editor={editor} />}
+            <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-0 transition-all pb-20 md:pb-8 relative">
+              {mounted && editor && (
+                <>
+                  <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+                    <BubbleToolbar
+                      editor={editor}
+                      onOpenLinkEditor={() => {
+                        // Logic to open link editor at current selection
+                        const { view } = editor
+                        const { state } = view
+                        const { selection } = state
+                        const { from } = selection
+                        const coords = view.coordsAtPos(from)
+                        const container = view.dom.closest('.prose') || view.dom.parentElement
+                        const containerRect = container?.getBoundingClientRect()
+
+                        if (containerRect) {
+                          setLinkEditorPosition({
+                            top: coords.bottom - containerRect.top + 8,
+                            left: coords.left - containerRect.left,
+                          })
+                        }
+                      }}
+                    />
+                  </BubbleMenu>
+
+                  <FloatingMenu
+                    editor={editor}
+                    tippyOptions={{ duration: 100 }}
+                    shouldShow={({ state }) => {
+                      const { selection } = state
+                      const { $from } = selection
+                      return $from.parent.content.size === 0
+                    }}
+                  >
+                    <FloatingToolbar
+                      editor={editor}
+                      onOpenIpfsBrowser={() => setShowIpfsBrowser(true)}
+                    />
+                  </FloatingMenu>
+
+                  <EditorContent editor={editor} />
+                </>
+              )}
               <ContextMenu editor={editor} />
               {linkEditorPosition && (
                 <LinkEditor

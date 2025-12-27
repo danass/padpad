@@ -337,8 +337,9 @@ export const translations = {
     signInWithGoogle: 'Sign in with Google',
 
     // Placeholder
-    editorPlaceholder: 'Start typing... Create your document here',
-    editorPlaceholderDoc: 'Start typing... Type / for commands',
+    editorPlaceholder: 'Tell your story...',
+    editorPlaceholderTitle: 'Title',
+    editorPlaceholderDoc: 'Tell your story...',
 
     // Settings extras
     yourLegacyUrl: 'Your Legacy URL',
@@ -790,8 +791,9 @@ export const translations = {
     signInWithGoogle: 'Se connecter avec Google',
 
     // Placeholder
-    editorPlaceholder: 'Commencez à écrire... Créez votre document ici',
-    editorPlaceholderDoc: 'Commencez à écrire... Tapez / pour les commandes',
+    editorPlaceholder: 'Racontez votre histoire...',
+    editorPlaceholderTitle: 'Titre',
+    editorPlaceholderDoc: 'Racontez votre histoire...',
 
     // Settings extras
     yourLegacyUrl: 'Votre URL d\'héritage',

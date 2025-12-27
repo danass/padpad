@@ -28,12 +28,6 @@ export default function NotFound() {
                     >
                         Start Writing
                     </Link>
-                    <Link
-                        href="/features"
-                        className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm font-medium transition-colors"
-                    >
-                        View Features
-                    </Link>
                 </div>
             </div>
 

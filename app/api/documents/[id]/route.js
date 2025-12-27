@@ -10,7 +10,9 @@ export async function GET(request, { params }) {
     }
 
     const { id } = await params
+    const { isCurator } = require('@/lib/auth/isCurator')
     const admin = await isAdmin()
+    const curator = await isCurator()
 
     // Get document - if it has no user_id, assign it to current user
     let docResult = await sql.query(
@@ -45,8 +47,8 @@ export async function GET(request, { params }) {
       }
     }
 
-    if (document.user_id && document.user_id !== userId && !admin) {
-      // Document belongs to another user - only admins can access
+    if (document.user_id && document.user_id !== userId && !admin && !curator) {
+      // Document belongs to another user - only admins/curators can access
       return Response.json({ error: 'Document not found' }, { status: 404 })
     }
 
@@ -117,7 +119,8 @@ export async function GET(request, { params }) {
       snapshot,
       events,
       isOwner: document.user_id === userId,
-      isAdmin: admin
+      isAdmin: admin,
+      isCurator: curator
     })
   } catch (error) {
     console.error('Error fetching document:', error)
@@ -170,11 +173,28 @@ export async function PATCH(request, { params }) {
 
     values.push(id)
 
+    const { isCurator } = require('@/lib/auth/isCurator')
     const admin = await isAdmin()
+    const curator = await isCurator()
+
     let whereClause = `id = $${paramCount}`
-    if (!admin) {
+
+    // Check permissions
+    if (!admin && !curator) {
+      // Regular user - must be owner
       whereClause += ` AND user_id = $${paramCount + 1}`
       values.push(userId)
+    } else if (curator && !admin) {
+      // Curator (but not admin) - check if they are owner or only updating keywords
+      const checkOwner = await sql.query('SELECT user_id FROM documents WHERE id = $1', [id])
+      const isOwner = checkOwner.rows[0]?.user_id === userId
+
+      if (!isOwner) {
+        // If not owner, curator can ONLY update keywords
+        if (title !== undefined || folder_id !== undefined || is_full_width !== undefined) {
+          return Response.json({ error: 'Curators can only update keywords on documents they do not own' }, { status: 403 })
+        }
+      }
     }
 
     const result = await sql.query(

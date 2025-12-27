@@ -8,15 +8,15 @@ export async function POST(request, { params }) {
     if (!admin) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
-    
+
     const { email } = await params
     const body = await request.json()
-    const { isAdmin: setAdmin } = body
-    
+    const { isAdmin: setAdmin, role } = body
+
     if (typeof setAdmin !== 'boolean') {
       return Response.json({ error: 'isAdmin must be a boolean' }, { status: 400 })
     }
-    
+
     if (setAdmin) {
       // Add to admins table (ignore if already exists)
       try {
@@ -30,18 +30,21 @@ export async function POST(request, { params }) {
           throw error
         }
       }
-    } else {
-      // Remove from admins table
+    }
+
+    // Update role in users table if provided
+    if (role !== undefined) {
       await sql.query(
-        'DELETE FROM admins WHERE email = $1',
-        [email]
+        'UPDATE users SET role = $1 WHERE email = $2',
+        [role, email]
       )
     }
-    
-    return Response.json({ 
-      success: true, 
+
+    return Response.json({
+      success: true,
       email,
-      isAdmin: setAdmin 
+      isAdmin: setAdmin,
+      role
     })
   } catch (error) {
     console.error('Error setting admin status:', error)

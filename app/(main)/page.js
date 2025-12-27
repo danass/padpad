@@ -82,5 +82,11 @@ function DBErrorPage() {
 }
 
 export default async function HomePage() {
-    return <HomeClient />
+    const { articles, dbError } = await getFeaturedArticles()
+
+    if (dbError) {
+        return <DBErrorPage />
+    }
+
+    return <HomeClient featuredArticles={articles} />
 }

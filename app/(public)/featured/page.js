@@ -115,7 +115,7 @@ async function getFeaturedArticles(page = 1, limit = 8, keyword = null) {
                     username: doc.testament_username,
                     avatarUrl: doc.avatar_url,
                     // Use archive_id or first 8 chars of user_id (without dashes) as fallback
-                    archiveId: doc.archive_id || (doc.user_id ? doc.user_id.replace(/-/g, '').substring(0, 8) : null),
+                    archive_id: doc.archive_id || (doc.user_id ? doc.user_id.replace(/-/g, '').substring(0, 8) : null),
                 },
             }
         }))
@@ -230,22 +230,22 @@ export default async function FeaturedPage({ searchParams }) {
                                     {/* Content */}
                                     <div className="p-5">
                                         {/* Author */}
-                                        {(article.author?.username || article.author?.archiveId) && (
+                                        {(article.author?.username || article.author?.archive_id) && (
                                             <div className="flex items-center gap-2 mb-3">
                                                 {article.author.avatarUrl ? (
                                                     <img
                                                         src={article.author.avatarUrl}
-                                                        alt={article.author.username || article.author.archiveId}
+                                                        alt={article.author.username || article.author.archive_id}
                                                         className="w-6 h-6 rounded-full"
                                                     />
                                                 ) : (
                                                     <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
                                                         <span className="text-xs text-gray-500">
-                                                            {(article.author.username || article.author.archiveId || '?').charAt(0).toUpperCase()}
+                                                            {(article.author.username || article.author.archive_id || '?').charAt(0).toUpperCase()}
                                                         </span>
                                                     </div>
                                                 )}
-                                                <span className="text-sm text-gray-500">@{article.author.username || article.author.archiveId}</span>
+                                                <span className="text-sm text-gray-500">@{article.author.username || article.author.archive_id}</span>
                                             </div>
                                         )}
 

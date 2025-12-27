@@ -43,6 +43,7 @@ const getFeedData = cache(async (page = 1, limit = 10, keyword = null) => {
                 d.keywords,
                 u.avatar_url as author_avatar,
                 u.testament_username as author_username,
+                COALESCE(u.archive_id, SUBSTRING(REPLACE(d.user_id::text, '-', ''), 1, 8)) as author_archive_id,
                 s.content_json
             FROM documents d
             LEFT JOIN users u ON d.user_id = u.id

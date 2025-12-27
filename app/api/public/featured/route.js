@@ -11,7 +11,7 @@ export async function GET(request) {
 
         // Get featured public documents
         const result = await sql.query(
-            `SELECT d.*, u.testament_username, u.avatar_url
+            `SELECT d.*, u.testament_username, u.avatar_url, u.archive_id
        FROM documents d
        LEFT JOIN users u ON d.user_id = u.id
        WHERE d.is_featured = true AND d.is_public = true
@@ -109,6 +109,7 @@ export async function GET(request) {
                 author: {
                     username: doc.testament_username,
                     avatarUrl: doc.avatar_url,
+                    archive_id: doc.archive_id || (doc.user_id ? doc.user_id.replace(/-/g, '').substring(0, 8) : null),
                 },
             }
         }))

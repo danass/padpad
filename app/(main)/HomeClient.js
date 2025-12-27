@@ -9,8 +9,10 @@ import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 import ContextMenu from '@/components/editor/ContextMenu'
 import LinkEditor from '@/components/editor/LinkEditor'
 import IpfsBrowser from '@/components/ipfs/IpfsBrowser'
+import BubbleToolbar from '@/components/editor/BubbleToolbar'
+import FloatingToolbar from '@/components/editor/FloatingToolbar'
 import { useLanguage } from '@/app/i18n/LanguageContext'
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
@@ -61,7 +63,12 @@ export default function HomeClient({ featuredArticles = [] }) {
         dropcursor: false,
       }),
       Placeholder.configure({
-        placeholder: 'Start typing... Create your document here',
+        placeholder: ({ node }) => {
+          if (node.type.name === 'heading') {
+            return t?.editorPlaceholderTitle || 'Title'
+          }
+          return t?.editorPlaceholder || 'Tell your story...'
+        },
       }),
       ResizableImage.configure({
         inline: false,
@@ -150,6 +157,7 @@ export default function HomeClient({ featuredArticles = [] }) {
     ],
     content: null,
     editable: true,
+    autofocus: 'end',
     onUpdate: ({ editor }) => {
       // Save to localStorage on every update
       const content = editor.getJSON()
@@ -160,7 +168,7 @@ export default function HomeClient({ featuredArticles = [] }) {
         console.error('Error saving to localStorage:', err)
       }
     },
-  })
+  }, [t]) // Re-run when translations change
 
   // Track if editor has content for save button state
   useEffect(() => {
@@ -455,8 +463,49 @@ export default function HomeClient({ featuredArticles = [] }) {
               <div className="mb-4">
                 <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} onSave={handleSave} saving={saving} hasChanges={hasContent} />
               </div>
-              <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all pb-20 md:pb-8 relative">
-                {mounted && <EditorContent editor={editor} />}
+              <div className="prose max-w-none min-h-[200px] md:min-h-[500px] p-4 md:p-0 transition-all pb-20 md:pb-8 relative">
+                {mounted && editor && (
+                  <>
+                    <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+                      <BubbleToolbar
+                        editor={editor}
+                        onOpenLinkEditor={() => {
+                          const { view } = editor
+                          const { state } = view
+                          const { selection } = state
+                          const { from } = selection
+                          const coords = view.coordsAtPos(from)
+                          const container = view.dom.closest('.prose') || view.dom.parentElement
+                          const containerRect = container?.getBoundingClientRect()
+
+                          if (containerRect) {
+                            setLinkEditorPosition({
+                              top: coords.bottom - containerRect.top + 8,
+                              left: coords.left - containerRect.left,
+                            })
+                          }
+                        }}
+                      />
+                    </BubbleMenu>
+
+                    <FloatingMenu
+                      editor={editor}
+                      tippyOptions={{ duration: 100 }}
+                      shouldShow={({ state }) => {
+                        const { selection } = state
+                        const { $from } = selection
+                        return $from.parent.content.size === 0
+                      }}
+                    >
+                      <FloatingToolbar
+                        editor={editor}
+                        onOpenIpfsBrowser={() => setShowIpfsBrowser(true)}
+                      />
+                    </FloatingMenu>
+
+                    <EditorContent editor={editor} />
+                  </>
+                )}
                 <ContextMenu editor={editor} />
                 {linkEditorPosition && (
                   <LinkEditor
@@ -466,26 +515,11 @@ export default function HomeClient({ featuredArticles = [] }) {
                   />
                 )}
               </div>
-              <p className="mt-4 text-xs text-gray-500 text-center">
-                {session
-                  ? (t?.savedLocally || 'Your document is saved locally. Click "Save Document" to save it permanently.')
-                  : (t?.clickToSave || 'Click "Save" to sign in and save your document permanently.')}
-              </p>
+              <div className="h-4" /> {/* Spacing */}
             </>
           )}
 
-          {/* Quick Links */}
-          <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center gap-6 text-sm text-gray-500">
-            <NextLink href="/featured" className="hover:text-gray-900 transition-colors">
-              Featured Articles
-            </NextLink>
-            <NextLink href="/features" className="hover:text-gray-900 transition-colors">
-              All Features
-            </NextLink>
-            <NextLink href="/credits" className="hover:text-gray-900 transition-colors">
-              Credits
-            </NextLink>
-          </div>
+
         </div>
       </main>
 

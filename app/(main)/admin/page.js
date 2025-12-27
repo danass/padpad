@@ -101,24 +101,24 @@ export default function AdminPage() {
     }
   }
 
-  const handleSetAdmin = async (email, isAdmin) => {
+  const handleUpdateUser = async (email, updates) => {
     setSettingAdmin(email)
     try {
       const response = await fetch(`/api/admin/users/${encodeURIComponent(email)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isAdmin })
+        body: JSON.stringify(updates)
       })
 
       if (response.ok) {
         // Reload users
         await loadUsers()
       } else {
-        alert('Failed to update admin status')
+        alert('Failed to update user status')
       }
     } catch (error) {
-      console.error('Error setting admin status:', error)
-      alert('Failed to update admin status')
+      console.error('Error updating user status:', error)
+      alert('Failed to update user status')
     } finally {
       setSettingAdmin(null)
     }
@@ -317,6 +317,7 @@ export default function AdminPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">First Created</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Activity</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Curator</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -348,21 +349,46 @@ export default function AdminPage() {
                           )}
                         </div>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm">
+                          {user.role === 'curator' ? (
+                            <span className="text-indigo-600 font-medium">Yes</span>
+                          ) : (
+                            <span className="text-gray-400">No</span>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button
-                          onClick={() => handleSetAdmin(user.email, !user.isAdmin)}
-                          disabled={settingAdmin === user.email}
-                          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${user.isAdmin
-                            ? 'bg-red-50 text-red-700 hover:bg-red-100'
-                            : 'bg-green-50 text-green-700 hover:bg-green-100'
-                            } disabled:opacity-50 disabled:cursor-not-allowed`}
-                        >
-                          {settingAdmin === user.email
-                            ? '...'
-                            : user.isAdmin
-                              ? 'Remove Admin'
-                              : 'Make Admin'}
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleUpdateUser(user.email, { isAdmin: !user.isAdmin, role: user.role })}
+                            disabled={settingAdmin === user.email}
+                            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${user.isAdmin
+                              ? 'bg-red-50 text-red-700 hover:bg-red-100'
+                              : 'bg-green-50 text-green-700 hover:bg-green-100'
+                              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          >
+                            {settingAdmin === user.email
+                              ? '...'
+                              : user.isAdmin
+                                ? 'Remove Admin'
+                                : 'Make Admin'}
+                          </button>
+                          <button
+                            onClick={() => handleUpdateUser(user.email, { isAdmin: user.isAdmin, role: user.role === 'curator' ? null : 'curator' })}
+                            disabled={settingAdmin === user.email}
+                            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${user.role === 'curator'
+                              ? 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                              : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          >
+                            {settingAdmin === user.email
+                              ? '...'
+                              : user.role === 'curator'
+                                ? 'Remove Curator'
+                                : 'Make Curator'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

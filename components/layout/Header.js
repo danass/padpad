@@ -148,13 +148,11 @@ export default function Header() {
             <nav className="hidden md:flex items-center gap-6">
               <Link href="/feed" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/feed' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Feed</Link>
               <Link href="/featured" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/featured' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Featured</Link>
-              <Link href="/features" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/features' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Features</Link>
-              <Link href="/credits" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/credits' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Credits</Link>
             </nav>
           </div>
 
           {/* Center title for current page */}
-          {(pathname === '/feed' || pathname === '/featured' || pathname === '/features' || pathname === '/credits') && (
+          {(pathname === '/feed' || pathname === '/featured') && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-900 pointer-events-auto">
                 {pathname.substring(1)}

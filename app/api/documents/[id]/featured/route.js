@@ -10,9 +10,10 @@ export async function POST(request, { params }) {
             return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const admin = await isAdmin()
-        if (!admin) {
-            return Response.json({ error: 'Admin only' }, { status: 403 })
+        const { isCurator } = require('@/lib/auth/isCurator')
+        const curator = await isCurator()
+        if (!curator) {
+            return Response.json({ error: 'Curator or Admin only' }, { status: 403 })
         }
 
         const { id } = await params

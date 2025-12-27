@@ -113,7 +113,12 @@ function ArticleRenderer({ id, content, title, author, date, keywords }) {
                                 <User className="w-5 h-5 text-gray-400" />
                             </div>
                         )}
-                        <span className="font-medium text-gray-900">@{author.username || 'anonymous'}</span>
+                        <NextLink
+                            href={`/public/archive/${author.username || author.archive_id}`}
+                            className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                        >
+                            @{author.username || author.archive_id || 'anonymous'}
+                        </NextLink>
                     </div>
                     <span className="text-gray-300">•</span>
                     <div className="flex items-center gap-1">
@@ -268,7 +273,8 @@ export default function FeedClient({ initialData, initialKeyword }) {
                                     date={formatDate(article.updated_at)}
                                     author={{
                                         username: article.author_username,
-                                        avatar: article.author_avatar
+                                        avatar: article.author_avatar,
+                                        archive_id: article.author_archive_id
                                     }}
                                 />
                             ))}

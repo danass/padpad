@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { EditorContent, useEditor } from '@tiptap/react'
+import { EditorContent, useEditor, BubbleMenu, FloatingMenu } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
@@ -33,6 +33,8 @@ import { useLanguage } from '@/app/i18n/LanguageContext'
 import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
 import ContextMenu from '@/components/editor/ContextMenu'
 import LinkEditor from '@/components/editor/LinkEditor'
+import BubbleToolbar from '@/components/editor/BubbleToolbar'
+import FloatingToolbar from '@/components/editor/FloatingToolbar'
 
 export default function TempPadClient({ serverData }) {
     const { data: session } = useSession()
@@ -56,7 +58,14 @@ export default function TempPadClient({ serverData }) {
                 heading: { levels: [1, 2, 3, 4, 5, 6] },
                 codeBlock: false,
             }),
-            Placeholder.configure({ placeholder: t?.editorPlaceholder || 'Start writing...' }),
+            Placeholder.configure({
+                placeholder: ({ node }) => {
+                    if (node.type.name === 'heading') {
+                        return t?.editorPlaceholderTitle || 'Title'
+                    }
+                    return t?.editorPlaceholder || 'Tell your story...'
+                }
+            }),
             ResizableImage,
             Youtube,
             TaskList,
@@ -228,8 +237,52 @@ export default function TempPadClient({ serverData }) {
                         <div className="mb-4">
                             <GoogleDocsToolbar editor={editor} />
                         </div>
-                        <div className="prose max-w-none min-h-[500px] p-4 md:p-8 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-black focus-within:border-black transition-all relative">
-                            {mounted && <EditorContent editor={editor} />}
+                        <div className="prose max-w-none min-h-[500px] p-4 md:p-0 transition-all relative">
+                            {mounted && editor && (
+                                <>
+                                    <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+                                        <BubbleToolbar
+                                            editor={editor}
+                                            onOpenLinkEditor={() => {
+                                                const { view } = editor
+                                                const { state } = view
+                                                const { selection } = state
+                                                const { from } = selection
+                                                const coords = view.coordsAtPos(from)
+                                                const container = view.dom.closest('.prose') || view.dom.parentElement
+                                                const containerRect = container?.getBoundingClientRect()
+
+                                                if (containerRect) {
+                                                    setLinkEditorPosition({
+                                                        top: coords.bottom - containerRect.top + 8,
+                                                        left: coords.left - containerRect.left,
+                                                    })
+                                                }
+                                            }}
+                                        />
+                                    </BubbleMenu>
+
+                                    <FloatingMenu
+                                        editor={editor}
+                                        tippyOptions={{ duration: 100 }}
+                                        shouldShow={({ state }) => {
+                                            const { selection } = state
+                                            const { $from } = selection
+                                            return $from.parent.content.size === 0
+                                        }}
+                                    >
+                                        <FloatingToolbar
+                                            editor={editor}
+                                            onOpenIpfsBrowser={() => {
+                                                // IpfsBrowser not yet in TempPad, could add it later if needed
+                                                // For now just alert or ignore
+                                            }}
+                                        />
+                                    </FloatingMenu>
+
+                                    <EditorContent editor={editor} />
+                                </>
+                            )}
                             <ContextMenu editor={editor} />
                             {linkEditorPosition && (
                                 <LinkEditor

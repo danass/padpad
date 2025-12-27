@@ -16,9 +16,6 @@ body {
 /* TipTap Editor Styles */
 .ProseMirror {
   outline: none;
-  min-height: 200px;
-  padding: 1rem;
-  padding-left: 2rem; /* Space for drag handle */
   font-size: 16px;
   line-height: 1.6;
   color: #374151;
@@ -39,9 +36,7 @@ body {
 
 @media (min-width: 768px) {
   .ProseMirror {
-    min-height: 500px;
-    padding: 2rem;
-    padding-left: 3rem;
+    padding: 0;
   }
 }
 
@@ -54,22 +49,7 @@ body {
   pointer-events: none;
 }
 
-/* Translated placeholders based on html lang attribute */
-html[lang="fr"] .ProseMirror p.is-editor-empty:first-child::before {
-  content: "Commencez à écrire... Créez votre document ici";
-}
-
-html[lang="es"] .ProseMirror p.is-editor-empty:first-child::before {
-  content: "Empieza a escribir... Crea tu documento aquí";
-}
-
-html[lang="zh"] .ProseMirror p.is-editor-empty:first-child::before {
-  content: "开始写作... 在这里创建您的文档";
-}
-
-html[lang="ru"] .ProseMirror p.is-editor-empty:first-child::before {
-  content: "Начните писать... Создайте свой документ здесь";
-}
+/* Translated placeholders are now handled by TipTap extension dynamically */
 
 .ProseMirror h1 {
   font-size: 2em;
@@ -95,7 +75,8 @@ html[lang="ru"] .ProseMirror p.is-editor-empty:first-child::before {
   line-height: 1.4;
 }
 
-.ProseMirror ul, .ProseMirror ol {
+.ProseMirror ul,
+.ProseMirror ol {
   padding-left: 1.5em;
   margin: 0.5em 0;
   list-style-position: outside;
@@ -220,11 +201,11 @@ html[lang="ru"] .ProseMirror p.is-editor-empty:first-child::before {
   cursor: grabbing;
 }
 
-.ProseMirror > * {
+.ProseMirror>* {
   position: relative;
 }
 
-.ProseMirror > *:hover .custom-drag-handle {
+.ProseMirror>*:hover .custom-drag-handle {
   opacity: 1;
 }
 
@@ -240,7 +221,7 @@ html[lang="ru"] .ProseMirror p.is-editor-empty:first-child::before {
   transition: opacity 0.2s;
 }
 
-.ProseMirror > *:hover .block-menu {
+.ProseMirror>*:hover .block-menu {
   opacity: 1;
 }
 
@@ -340,7 +321,7 @@ html[lang="ru"] .ProseMirror p.is-editor-empty:first-child::before {
   padding: 0;
 }
 
-.bubble-menu .tippy-box[data-placement^='top'] > .tippy-arrow::before {
+.bubble-menu .tippy-box[data-placement^='top']>.tippy-arrow::before {
   border-top-color: white;
 }
 
@@ -397,11 +378,11 @@ html[lang="ru"] .ProseMirror p.is-editor-empty:first-child::before {
   padding: 0.25rem;
 }
 
-.ProseMirror > * {
+.ProseMirror>* {
   position: relative;
 }
 
-.ProseMirror > *:hover .custom-drag-handle {
+.ProseMirror>*:hover .custom-drag-handle {
   opacity: 1;
 }
 
@@ -416,7 +397,7 @@ html[lang="ru"] .ProseMirror p.is-editor-empty:first-child::before {
 
 /* Make drag handle more visible when dragging */
 .ProseMirror.dragging .custom-drag-handle,
-.ProseMirror.dragging > *:hover .custom-drag-handle {
+.ProseMirror.dragging>*:hover .custom-drag-handle {
   opacity: 1 !important;
 }
 
@@ -549,7 +530,7 @@ html[lang="ru"] .ProseMirror p.is-editor-empty:first-child::before {
   margin: 0.5em 0;
 }
 
-.ProseMirror ul[data-type="taskList"] li[data-type="taskItem"] > div {
+.ProseMirror ul[data-type="taskList"] li[data-type="taskItem"]>div {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
@@ -572,7 +553,7 @@ html[lang="ru"] .ProseMirror p.is-editor-empty:first-child::before {
   flex-shrink: 0;
 }
 
-.ProseMirror ul[data-type="taskList"] li[data-type="taskItem"] label > div {
+.ProseMirror ul[data-type="taskList"] li[data-type="taskItem"] label>div {
   flex: 1;
 }
 
@@ -631,7 +612,7 @@ input[type="search"] {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: auto;
   }
-  
+
   /* Prevent iOS selection menu from causing layout shift */
   .ProseMirror * {
     -webkit-tap-highlight-color: transparent;
@@ -653,4 +634,3 @@ input[type="search"] {
 /* Inline styles should naturally take precedence - no CSS override needed */
 
 /* Remove dark mode styles - using light theme only */
-

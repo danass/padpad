@@ -120,7 +120,7 @@ const getDocumentData = cache(async (documentId) => {
     if (document.user_id) {
       try {
         const userResult = await sql.query(
-          'SELECT id, testament_username, archive_id FROM users WHERE id = $1',
+          "SELECT id, testament_username, COALESCE(archive_id, SUBSTRING(REPLACE(id::text, '-', ''), 1, 8)) as archive_id FROM users WHERE id = $1",
           [document.user_id]
         )
         if (userResult.rows.length > 0) {
