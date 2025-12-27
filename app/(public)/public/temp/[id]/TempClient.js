@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { EditorContent, useEditor } from '@tiptap/react'
@@ -125,9 +125,12 @@ export default function TempPadClient({ serverData }) {
         setMounted(true)
     }, [])
 
+    // Use a ref to ensure we only try to claim once per mount
+    const claimAttempted = useRef(false)
+
     // Handle claim query param after login
     useEffect(() => {
-        if (mounted && session && searchParams.get('claim') === 'true' && document?.id && !claiming) {
+        if (mounted && session && searchParams.get('claim') === 'true' && document?.id && !claiming && !claimAttempted.current) {
             handleClaim()
         }
     }, [mounted, session, searchParams, document?.id, claiming])
@@ -140,6 +143,9 @@ export default function TempPadClient({ serverData }) {
             return
         }
 
+        if (claimAttempted.current) return
+        claimAttempted.current = true
+
         setClaiming(true)
         try {
             const res = await fetch(`/api/documents/${document.id}/claim`, {
@@ -147,16 +153,22 @@ export default function TempPadClient({ serverData }) {
             })
             if (res.ok) {
                 const data = await res.json()
-                // Use window.location.href for a clean redirect and to clear the ?claim=true param
+                // Use window.location.href for a clean redirect
                 window.location.href = `/doc/${data.document.id}`
             } else {
+                // If we're already navigating away, don't show the alert
                 const errorData = await res.json().catch(() => ({}))
                 alert(`Failed to claim document: ${errorData.error || res.statusText}`)
             }
         } catch (err) {
             console.error('Error claiming document:', err)
-            alert('Error claiming document')
+            // Only alert if we're not likely navigating
+            if (typeof window !== 'undefined' && !window.document.hidden) {
+                alert('Error claiming document')
+            }
         } finally {
+            // Don't set claiming to false if successful to avoid re-triggering effect
+            // Actually with the ref it's safe either way, but let's be clean
             setClaiming(false)
         }
     }

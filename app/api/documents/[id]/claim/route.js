@@ -26,6 +26,13 @@ export async function POST(request, { params }) {
         const doc = docResult.rows[0]
 
         if (!doc.is_disposable) {
+            // Idempotency: If already claimed by the same user, return success
+            if (doc.user_id === userId) {
+                return Response.json({
+                    document: doc,
+                    message: 'Document already claimed'
+                })
+            }
             return Response.json({ error: 'Document is not disposable' }, { status: 400 })
         }
 
