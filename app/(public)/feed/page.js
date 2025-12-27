@@ -12,38 +12,59 @@ export const metadata = {
     },
 }
 
-const getFeedData = cache(async (page = 1, limit = 10) => {
+const getFeedData = cache(async (page = 1, limit = 10, keyword = null) => {
     try {
         const offset = (page - 1) * limit
 
+        // Build query with optional keyword filter
+        let whereClause = 'd.is_public = true'
+        const queryParams = []
+        let paramCount = 1
+
+        if (keyword) {
+            whereClause += ` AND $${paramCount++} = ANY(d.keywords)`
+            queryParams.push(keyword)
+        }
+
         // Get total count
-        const countResult = await sql`
-            SELECT COUNT(*) as total 
-            FROM documents 
-            WHERE is_public = true
-        `
+        const countResult = await sql.query(
+            `SELECT COUNT(*) as total FROM documents d WHERE ${whereClause}`,
+            queryParams
+        )
         const total = parseInt(countResult.rows[0]?.total || 0)
         const totalPages = Math.ceil(total / limit)
 
-        const result = await sql`
-            SELECT 
+        const result = await sql.query(
+            `SELECT 
                 d.id,
                 d.title,
                 d.created_at,
                 d.updated_at,
+                d.keywords,
                 u.avatar_url as author_avatar,
                 u.testament_username as author_username,
                 s.content_json
             FROM documents d
             LEFT JOIN users u ON d.user_id = u.id
             LEFT JOIN document_snapshots s ON d.current_snapshot_id = s.id
-            WHERE d.is_public = true
+            WHERE ${whereClause}
             ORDER BY d.updated_at DESC
-            LIMIT ${limit} OFFSET ${offset}
-        `
+            LIMIT $${paramCount++} OFFSET $${paramCount}`,
+            [...queryParams, limit, offset]
+        )
+
+        // Get all available keywords
+        const allKeywordsResult = await sql.query(
+            `SELECT DISTINCT unnest(keywords) as keyword 
+             FROM documents 
+             WHERE is_public = true 
+             LIMIT 50`
+        )
+        const allKeywords = allKeywordsResult.rows.map(r => r.keyword).filter(Boolean).sort()
 
         return {
             articles: result.rows,
+            allKeywords,
             pagination: {
                 page,
                 limit,
@@ -55,11 +76,14 @@ const getFeedData = cache(async (page = 1, limit = 10) => {
         }
     } catch (error) {
         console.error('Error fetching feed data:', error)
-        return { articles: [], pagination: null }
+        return { articles: [], allKeywords: [], pagination: null }
     }
 })
 
-export default async function FeedPage() {
-    const initialData = await getFeedData(1, 10)
-    return <FeedClient initialData={initialData} />
+export default async function FeedPage({ searchParams }) {
+    const params = await searchParams
+    const page = parseInt(params?.page || '1')
+    const keyword = params?.keyword || null
+    const initialData = await getFeedData(page, 10, keyword)
+    return <FeedClient initialData={initialData} initialKeyword={keyword} />
 }

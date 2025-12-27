@@ -7,36 +7,58 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url)
         const page = parseInt(searchParams.get('page') || '1')
         const limit = parseInt(searchParams.get('limit') || '10')
+        const keyword = searchParams.get('keyword')?.toLowerCase().trim() || null
         const offset = (page - 1) * limit
 
-        // Get total count of public documents
-        const countResult = await sql`
-            SELECT COUNT(*) as total 
-            FROM documents 
-            WHERE is_public = true
-        `
+        // Build query with optional keyword filter
+        let whereClause = 'd.is_public = true'
+        const queryParams = []
+        let paramCount = 1
+
+        if (keyword) {
+            whereClause += ` AND $${paramCount++} = ANY(d.keywords)`
+            queryParams.push(keyword)
+        }
+
+        // Get total count with filter
+        const countResult = await sql.query(
+            `SELECT COUNT(*) as total FROM documents d WHERE ${whereClause}`,
+            queryParams
+        )
         const total = parseInt(countResult.rows[0]?.total || 0)
         const totalPages = Math.ceil(total / limit)
 
-        const result = await sql`
-            SELECT 
+        const result = await sql.query(
+            `SELECT 
                 d.id,
                 d.title,
                 d.created_at,
                 d.updated_at,
+                d.keywords,
                 u.avatar_url as author_avatar,
                 u.testament_username as author_username,
                 s.content_json
             FROM documents d
             LEFT JOIN users u ON d.user_id = u.id
             LEFT JOIN document_snapshots s ON d.current_snapshot_id = s.id
-            WHERE d.is_public = true
+            WHERE ${whereClause}
             ORDER BY d.updated_at DESC
-            LIMIT ${limit} OFFSET ${offset}
-        `
+            LIMIT $${paramCount++} OFFSET $${paramCount}`,
+            [...queryParams, limit, offset]
+        )
+
+        // Get all available keywords for filter UI
+        const allKeywordsResult = await sql.query(
+            `SELECT DISTINCT unnest(keywords) as keyword 
+             FROM documents 
+             WHERE is_public = true 
+             LIMIT 50`
+        )
+        const allKeywords = allKeywordsResult.rows.map(r => r.keyword).filter(Boolean).sort()
 
         return NextResponse.json({
             articles: result.rows,
+            allKeywords,
             pagination: {
                 page,
                 limit,
