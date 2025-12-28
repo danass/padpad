@@ -18,7 +18,7 @@ export function PostHogProvider({ children }) {
                 // Disable unused features to reduce bundle size
                 disable_surveys: true,
                 disable_web_experiments: true,
-                autocapture: false,
+                // autocapture enabled for heatmaps and session recordings
                 persistence: 'localStorage',
                 defaults: '2025-11-30',
             })

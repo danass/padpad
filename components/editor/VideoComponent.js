@@ -130,7 +130,7 @@ export default function VideoComponent({ node, updateAttributes, deleteNode, edi
                         playsInline
                         preload="metadata"
                         crossOrigin="anonymous"
-                        className={`rounded-lg ${alignClass} bg-black shadow-md transition-all ${editor?.isEditable ? 'group-hover:ring-2 group-hover:ring-blue-400' : ''} ${editor?.isActive(node.type.name) ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
+                        className={`rounded-lg ${alignClass} bg-black shadow-md transition-all ${editor?.isEditable ? 'group-hover:ring-2 group-hover:ring-blue-400' : ''} ${editor?.isEditable && editor?.isActive(node.type.name) ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
                         style={{ maxWidth: '100%', width: width ? `${width}px` : '100%', minHeight: '100px' }}
                         onPlay={() => setIsPlaying(true)}
                         onPause={() => setIsPlaying(false)}

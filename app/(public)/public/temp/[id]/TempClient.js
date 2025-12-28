@@ -75,7 +75,7 @@ export default function TempPadClient({ serverData }) {
             DetailsContent,
             Link.configure({
                 openOnClick: false,
-                HTMLAttributes: { class: 'text-blue-500 underline cursor-pointer' },
+                HTMLAttributes: { class: 'text-cyan-600 underline cursor-pointer' },
             }),
             Underline,
             Subscript,

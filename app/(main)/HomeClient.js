@@ -82,7 +82,7 @@ export default function HomeClient({ featuredArticles = [] }) {
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-blue-500 underline cursor-pointer',
+          class: 'text-cyan-600 underline cursor-pointer',
         },
       }),
       Underline,

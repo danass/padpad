@@ -50,7 +50,7 @@ function ArticleRenderer({ id, content, title, author, date, keywords }) {
             DetailsContent,
             Link.configure({
                 openOnClick: true,
-                HTMLAttributes: { class: 'text-blue-500 underline cursor-pointer' },
+                HTMLAttributes: { class: 'text-cyan-600 underline cursor-pointer' },
             }),
             Underline,
             Subscript,

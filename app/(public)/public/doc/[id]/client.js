@@ -73,7 +73,7 @@ export default function PublicDocumentClient({ serverData }) {
             Link.configure({
                 openOnClick: true,
                 HTMLAttributes: {
-                    class: 'text-blue-500 underline cursor-pointer',
+                    class: 'text-cyan-600 underline cursor-pointer',
                 },
             }),
             Underline,

@@ -34,7 +34,7 @@ function ArticleContent({ content }) {
             }),
             ResizableImage.configure({ HTMLAttributes: { class: 'max-w-full h-auto' } }),
             Youtube, TaskList, TaskItem, Details, DetailsSummary, DetailsContent,
-            LinkExtension.configure({ openOnClick: true, HTMLAttributes: { class: 'text-blue-500 underline' } }),
+            LinkExtension.configure({ openOnClick: true, HTMLAttributes: { class: 'text-cyan-600 underline' } }),
             Underline, TextStyle, Color, Highlight.configure({ multicolor: true }),
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
             Typography, FontFamily, FontSize, LineHeight, Drawing, LinkPreview,
