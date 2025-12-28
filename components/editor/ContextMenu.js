@@ -393,6 +393,8 @@ export default function ContextMenu({ editor }) {
             action: () => {
               if (targetPos !== null) {
                 editor.chain().focus().setNodeSelection(targetPos).updateAttributes('linkPreview', { size: 'text' }).run()
+                // Force content change detection
+                setTimeout(() => editor.commands.focus(), 10)
               }
             },
             isActive: targetNode.attrs.size === 'text',
@@ -403,6 +405,7 @@ export default function ContextMenu({ editor }) {
             action: () => {
               if (targetPos !== null) {
                 editor.chain().focus().setNodeSelection(targetPos).updateAttributes('linkPreview', { size: 'xs' }).run()
+                setTimeout(() => editor.commands.focus(), 10)
               }
             },
             isActive: targetNode.attrs.size === 'xs',
@@ -413,6 +416,7 @@ export default function ContextMenu({ editor }) {
             action: () => {
               if (targetPos !== null) {
                 editor.chain().focus().setNodeSelection(targetPos).updateAttributes('linkPreview', { size: 's' }).run()
+                setTimeout(() => editor.commands.focus(), 10)
               }
             },
             isActive: targetNode.attrs.size === 's',
@@ -423,6 +427,7 @@ export default function ContextMenu({ editor }) {
             action: () => {
               if (targetPos !== null) {
                 editor.chain().focus().setNodeSelection(targetPos).updateAttributes('linkPreview', { size: 'm' }).run()
+                setTimeout(() => editor.commands.focus(), 10)
               }
             },
             isActive: targetNode.attrs.size === 'm',
@@ -433,6 +438,7 @@ export default function ContextMenu({ editor }) {
             action: () => {
               if (targetPos !== null) {
                 editor.chain().focus().setNodeSelection(targetPos).updateAttributes('linkPreview', { size: 'full' }).run()
+                setTimeout(() => editor.commands.focus(), 10)
               }
             },
             isActive: targetNode.attrs.size === 'full',
