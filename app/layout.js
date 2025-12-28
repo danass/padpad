@@ -1,4 +1,5 @@
 import './globals.css'
+import Script from 'next/script'
 import { LanguageProvider } from '@/app/i18n/LanguageContext'
 import { cookies, headers } from 'next/headers'
 import { auth } from '@/auth'
@@ -7,6 +8,8 @@ import UniversalHeader from '@/components/layout/UniversalHeader'
 import Footer from '@/components/layout/Footer'
 import { PostHogProvider } from '@/components/providers/PostHogProvider'
 import { PostHogPageView } from '@/components/providers/PostHogPageView'
+
+const GA_MEASUREMENT_ID = 'G-S6HWH3G1B4'
 
 // SEO translations
 const seoTranslations = {
@@ -116,6 +119,19 @@ export default async function RootLayout({ children }) {
   return (
     <html lang={locale} suppressHydrationWarning>
       <head suppressHydrationWarning>
+        {/* Google Analytics */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}');
+          `}
+        </Script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Lato:wght@300;400;700&family=Open+Sans:wght@300;400;600;700&family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
