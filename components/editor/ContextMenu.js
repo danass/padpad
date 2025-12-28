@@ -390,14 +390,22 @@ export default function ContextMenu({ editor }) {
           {
             icon: <Minimize2 className="w-4 h-4" />,
             label: 'Small',
-            action: () => editor.chain().focus().updateAttributes('linkPreview', { size: 'm' }).run(),
+            action: () => {
+              if (targetPos !== null) {
+                editor.chain().focus().setNodeSelection(targetPos).updateAttributes('linkPreview', { size: 'm' }).run()
+              }
+            },
             isActive: targetNode.attrs.size === 'm',
           },
           {
             icon: <Maximize2 className="w-4 h-4" />,
             label: 'Full',
-            action: () => editor.chain().focus().updateAttributes('linkPreview', { size: 'full' }).run(),
-            isActive: targetNode.attrs.size === 'full' || !targetNode.attrs.size,
+            action: () => {
+              if (targetPos !== null) {
+                editor.chain().focus().setNodeSelection(targetPos).updateAttributes('linkPreview', { size: 'full' }).run()
+              }
+            },
+            isActive: targetNode.attrs.size === 'full',
           }
         ] : [
           {

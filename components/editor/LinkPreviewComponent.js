@@ -5,7 +5,7 @@ import { NodeViewWrapper } from '@tiptap/react'
 import { ExternalLink, X, RefreshCw, AlignLeft, AlignCenter, AlignRight, Trash2 } from 'lucide-react'
 
 export default function LinkPreviewComponent({ node, updateAttributes, deleteNode, editor, selected, getPos }) {
-    const { url, title, description, image, siteName, favicon, loading, size = 's', showImage = true, textAlign = 'left' } = node.attrs
+    const { url, title, description, image, siteName, favicon, loading, size = 'full', showImage = true, textAlign = 'left' } = node.attrs
     const [error, setError] = useState(false)
     const [showHoverMenu, setShowHoverMenu] = useState(false)
 
