@@ -17,140 +17,67 @@ export async function generateMetadata() {
 
 export default function ImagesAndDrawingsPage() {
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white font-['DM_Sans',sans-serif]">
             <div className="max-w-4xl mx-auto px-4 py-12 md:py-20">
                 {/* Hero */}
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                        Images & Drawings
+                <div className="text-center mb-16">
+                    <h1 className="text-4xl md:text-6xl font-medium text-gray-900 mb-6 tracking-tight leading-[1.1]">
+                        Visual <span className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-600 bg-clip-text text-transparent">Creative Tools</span>
                     </h1>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        Your text pad is more than text. Add images, resize them on the fly,
-                        and draw directly in your documents.
+                    <p className="text-lg md:text-xl text-gray-500 font-normal max-w-2xl mx-auto">
+                        Don't let your ideas be limited by text. Textpad integrates a full creative canvas and rich media engine directly into your writing.
                     </p>
                 </div>
 
-                {/* Feature: Drawing */}
-                <section className="mb-16">
-                    <div className="grid md:grid-cols-2 gap-8 items-center">
+                {/* Core Features */}
+                <div className="space-y-20 mb-24">
+                    <section className="grid md:grid-cols-2 gap-12 items-center">
                         <div>
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                                Draw Your Ideas
-                            </h2>
-                            <p className="text-gray-700 mb-4">
-                                Open the brush tool and sketch directly in your document.
-                                Perfect for quick diagrams, annotations, or just doodling while you think.
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight underline decoration-cyan-400 decoration-4 underline-offset-4">Integrated Drawing</h2>
+                            <p className="text-gray-600 leading-relaxed mb-4">
+                                Hand-drawn diagrams, quick sketches, or artistic flourishes. Our integrated drawing engine allows you to create directly in the document flow.
                             </p>
-                            <ul className="space-y-2 text-gray-600 text-sm">
-                                <li>✓ Multiple brush sizes</li>
-                                <li>✓ Color picker</li>
-                                <li>✓ Eraser tool</li>
-                                <li>✓ Drawings save automatically</li>
-                            </ul>
+                            <p className="text-gray-600 leading-relaxed">
+                                No external tools needed. Your drawings are saved as native elements, fully responsive and crisp on any device.
+                            </p>
                         </div>
-                        <div className="rounded-lg overflow-hidden shadow-lg border border-gray-200">
-                            <img
-                                src="/features/screens/pad_make_a_drawing.png"
-                                alt="Drawing tool in action"
-                                className="w-full"
-                            />
+                        <div className="bg-gray-50 aspect-video rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
+                            Drawing Canvas Preview...
                         </div>
-                    </div>
-                </section>
+                    </section>
 
-                {/* Feature: Drawings in Articles */}
-                <section className="mb-16">
-                    <div className="grid md:grid-cols-2 gap-8 items-center">
-                        <div className="order-2 md:order-1 rounded-lg overflow-hidden shadow-lg border border-gray-200">
-                            <img
-                                src="/features/screens/blog_my_drawing_in_pad.png"
-                                alt="Drawing embedded in text"
-                                className="w-full"
-                            />
+                    <section className="grid md:grid-cols-2 gap-12 items-center">
+                        <div className="order-2 md:order-1 bg-gray-50 aspect-video rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
+                            Rich Media Preview...
                         </div>
                         <div className="order-1 md:order-2">
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                                Drawings Live With Your Text
-                            </h2>
-                            <p className="text-gray-700 mb-4">
-                                Your drawings aren't separate files. They're embedded right in your document,
-                                flowing with your text. Share the document and your drawings come along.
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight underline decoration-emerald-400 decoration-4 underline-offset-4">Rich Media Integration</h2>
+                            <p className="text-gray-600 leading-relaxed">
+                                Embed YouTube videos, upload raw video files from your drive, or link to external media sources. Textpad's media handler ensures your documents are multi-dimensional and alive.
                             </p>
                         </div>
-                    </div>
-                </section>
-
-                {/* Feature: Font Swap Video */}
-                <section className="mb-16">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center">
-                        Change Fonts on the Fly
-                    </h2>
-                    <p className="text-gray-600 text-center mb-6 max-w-xl mx-auto">
-                        Switch between fonts instantly. See your text transform as you pick different styles.
-                    </p>
-                    <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200 max-w-2xl mx-auto">
-                        <video
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="w-full"
-                        >
-                            <source src="/features/screens/pad_font_swap.mp4" type="video/mp4" />
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                </section>
-
-                {/* Feature: Resize Images */}
-                <section className="mb-16">
-                    <div className="grid md:grid-cols-2 gap-8 items-center">
-                        <div>
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                                Resize Images Instantly
-                            </h2>
-                            <p className="text-gray-700 mb-4">
-                                Drag the corners to resize any image. Make it full-width or keep it small.
-                                The layout adapts to your content.
-                            </p>
-                            <p className="text-gray-600 text-sm">
-                                Drag and drop images, or paste from clipboard. We handle the rest.
-                            </p>
-                        </div>
-                        <div className="rounded-lg overflow-hidden shadow-lg border border-gray-200">
-                            <img
-                                src="/features/screens/pad_change_image_width.png"
-                                alt="Resizing an image"
-                                className="w-full"
-                            />
-                        </div>
-                    </div>
-                </section>
+                    </section>
+                </div>
 
                 {/* CTA */}
-                <div className="text-center py-12 bg-gray-50 rounded-2xl">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                        Try the drawing tool
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                        Open a new pad and click the brush icon. Start sketching.
-                    </p>
+                <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-cyan-50/30 rounded-[3rem] border border-gray-100 px-4">
+                    <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-8 tracking-tight">Ready to visualize your story?</h2>
                     <Link
                         href="/"
-                        className="inline-block px-8 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                        className="inline-block px-10 py-4 bg-gray-900 text-white font-medium rounded-2xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-cyan-100"
                     >
-                        Start Drawing
+                        Start Your Visual Note
                     </Link>
                 </div>
 
-                {/* Footer Links */}
-                <div className="pt-8 mt-12 border-t border-gray-200 text-center">
-                    <p className="text-sm text-gray-600">
-                        <Link href="/features" className="text-gray-900 underline">All features</Link>
+                {/* Footer Nav */}
+                <div className="pt-12 mt-20 border-t border-gray-100 text-center">
+                    <p className="text-sm text-gray-400">
+                        <Link href="/features" className="text-gray-900 hover:text-cyan-600 transition-colors">All Features</Link>
                         {' · '}
-                        <Link href="/features/public-blog" className="text-gray-900 underline">Public Blog</Link>
+                        <Link href="/features/rich-media" className="text-gray-900 hover:text-cyan-600 transition-colors">Rich Media</Link>
                         {' · '}
-                        <Link href="/features/version-history" className="text-gray-900 underline">Version History</Link>
+                        <Link href="/" className="text-gray-900 hover:text-cyan-600 transition-colors">Start Writing</Link>
                     </p>
                 </div>
             </div>

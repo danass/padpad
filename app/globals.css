@@ -9,8 +9,10 @@
 }
 
 body {
-  color: #000000;
-  background: #ffffff;
+  font-family: 'DM Sans', 'Inter', sans-serif;
+  color: oklch(0.37 0.013 285.805);
+  background: linear-gradient(135deg, #f8faff 0%, #ffffff 50%, #fef8ff 100%);
+  background-attachment: fixed;
 }
 
 /* TipTap Editor Styles */
@@ -36,16 +38,7 @@ body {
 }
 
 /* Preserve inline styles - ensure they take precedence */
-.ProseMirror span[style],
-.ProseMirror p[style],
-.ProseMirror h1[style],
-.ProseMirror h2[style],
-.ProseMirror h3[style],
-.ProseMirror h4[style],
-.ProseMirror h5[style],
-.ProseMirror h6[style] {
-  /* Inline styles will automatically take precedence, but ensure no CSS overrides */
-}
+/* Inline styles will automatically take precedence, but ensure no CSS overrides */
 
 @media (min-width: 768px) {
   .ProseMirror {

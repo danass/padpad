@@ -17,158 +17,76 @@ export async function generateMetadata() {
 
 export default function DigitalTestamentPage() {
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white font-['DM_Sans',sans-serif]">
             <div className="max-w-4xl mx-auto px-4 py-12 md:py-20">
                 {/* Hero */}
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                        Digital Legacy
+                <div className="text-center mb-16">
+                    <h1 className="text-4xl md:text-6xl font-medium text-gray-900 mb-6 tracking-tight leading-[1.1]">
+                        Digital <span className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-600 bg-clip-text text-transparent">Legacy</span>
                     </h1>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        Write your thoughts, stories, and messages today.
-                        They'll be published on your <span className="font-semibold">99th birthday</span>,
-                        preserving your words for future generations.
+                    <p className="text-lg md:text-xl text-gray-500 font-normal max-w-2xl mx-auto">
+                        Write your stories today. Preserve them for the next century. Your words automatically become your legacy on your 99th birthday.
                     </p>
                 </div>
 
-                {/* Main Screenshot */}
-                <div className="mb-16 rounded-xl overflow-hidden shadow-2xl border border-gray-200">
-                    <img
-                        src="/features/screens/digital_testament_public_view.png"
-                        alt="Digital legacy public page preview"
-                        className="w-full"
-                    />
-                </div>
-
-                {/* How it works */}
-                <section className="mb-16 bg-amber-50 rounded-2xl p-8">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">
-                        How it works
-                    </h2>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        <div className="text-center">
-                            <div className="w-12 h-12 bg-amber-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">
-                                1
-                            </div>
-                            <h3 className="font-medium text-gray-900 mb-2">Set your birth date</h3>
-                            <p className="text-gray-700 text-sm">
-                                Go to Settings and enter your date of birth.
-                            </p>
-                        </div>
-                        <div className="text-center">
-                            <div className="w-12 h-12 bg-amber-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">
-                                2
-                            </div>
-                            <h3 className="font-medium text-gray-900 mb-2">Write freely</h3>
-                            <p className="text-gray-700 text-sm">
-                                Create documents, share memories, leave messages.
-                            </p>
-                        </div>
-                        <div className="text-center">
-                            <div className="w-12 h-12 bg-amber-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">
-                                3
-                            </div>
-                            <h3 className="font-medium text-gray-900 mb-2">Auto-publish</h3>
-                            <p className="text-gray-700 text-sm">
-                                On your 99th birthday, all documents become public.
-                            </p>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Settings Screenshot */}
-                <section className="mb-16">
-                    <div className="grid md:grid-cols-2 gap-8 items-center">
+                {/* Main Feature Content */}
+                <div className="space-y-20 mb-24">
+                    <section className="grid md:grid-cols-2 gap-12 items-center">
                         <div>
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                                Easy Setup
-                            </h2>
-                            <p className="text-gray-700 mb-4">
-                                Just enter your birth date in Settings. That's it.
-                                Your legacy date is calculated automatically.
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight underline decoration-cyan-400 decoration-4 underline-offset-4">Automatic Preservation</h2>
+                            <p className="text-gray-600 leading-relaxed mb-4">
+                                Most digital content is ephemeral. Textpad changes that. By setting your birth date, you create a temporal lock on your private documents.
                             </p>
-                            <p className="text-gray-600 text-sm">
-                                You can remove it anytime — your documents go back to private.
+                            <p className="text-gray-600 leading-relaxed">
+                                On your 99th birthday, our system automatically transitions your selected works to your public archive—creating a permanent digital testament for future generations.
                             </p>
                         </div>
-                        <div className="rounded-lg overflow-hidden shadow-lg border border-gray-200">
-                            <img
-                                src="/features/screens/settings_digital_legacy_setup.png"
-                                alt="Digital legacy settings"
-                                className="w-full"
-                            />
+                        <div className="bg-gray-50 aspect-video rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
+                            Legacy Archive Preview...
                         </div>
-                    </div>
-                </section>
+                    </section>
 
-                {/* Use cases */}
-                <section className="mb-16">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                        What you can leave behind
-                    </h2>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="p-6 bg-gray-50 rounded-xl">
-                            <h3 className="font-medium text-gray-900 mb-2">💌 Messages to loved ones</h3>
-                            <p className="text-gray-600 text-sm">
-                                Letters to your children, grandchildren, or friends that they'll discover one day.
-                            </p>
+                    <section className="bg-amber-50/30 rounded-[3rem] p-8 md:p-12 border border-amber-100">
+                        <h2 className="text-2xl font-semibold text-gray-900 mb-8 text-center tracking-tight">The Journey of Your Words</h2>
+                        <div className="grid md:grid-cols-3 gap-8">
+                            <div className="text-center">
+                                <div className="text-3xl mb-4">✍️</div>
+                                <h3 className="font-medium text-gray-900 mb-2">Write Freely</h3>
+                                <p className="text-gray-500 text-sm">Create memoirs, advice, or stories in total privacy today.</p>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-3xl mb-4">⏳</div>
+                                <h3 className="font-medium text-gray-900 mb-2">Temporal Lock</h3>
+                                <p className="text-gray-500 text-sm">Your documents stay private and secure for decades.</p>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-3xl mb-4">🌍</div>
+                                <h3 className="font-medium text-gray-900 mb-2">Be Remembered</h3>
+                                <p className="text-gray-500 text-sm">Automatically join the public archive on your 99th birthday.</p>
+                            </div>
                         </div>
-                        <div className="p-6 bg-gray-50 rounded-xl">
-                            <h3 className="font-medium text-gray-900 mb-2">📖 Your life story</h3>
-                            <p className="text-gray-600 text-sm">
-                                Memoirs, experiences, wisdom gathered over a lifetime.
-                            </p>
-                        </div>
-                        <div className="p-6 bg-gray-50 rounded-xl">
-                            <h3 className="font-medium text-gray-900 mb-2">🎨 Creative works</h3>
-                            <p className="text-gray-600 text-sm">
-                                Poems, stories, drawings that you want to share with the world.
-                            </p>
-                        </div>
-                        <div className="p-6 bg-gray-50 rounded-xl">
-                            <h3 className="font-medium text-gray-900 mb-2">⏰ Time capsule</h3>
-                            <p className="text-gray-600 text-sm">
-                                Thoughts about the world today for people in the future.
-                            </p>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Privacy note */}
-                <section className="mb-16 p-6 border border-gray-200 rounded-xl">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                        🔒 Private until you say otherwise
-                    </h2>
-                    <p className="text-gray-700">
-                        Everything is private by default. Your documents stay invisible until the date you've set.
-                        You can preview how your legacy page will look, and you can remove the feature anytime.
-                    </p>
-                </section>
+                    </section>
+                </div>
 
                 {/* CTA */}
-                <div className="text-center py-12 bg-gray-50 rounded-2xl">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                        Start your digital legacy
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                        Set your birth date in settings and begin writing.
-                    </p>
+                <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-cyan-50/30 rounded-[3rem] border border-gray-100 px-4">
+                    <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-8 tracking-tight">Begin your digital testament</h2>
                     <Link
                         href="/settings"
-                        className="inline-block px-8 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                        className="inline-flex px-10 py-4 bg-gray-900 text-white font-medium rounded-2xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-cyan-100"
                     >
-                        Go to Settings
+                        Configure Legacy Settings
                     </Link>
                 </div>
 
-                {/* Footer Links */}
-                <div className="pt-8 mt-12 border-t border-gray-200 text-center">
-                    <p className="text-sm text-gray-600">
-                        <Link href="/features" className="text-gray-900 underline">All features</Link>
+                {/* Footer Nav */}
+                <div className="pt-12 mt-20 border-t border-gray-100 text-center">
+                    <p className="text-sm text-gray-400">
+                        <Link href="/features" className="text-gray-900 hover:text-cyan-600 transition-colors">All Features</Link>
                         {' · '}
-                        <Link href="/features/public-blog" className="text-gray-900 underline">Public Blog</Link>
+                        <Link href="/features/public-blog" className="text-gray-900 hover:text-cyan-600 transition-colors">Public Blog</Link>
                         {' · '}
-                        <Link href="/" className="text-gray-900 underline">Start Writing</Link>
+                        <Link href="/" className="text-gray-900 hover:text-cyan-600 transition-colors">Start Writing</Link>
                     </p>
                 </div>
             </div>

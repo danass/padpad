@@ -17,121 +17,67 @@ export async function generateMetadata() {
 
 export default function VersionHistoryPage() {
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white font-['DM_Sans',sans-serif]">
             <div className="max-w-4xl mx-auto px-4 py-12 md:py-20">
                 {/* Hero */}
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                        Version History
+                <div className="text-center mb-16">
+                    <h1 className="text-4xl md:text-6xl font-medium text-gray-900 mb-6 tracking-tight leading-[1.1]">
+                        Infinite <span className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-600 bg-clip-text text-transparent">History</span>
                     </h1>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        Made a mistake? Deleted something important? No worries.
-                        Every version of your document is saved automatically.
+                    <p className="text-lg md:text-xl text-gray-500 font-normal max-w-2xl mx-auto">
+                        Never lose a single character. Textpad maintains a deep event log of every change, allowing you to travel back to any moment in your document's life.
                     </p>
                 </div>
 
-                {/* Main Feature */}
-                <section className="mb-16">
-                    <div className="grid md:grid-cols-2 gap-8 items-center">
+                {/* Feature Content */}
+                <div className="space-y-20 mb-24">
+                    <section className="grid md:grid-cols-2 gap-12 items-center">
                         <div>
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                                Restore Any Version
-                            </h2>
-                            <p className="text-gray-700 mb-4">
-                                Open the history panel and browse all your saves.
-                                Click to preview, one more click to restore. Simple as that.
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight underline decoration-cyan-400 decoration-4 underline-offset-4">Time Travel</h2>
+                            <p className="text-gray-600 leading-relaxed mb-4">
+                                Our versioning system isn't just about regular saves. We track character-level events, giving you the power to see exactly how your ideas evolved over time.
                             </p>
-                            <ul className="space-y-2 text-gray-600 text-sm">
-                                <li>✓ Automatic snapshots on every save</li>
-                                <li>✓ See when each version was created</li>
-                                <li>✓ One-click restore</li>
-                                <li>✓ Delete old versions to save space</li>
-                            </ul>
+                            <p className="text-gray-600 leading-relaxed">
+                                Preview any past version and restore it with a single click. Your history is permanent and secure.
+                            </p>
                         </div>
-                        <div className="rounded-lg overflow-hidden shadow-lg border border-gray-200">
-                            <img
-                                src="/features/screens/pad_restore_history.png"
-                                alt="Version history panel"
-                                className="w-full"
-                            />
+                        <div className="bg-gray-50 aspect-video rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
+                            History Timeline Preview...
                         </div>
-                    </div>
-                </section>
+                    </section>
 
-                {/* How it works */}
-                <section className="mb-16 bg-gray-50 rounded-2xl p-8">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">
-                        How it works
-                    </h2>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        <div className="text-center">
-                            <div className="w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">
-                                1
-                            </div>
-                            <h3 className="font-medium text-gray-900 mb-2">Write</h3>
-                            <p className="text-gray-600 text-sm">
-                                Every time you save, a snapshot is created automatically.
+                    <section className="grid md:grid-cols-2 gap-12 items-center">
+                        <div className="order-2 md:order-1 bg-gray-50 aspect-video rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
+                            Restoration Logic Preview...
+                        </div>
+                        <div className="order-1 md:order-2">
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight underline decoration-emerald-400 decoration-4 underline-offset-4">Granular Control</h2>
+                            <p className="text-gray-600 leading-relaxed">
+                                Choose which versions to keep and which to prune. Maintain a clean workspace while feeling the security of a permanent archive.
                             </p>
                         </div>
-                        <div className="text-center">
-                            <div className="w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">
-                                2
-                            </div>
-                            <h3 className="font-medium text-gray-900 mb-2">Browse</h3>
-                            <p className="text-gray-600 text-sm">
-                                Open history to see all your past versions with timestamps.
-                            </p>
-                        </div>
-                        <div className="text-center">
-                            <div className="w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">
-                                3
-                            </div>
-                            <h3 className="font-medium text-gray-900 mb-2">Restore</h3>
-                            <p className="text-gray-600 text-sm">
-                                Click any version to restore it. Your document is back.
-                            </p>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Keep it clean */}
-                <section className="mb-16">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                        Keep it clean
-                    </h2>
-                    <p className="text-gray-700 mb-4">
-                        Too many versions? Use "Keep only last" to delete all old snapshots
-                        except the most recent one. Clean history, fresh start.
-                    </p>
-                    <p className="text-gray-600 text-sm">
-                        Empty snapshots (just whitespace) can also be deleted in bulk.
-                    </p>
-                </section>
+                    </section>
+                </div>
 
                 {/* CTA */}
-                <div className="text-center py-12 bg-gray-50 rounded-2xl">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                        Never lose work again
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                        Start writing and watch your history grow.
-                    </p>
+                <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-cyan-50/30 rounded-[3rem] border border-gray-100 px-4">
+                    <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-8 tracking-tight">Write with a safety net</h2>
                     <Link
                         href="/"
-                        className="inline-block px-8 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                        className="inline-block px-10 py-4 bg-gray-900 text-white font-medium rounded-2xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-cyan-100"
                     >
-                        Start Writing
+                        Experience Infinite History
                     </Link>
                 </div>
 
-                {/* Footer Links */}
-                <div className="pt-8 mt-12 border-t border-gray-200 text-center">
-                    <p className="text-sm text-gray-600">
-                        <Link href="/features" className="text-gray-900 underline">All features</Link>
+                {/* Footer Nav */}
+                <div className="pt-12 mt-20 border-t border-gray-100 text-center">
+                    <p className="text-sm text-gray-400">
+                        <Link href="/features" className="text-gray-900 hover:text-cyan-600 transition-colors">All Features</Link>
                         {' · '}
-                        <Link href="/features/tabs-and-drive" className="text-gray-900 underline">Tabs & Drive</Link>
+                        <Link href="/features/tabs-and-drive" className="text-gray-900 hover:text-cyan-600 transition-colors">Tabs & Drive</Link>
                         {' · '}
-                        <Link href="/features/public-blog" className="text-gray-900 underline">Public Blog</Link>
+                        <Link href="/" className="text-gray-900 hover:text-cyan-600 transition-colors">Start Writing</Link>
                     </p>
                 </div>
             </div>

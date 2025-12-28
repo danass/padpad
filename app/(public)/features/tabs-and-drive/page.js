@@ -17,113 +17,67 @@ export async function generateMetadata() {
 
 export default function TabsAndDrivePage() {
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white font-['DM_Sans',sans-serif]">
             <div className="max-w-4xl mx-auto px-4 py-12 md:py-20">
                 {/* Hero */}
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                        Tabs & Drive
+                <div className="text-center mb-16">
+                    <h1 className="text-4xl md:text-6xl font-medium text-gray-900 mb-6 tracking-tight leading-[1.1]">
+                        Smart <span className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-600 bg-clip-text text-transparent">Drive & Tabs</span>
                     </h1>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        All your documents in one place. Folders to organize, tabs for quick access,
-                        and everything at your fingertips.
+                    <p className="text-lg md:text-xl text-gray-500 font-normal max-w-2xl mx-auto">
+                        Professional organization for serious writers. Manage multiple documents with ease using our folder-based drive and persistent browser-like tabs.
                     </p>
                 </div>
 
-                {/* Main Screenshot */}
-                <div className="mb-16 rounded-xl overflow-hidden shadow-2xl border border-gray-200">
-                    <img
-                        src="/features/screens/list_files.png"
-                        alt="Document drive view"
-                        className="w-full"
-                    />
-                </div>
-
-                {/* Feature: Context Menu */}
-                <section className="mb-16">
-                    <div className="grid md:grid-cols-2 gap-8 items-center">
+                {/* Main Content */}
+                <div className="space-y-20 mb-24">
+                    <section className="grid md:grid-cols-2 gap-12 items-center">
                         <div>
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                                Right-Click for Actions
-                            </h2>
-                            <p className="text-gray-700 mb-4">
-                                Right-click any document for quick actions. Rename, delete, move to folder,
-                                change visibility. Everything you need, one click away.
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight underline decoration-cyan-400 decoration-4 underline-offset-4">Fluid Multi-Tasking</h2>
+                            <p className="text-gray-600 leading-relaxed mb-4">
+                                Switch between research documents, drafts, and sketches instantly. Our persistent tab system remembers exactly where you left off, even across sessions.
+                            </p>
+                            <p className="text-gray-600 leading-relaxed">
+                                No more searching through history or reopening files. Your workspace stays exactly how you like it.
                             </p>
                         </div>
-                        <div className="rounded-lg overflow-hidden shadow-lg border border-gray-200">
-                            <img
-                                src="/features/screens/list_files_contextualmenu.png"
-                                alt="Context menu on documents"
-                                className="w-full"
-                            />
+                        <div className="bg-gray-50 aspect-video rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
+                            Tabs System Preview...
                         </div>
-                    </div>
-                </section>
+                    </section>
 
-                {/* Feature: Visibility */}
-                <section className="mb-16">
-                    <div className="grid md:grid-cols-2 gap-8 items-center">
-                        <div className="order-2 md:order-1 rounded-lg overflow-hidden shadow-lg border border-gray-200">
-                            <img
-                                src="/features/screens/list_files_change_visibility_status.png"
-                                alt="Change visibility status"
-                                className="w-full"
-                            />
+                    <section className="grid md:grid-cols-2 gap-12 items-center">
+                        <div className="order-2 md:order-1 bg-gray-50 aspect-video rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
+                            Drive Organization Preview...
                         </div>
                         <div className="order-1 md:order-2">
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                                Public or Private?
-                            </h2>
-                            <p className="text-gray-700 mb-4">
-                                Toggle visibility with one click. See at a glance which documents
-                                are public and which are private. You're always in control.
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight underline decoration-emerald-400 decoration-4 underline-offset-4">Deep Organization</h2>
+                            <p className="text-gray-600 leading-relaxed">
+                                Group your projects into folders. Right-click to rename, move, or delete. Our drive gives you the power of a desktop file explorer directly in your browser.
                             </p>
                         </div>
-                    </div>
-                </section>
-
-                {/* Feature: Tabs */}
-                <section className="mb-16 bg-gray-50 rounded-2xl p-8">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                        Tabs for Quick Access
-                    </h2>
-                    <p className="text-gray-700 mb-4">
-                        Working on multiple documents? Open them in tabs. Switch between them instantly.
-                        Tabs persist across sessions so you can pick up where you left off.
-                    </p>
-                    <ul className="space-y-2 text-gray-600 text-sm">
-                        <li>✓ Multiple documents open at once</li>
-                        <li>✓ Tabs remember your position</li>
-                        <li>✓ Close tabs you don't need</li>
-                        <li>✓ Last tab is always preserved</li>
-                    </ul>
-                </section>
+                    </section>
+                </div>
 
                 {/* CTA */}
-                <div className="text-center py-12 bg-gray-50 rounded-2xl">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                        Start organizing
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                        Create your first folder and see how easy it is.
-                    </p>
+                <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-cyan-50/30 rounded-[3rem] border border-gray-100 px-4">
+                    <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-8 tracking-tight">Organize your creative life</h2>
                     <Link
                         href="/drive"
-                        className="inline-block px-8 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                        className="inline-block px-10 py-4 bg-gray-900 text-white font-medium rounded-2xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-cyan-100"
                     >
-                        Open Drive
+                        Open Your Drive
                     </Link>
                 </div>
 
-                {/* Footer Links */}
-                <div className="pt-8 mt-12 border-t border-gray-200 text-center">
-                    <p className="text-sm text-gray-600">
-                        <Link href="/features" className="text-gray-900 underline">All features</Link>
+                {/* Footer Nav */}
+                <div className="pt-12 mt-20 border-t border-gray-100 text-center">
+                    <p className="text-sm text-gray-400">
+                        <Link href="/features" className="text-gray-900 hover:text-cyan-600 transition-colors">All Features</Link>
                         {' · '}
-                        <Link href="/features/version-history" className="text-gray-900 underline">Version History</Link>
+                        <Link href="/features/version-history" className="text-gray-900 hover:text-cyan-600 transition-colors">Version History</Link>
                         {' · '}
-                        <Link href="/features/shareable-links" className="text-gray-900 underline">Shareable Links</Link>
+                        <Link href="/" className="text-gray-900 hover:text-cyan-600 transition-colors">Start Writing</Link>
                     </p>
                 </div>
             </div>
