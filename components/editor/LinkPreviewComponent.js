@@ -5,7 +5,7 @@ import { NodeViewWrapper } from '@tiptap/react'
 import { ExternalLink, X, RefreshCw, AlignLeft, AlignCenter, AlignRight, Trash2 } from 'lucide-react'
 
 export default function LinkPreviewComponent({ node, updateAttributes, deleteNode, editor, selected, getPos }) {
-    const { url, title, description, image, siteName, favicon, loading, size = 'full', showImage = true, textAlign = 'left' } = node.attrs
+    const { url, title, description, image, siteName, favicon, loading, size = 's', showImage = true, textAlign = 'left' } = node.attrs
     const [error, setError] = useState(false)
     const [showHoverMenu, setShowHoverMenu] = useState(false)
 
@@ -145,22 +145,37 @@ export default function LinkPreviewComponent({ node, updateAttributes, deleteNod
 
     if (size === 'text') {
         return (
-            <NodeViewWrapper
-                className="link-preview-wrapper inline"
-                data-drag-handle
-                onMouseEnter={() => setShowHoverMenu(true)}
-                onMouseLeave={() => setShowHoverMenu(false)}
-                style={{ textAlign: node.attrs.textAlign }}
-            >
-                <span
-                    onClick={handleClick}
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 border rounded text-sm text-blue-600 hover:bg-blue-50 cursor-pointer group whitespace-nowrap align-middle transition-all ${selected || editor.isActive('linkPreview') ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200'}`}
-                >
-                    {favicon && <img src={favicon} alt="" className="w-3.5 h-3.5 rounded-sm" />}
-                    <span className="truncate max-w-[150px]">{title || siteName || url}</span>
-                    <ExternalLink className="w-3 h-3 text-gray-400 group-hover:text-blue-500" />
-                </span>
-
+            <NodeViewWrapper className="link-preview-wrapper my-4">
+                <div className={`border rounded-lg p-3 flex items-center justify-between hover:bg-gray-50 transition-colors group ${selected || editor.isActive('linkPreview') ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200'}`}>
+                    <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-cyan-600 hover:underline flex-1 min-w-0"
+                        onClick={(e) => { if (editor.isEditable) { e.preventDefault(); handleClick(e) } }}
+                    >
+                        <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate">{title || url}</span>
+                    </a>
+                    {editor.isEditable && (
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); fetchMetadata() }}
+                                className="p-1 hover:bg-gray-200 rounded"
+                                title="Retry"
+                            >
+                                <RefreshCw className="w-4 h-4 text-gray-500" />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); deleteNode() }}
+                                className="p-1 hover:bg-gray-200 rounded"
+                                title="Remove"
+                            >
+                                <X className="w-4 h-4 text-gray-500" />
+                            </button>
+                        </div>
+                    )}
+                </div>
             </NodeViewWrapper>
         )
     }

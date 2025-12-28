@@ -388,8 +388,38 @@ export default function ContextMenu({ editor }) {
       items: [
         ...(targetNode.type.name === 'linkPreview' ? [
           {
+            icon: <Type className="w-4 h-4" />,
+            label: 'Text',
+            action: () => {
+              if (targetPos !== null) {
+                editor.chain().focus().setNodeSelection(targetPos).updateAttributes('linkPreview', { size: 'text' }).run()
+              }
+            },
+            isActive: targetNode.attrs.size === 'text',
+          },
+          {
+            icon: <Minimize2 className="w-4 h-4" />,
+            label: 'XS',
+            action: () => {
+              if (targetPos !== null) {
+                editor.chain().focus().setNodeSelection(targetPos).updateAttributes('linkPreview', { size: 'xs' }).run()
+              }
+            },
+            isActive: targetNode.attrs.size === 'xs',
+          },
+          {
             icon: <Minimize2 className="w-4 h-4" />,
             label: 'Small',
+            action: () => {
+              if (targetPos !== null) {
+                editor.chain().focus().setNodeSelection(targetPos).updateAttributes('linkPreview', { size: 's' }).run()
+              }
+            },
+            isActive: targetNode.attrs.size === 's',
+          },
+          {
+            icon: <Maximize2 className="w-4 h-4" />,
+            label: 'Medium',
             action: () => {
               if (targetPos !== null) {
                 editor.chain().focus().setNodeSelection(targetPos).updateAttributes('linkPreview', { size: 'm' }).run()

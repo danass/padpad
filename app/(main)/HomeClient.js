@@ -491,7 +491,27 @@ export default function HomeClient({ featuredArticles = [] }) {
               >
                 {mounted && editor && (
                   <>
-                    <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+                    <BubbleMenu
+                      editor={editor}
+                      tippyOptions={{ duration: 100 }}
+                      shouldShow={({ editor: bubbleEditor, state, from, to }) => {
+                        // Never show on media nodes
+                        if (bubbleEditor.isActive('linkPreview')) return false
+                        if (bubbleEditor.isActive('resizableImage')) return false
+                        if (bubbleEditor.isActive('video')) return false
+                        if (bubbleEditor.isActive('youtube')) return false
+                        if (bubbleEditor.isActive('drawing')) return false
+                        if (bubbleEditor.isActive('audio')) return false
+
+                        // Only show if there's a text selection
+                        if (from === to) return false
+
+                        // Check if it's a node selection
+                        if (state.selection.node) return false
+
+                        return true
+                      }}
+                    >
                       <BubbleToolbar
                         editor={editor}
                         onOpenLinkEditor={() => {

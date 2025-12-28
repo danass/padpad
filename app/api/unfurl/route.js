@@ -2,15 +2,18 @@ import { NextResponse } from 'next/server'
 
 // Fetch OG metadata from a URL
 export async function POST(request) {
+    let url = null
+    let parsedUrl = null
+
     try {
-        const { url } = await request.json()
+        const body = await request.json()
+        url = body.url
 
         if (!url) {
             return NextResponse.json({ error: 'URL is required' }, { status: 400 })
         }
 
         // Validate URL
-        let parsedUrl
         try {
             parsedUrl = new URL(url)
         } catch {
@@ -19,12 +22,13 @@ export async function POST(request) {
 
         // Fetch the URL with a timeout
         const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 5000)
+        const timeout = setTimeout(() => controller.abort(), 8000) // Increased timeout
 
         const response = await fetch(parsedUrl.toString(), {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (compatible; TextpadBot/1.0; +https://www.textpad.cloud)',
-                'Accept': 'text/html,application/xhtml+xml',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
             },
             signal: controller.signal,
         })
@@ -107,27 +111,29 @@ export async function POST(request) {
         })
 
     } catch (error) {
-        console.error('Unfurl error:', error)
+        console.error('Unfurl error:', error.message)
 
         // Return basic info even on error
-        try {
-            const { url } = await request.json()
-            const parsedUrl = new URL(url)
+        if (url && parsedUrl) {
             return NextResponse.json({
                 url,
                 title: parsedUrl.hostname,
                 description: null,
                 image: null,
                 siteName: parsedUrl.hostname,
+                favicon: `${parsedUrl.origin}/favicon.ico`,
             })
-        } catch {
-            return NextResponse.json({ error: 'Failed to unfurl URL' }, { status: 500 })
         }
+
+        return NextResponse.json({ error: 'Failed to unfurl URL' }, { status: 500 })
     }
 }
 
 // Helper to decode HTML entities
 function decodeHTMLEntities(text) {
+    if (!text) return text
+
+    // Common named entities
     const entities = {
         '&amp;': '&',
         '&lt;': '<',
@@ -139,7 +145,49 @@ function decodeHTMLEntities(text) {
         '&#x2F;': '/',
         '&#47;': '/',
         '&nbsp;': ' ',
+        // French accents
+        '&eacute;': 'é',
+        '&egrave;': 'è',
+        '&ecirc;': 'ê',
+        '&euml;': 'ë',
+        '&agrave;': 'à',
+        '&acirc;': 'â',
+        '&ocirc;': 'ô',
+        '&ugrave;': 'ù',
+        '&ucirc;': 'û',
+        '&icirc;': 'î',
+        '&iuml;': 'ï',
+        '&ccedil;': 'ç',
+        '&Eacute;': 'É',
+        '&Egrave;': 'È',
+        '&Ecirc;': 'Ê',
+        '&Agrave;': 'À',
+        '&Acirc;': 'Â',
+        '&Ocirc;': 'Ô',
+        '&Ugrave;': 'Ù',
+        '&Ucirc;': 'Û',
+        '&Icirc;': 'Î',
+        '&Ccedil;': 'Ç',
+        // Common others
+        '&ndash;': '–',
+        '&mdash;': '—',
+        '&lsquo;': '\u2018',
+        '&rsquo;': '\u2019',
+        '&ldquo;': '\u201C',
+        '&rdquo;': '\u201D',
+        '&hellip;': '…',
+        '&copy;': '©',
+        '&reg;': '®',
+        '&trade;': '™',
+        '&euro;': '€',
     }
 
-    return text.replace(/&[^;]+;/g, match => entities[match] || match)
+    // Replace named entities
+    let result = text.replace(/&[a-zA-Z]+;/g, match => entities[match] || match)
+
+    // Replace numeric entities (&#123; or &#x1F;)
+    result = result.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
+    result = result.replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
+
+    return result
 }

@@ -120,7 +120,7 @@ export async function proxy(request) {
         '/', '/auth', '/api/auth', '/api/migrate', '/public',
         '/api/public', '/online-text-editor', '/features',
         '/featured', '/robots.txt', '/sitemap.xml', '/privacy', '/terms', '/credits',
-        '/fr', '/en', '/feed', '/api/feed', '/api/documents', '/api/ipfs'
+        '/fr', '/en', '/feed', '/api/feed', '/api/documents', '/api/ipfs', '/api/unfurl'
     ]
 
     if (publicPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {

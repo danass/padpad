@@ -1603,7 +1603,10 @@ export default function DocumentPage() {
                   <BubbleMenu
                     editor={editor}
                     tippyOptions={{ duration: 100 }}
-                    shouldShow={({ state, from, to }) => {
+                    shouldShow={({ editor: bubbleEditor, state, from, to }) => {
+                      // Never show on linkPreview nodes
+                      if (bubbleEditor.isActive('linkPreview')) return false
+
                       // Only show if there's a text selection and no media nodes involved
                       if (from === to) return false
 
