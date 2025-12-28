@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useLanguage } from '@/app/i18n/LanguageContext'
+import ContactModal from '@/components/ui/ContactModal'
+import { Mail } from 'lucide-react'
 
 // Static content for SEO - rendered on server
 const staticContent = {
@@ -37,6 +39,7 @@ const staticContent = {
 export default function TermsClient() {
     const { t } = useLanguage()
     const [currentDate, setCurrentDate] = useState('')
+    const [showContactModal, setShowContactModal] = useState(false)
 
     useEffect(() => {
         // Set date only on client to avoid hydration mismatch
@@ -195,8 +198,20 @@ export default function TermsClient() {
                     <p className="text-gray-700 mb-4">
                         {t?.termsContactText || staticContent.contactText}
                     </p>
+                    <button
+                        onClick={() => setShowContactModal(true)}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 active:scale-[0.98] transition-all"
+                    >
+                        <Mail className="w-5 h-5" />
+                        Contact Us
+                    </button>
                 </section>
             </div>
+
+            <ContactModal
+                isOpen={showContactModal}
+                onClose={() => setShowContactModal(false)}
+            />
         </article>
     )
 }

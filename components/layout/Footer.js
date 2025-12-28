@@ -12,20 +12,21 @@ export default function Footer() {
   return (
     <footer className="w-full py-4 mt-auto">
       <div className="flex items-center justify-center gap-4">
-        {/* Show Feed, Featured and Credits links on mobile when not logged in */}
+        {/* Show Feed and Featured links when not logged in */}
         {!session && (
-          <div className="flex items-center gap-4 xs:hidden">
+          <div className="flex items-center gap-4">
             <Link href="/feed" className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
               {t?.navFeed || 'Feed'}
             </Link>
             <Link href="/featured" className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
               {t?.navFeatured || 'Featured'}
             </Link>
-            <Link href="/credits" className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
-              {t?.credits || 'Credits'}
-            </Link>
           </div>
         )}
+        {/* Credits always visible */}
+        <Link href="/credits" className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
+          {t?.credits || 'Credits'}
+        </Link>
         <LanguageSelector compact />
       </div>
     </footer>
