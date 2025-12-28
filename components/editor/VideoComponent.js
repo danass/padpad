@@ -168,7 +168,7 @@ export default function VideoComponent({ node, updateAttributes, deleteNode, edi
                     </video>
                 )}
 
-                {/* Hover menu - positioned relative to video container */}
+                {/* Hover menu - Disabled for now
                 {editor?.isEditable && showHoverMenu && (
                     <div className="absolute bottom-2 right-2 bg-white border border-gray-200 rounded-lg shadow-lg p-1 flex gap-1 z-20 animate-in fade-in slide-in-from-bottom-1 duration-200">
                         <button
@@ -218,6 +218,7 @@ export default function VideoComponent({ node, updateAttributes, deleteNode, edi
                         </button>
                     </div>
                 )}
+                */}
             </div>
         </NodeViewWrapper>
     )

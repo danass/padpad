@@ -3,38 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { EditorContent, useEditor, BubbleMenu, FloatingMenu } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Placeholder from '@tiptap/extension-placeholder'
-import Link from '@tiptap/extension-link'
-import Underline from '@tiptap/extension-underline'
-import Subscript from '@tiptap/extension-subscript'
-import Superscript from '@tiptap/extension-superscript'
-import CodeBlock from '@tiptap/extension-code-block'
-import TextStyle from '@tiptap/extension-text-style'
-import Color from '@tiptap/extension-color'
-import Highlight from '@tiptap/extension-highlight'
-import TextAlign from '@tiptap/extension-text-align'
-import Typography from '@tiptap/extension-typography'
-import FontFamily from '@tiptap/extension-font-family'
-import { FontSize } from '@/lib/editor/font-size-extension'
-import { LineHeight } from '@/lib/editor/line-height-extension'
-import { ResizableImage } from '@/lib/editor/resizable-image-extension'
-import { Drawing } from '@/lib/editor/drawing-extension'
-import { Youtube } from '@/lib/editor/youtube-extension'
-import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
-import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
-import { LinkPreview } from '@/lib/editor/link-preview-extension'
-import { ChatConversation } from '@/lib/editor/chat-extension'
-import { Video } from '@/lib/editor/video-extension'
-import { Audio } from '@/lib/editor/audio-extension'
-import Emoji from '@tiptap/extension-emoji'
 import { useLanguage } from '@/app/i18n/LanguageContext'
-import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
-import ContextMenu from '@/components/editor/ContextMenu'
-import LinkEditor from '@/components/editor/LinkEditor'
-import BubbleToolbar from '@/components/editor/BubbleToolbar'
-import FloatingToolbar from '@/components/editor/FloatingToolbar'
+import UnifiedEditor from '@/components/editor/UnifiedEditor'
 
 export default function TempPadClient({ serverData }) {
     const { data: session } = useSession()
@@ -43,82 +13,33 @@ export default function TempPadClient({ serverData }) {
     const { t } = useLanguage()
     const [mounted, setMounted] = useState(false)
     const [claiming, setClaiming] = useState(false)
-    const [linkEditorPosition, setLinkEditorPosition] = useState(null)
     const [isSaving, setIsSaving] = useState(false)
+    const [editor, setEditor] = useState(null)
+    const [hasChanges, setHasChanges] = useState(false)
 
     const document = serverData?.document
     const initialContent = serverData?.content
     const error = serverData?.error
-
-    const editor = useEditor({
-        editable: true,
-        immediatelyRender: false,
-        extensions: [
-            StarterKit.configure({
-                heading: { levels: [1, 2, 3, 4, 5, 6] },
-                codeBlock: false,
-            }),
-            Placeholder.configure({
-                placeholder: ({ node }) => {
-                    if (node.type.name === 'heading') {
-                        return t?.editorPlaceholderTitle || 'Title'
-                    }
-                    return t?.editorPlaceholder || 'Tell your story...'
-                }
-            }),
-            ResizableImage,
-            Youtube,
-            TaskList,
-            TaskItem,
-            Details,
-            DetailsSummary,
-            DetailsContent,
-            Link.configure({
-                openOnClick: false,
-                HTMLAttributes: { class: 'text-cyan-600 underline cursor-pointer' },
-            }),
-            Underline,
-            Subscript,
-            Superscript,
-            CodeBlock.configure({
-                HTMLAttributes: { class: 'bg-gray-100 rounded-md p-4 font-mono text-sm' },
-            }),
-            TextStyle,
-            Color,
-            Highlight.configure({ multicolor: true }),
-            TextAlign.configure({ types: ['heading', 'paragraph'] }),
-            Typography,
-            FontFamily,
-            FontSize,
-            LineHeight,
-            Drawing,
-            LinkPreview,
-            ChatConversation,
-            Video,
-            Audio,
-            Emoji.configure({ enableEmoticons: true }),
-        ],
-        content: initialContent || { type: 'doc', content: [] },
-        onUpdate: ({ editor }) => {
-            debouncedSave(editor.getJSON())
-        }
-    })
 
     // Debounced save for snapshots
     const debouncedSave = useCallback(
         (() => {
             let timeout
             return (content) => {
+                setHasChanges(true)
                 clearTimeout(timeout)
                 timeout = setTimeout(async () => {
                     if (!document?.id) return
                     setIsSaving(true)
                     try {
-                        await fetch(`/api/documents/${document.id}/snapshot`, {
+                        const response = await fetch(`/api/documents/${document.id}/snapshot`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ content_json: content }),
                         })
+                        if (response.ok) {
+                            setHasChanges(false)
+                        }
                     } catch (err) {
                         console.error('Error saving snapshot:', err)
                     } finally {
@@ -182,12 +103,6 @@ export default function TempPadClient({ serverData }) {
         }
     }
 
-    // Listen for showLinkEditor event
-    useEffect(() => {
-        const handleShowLinkEditor = (e) => setLinkEditorPosition(e.detail.position)
-        window.addEventListener('showLinkEditor', handleShowLinkEditor)
-        return () => window.removeEventListener('showLinkEditor', handleShowLinkEditor)
-    }, [])
 
     if (error) {
         return (
@@ -232,73 +147,24 @@ export default function TempPadClient({ serverData }) {
             </div>
 
             <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-8">
-                {editor && (
-                    <>
-                        <div className="mb-4">
-                            <GoogleDocsToolbar editor={editor} />
-                        </div>
-                        <div className="prose max-w-none min-h-[500px] p-4 md:p-0 transition-all relative">
-                            {mounted && editor && (
-                                <>
-                                    <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-                                        <BubbleToolbar
-                                            editor={editor}
-                                            onOpenLinkEditor={() => {
-                                                const { view } = editor
-                                                const { state } = view
-                                                const { selection } = state
-                                                const { from } = selection
-                                                const coords = view.coordsAtPos(from)
-                                                const container = view.dom.closest('.prose') || view.dom.parentElement
-                                                const containerRect = container?.getBoundingClientRect()
-
-                                                if (containerRect) {
-                                                    setLinkEditorPosition({
-                                                        top: coords.bottom - containerRect.top + 8,
-                                                        left: coords.left - containerRect.left,
-                                                    })
-                                                }
-                                            }}
-                                        />
-                                    </BubbleMenu>
-
-                                    <FloatingMenu
-                                        editor={editor}
-                                        tippyOptions={{ duration: 100 }}
-                                        shouldShow={({ state }) => {
-                                            const { selection } = state
-                                            const { $from } = selection
-                                            return $from.parent.content.size === 0
-                                        }}
-                                    >
-                                        <FloatingToolbar
-                                            editor={editor}
-                                            onOpenIpfsBrowser={() => {
-                                                // IpfsBrowser not yet in TempPad, could add it later if needed
-                                                // For now just alert or ignore
-                                            }}
-                                        />
-                                    </FloatingMenu>
-
-                                    <EditorContent editor={editor} />
-                                </>
-                            )}
-                            <ContextMenu editor={editor} />
-                            {linkEditorPosition && (
-                                <LinkEditor
-                                    editor={editor}
-                                    position={linkEditorPosition}
-                                    onClose={() => setLinkEditorPosition(null)}
-                                />
-                            )}
-                            {isSaving && (
-                                <div className="absolute top-2 right-2 flex items-center gap-1 text-[10px] text-gray-400 font-medium">
-                                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
-                                    Saving...
-                                </div>
-                            )}
-                        </div>
-                    </>
+                {mounted && (
+                    <UnifiedEditor
+                        onEditorReady={setEditor}
+                        onUpdate={(content) => debouncedSave(content)}
+                        saving={isSaving}
+                        hasChanges={hasChanges}
+                        initialContent={initialContent}
+                        features={{
+                            showToolbar: true,
+                            showBubbleMenu: true,
+                            showFloatingMenu: true,
+                            showContextMenu: true,
+                            showIpfsBrowser: true,
+                            showSaveButton: false,
+                            saveButtonIconOnly: true
+                        }}
+                        className="font-['DM_Sans',sans-serif] min-h-[500px] pb-24 md:pb-32"
+                    />
                 )}
             </div>
         </div>

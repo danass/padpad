@@ -7,41 +7,48 @@ export const useEditorStore = create((set, get) => ({
   currentDocument: null,
   currentContent: null,
   editor: null,
-  
+
   // Unsaved changes tracking
   hasUnsavedChanges: false,
   lastSavedVersion: 0,
   currentVersion: 0,
-  
+
   // History state
   history: [],
   historyLoading: false,
-  
+
   // Actions
   setEditor: (editor) => set({ editor }),
-  
-  setCurrentDocument: (document) => set({ 
+
+  setCurrentDocument: (document, content = null, version = 0) => set({
     currentDocument: document,
+    currentContent: content || get().currentContent,
     hasUnsavedChanges: false,
-    lastSavedVersion: 0,
-    currentVersion: 0
+    lastSavedVersion: version,
+    currentVersion: version
   }),
-  
-  setCurrentContent: (content) => set({ 
+
+  setCurrentContent: (content) => set({
     currentContent: content,
     hasUnsavedChanges: true,
     currentVersion: get().currentVersion + 1
   }),
-  
-  markSaved: () => set({ 
+
+  markSaved: () => set({
     hasUnsavedChanges: false,
     lastSavedVersion: get().currentVersion
   }),
-  
+
+  setVersion: (version) => set({
+    currentVersion: version,
+    lastSavedVersion: version,
+    hasUnsavedChanges: false
+  }),
+
   setHistory: (history) => set({ history }),
-  
+
   setHistoryLoading: (loading) => set({ historyLoading: loading }),
-  
+
   reset: () => set({
     currentDocument: null,
     currentContent: null,
@@ -53,6 +60,7 @@ export const useEditorStore = create((set, get) => ({
     historyLoading: false
   })
 }))
+
 
 
 

@@ -18,3 +18,4 @@ CREATE INDEX IF NOT EXISTS idx_users_birth_date ON users(birth_date) WHERE birth
 
 
 
+

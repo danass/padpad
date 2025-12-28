@@ -2,58 +2,8 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Placeholder from '@tiptap/extension-placeholder'
-import Link from '@tiptap/extension-link'
-import Underline from '@tiptap/extension-underline'
-import Subscript from '@tiptap/extension-subscript'
-import Superscript from '@tiptap/extension-superscript'
-import TextStyle from '@tiptap/extension-text-style'
-import Color from '@tiptap/extension-color'
-import Highlight from '@tiptap/extension-highlight'
-import TextAlign from '@tiptap/extension-text-align'
-import CharacterCount from '@tiptap/extension-character-count'
-import Dropcursor from '@tiptap/extension-dropcursor'
-import Focus from '@tiptap/extension-focus'
-import Gapcursor from '@tiptap/extension-gapcursor'
-import Typography from '@tiptap/extension-typography'
-import FileHandler from '@tiptap/extension-file-handler'
-import FontFamily from '@tiptap/extension-font-family'
-import InvisibleCharacters from '@tiptap/extension-invisible-characters'
-import ListKeymap from '@tiptap/extension-list-keymap'
-import UniqueID from '@tiptap/extension-unique-id'
-import Emoji from '@tiptap/extension-emoji'
-import { Youtube } from '@/lib/editor/youtube-extension'
-import { LinkPreview } from '@/lib/editor/link-preview-extension'
-import { ChatConversation } from '@/lib/editor/chat-extension'
-import { Video } from '@/lib/editor/video-extension'
-import { Audio } from '@/lib/editor/audio-extension'
-import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
-// Collaboration requires Y.js and WebSocket provider - commented out for now
-// import Collaboration from '@tiptap/extension-collaboration'
-// import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
-// import * as Y from 'yjs'
-import { ResizableImage } from '@/lib/editor/resizable-image-extension'
-import { Drawing } from '@/lib/editor/drawing-extension'
-import {
-  DraggableParagraph,
-  DraggableHeading,
-  DraggableBulletList,
-  DraggableOrderedList,
-  DraggableBlockquote,
-  DraggableCodeBlock,
-} from '@/lib/editor/draggable-nodes'
-import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
-import { FontSize } from '@/lib/editor/font-size-extension'
-import { LineHeight } from '@/lib/editor/line-height-extension'
-import GoogleDocsToolbar from '@/components/editor/GoogleDocsToolbar'
-import ContextMenu from '@/components/editor/ContextMenu'
+import UnifiedEditor from '@/components/editor/UnifiedEditor'
 import HistoryPanel from '@/components/editor/HistoryPanel'
-import LinkEditor from '@/components/editor/LinkEditor'
-import IpfsBrowser from '@/components/ipfs/IpfsBrowser'
-import BubbleToolbar from '@/components/editor/BubbleToolbar'
-import FloatingToolbar from '@/components/editor/FloatingToolbar'
 import { useEditorStore } from '@/store/editorStore'
 import { useToast } from '@/components/ui/toast'
 import { replayHistory } from '@/lib/editor/history-replay'
@@ -68,7 +18,6 @@ export default function DocumentPage() {
   const [saving, setSaving] = useState(false)
   const [title, setTitle] = useState('')
   const [showHistory, setShowHistory] = useState(false)
-  const [showIpfsBrowser, setShowIpfsBrowser] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
   const [isPublic, setIsPublic] = useState(false)
   const [isFullWidth, setIsFullWidth] = useState(false)
@@ -92,7 +41,7 @@ export default function DocumentPage() {
   const snapshotIntervalRef = useRef(null)
   const lastSnapshotContentRef = useRef(null)
   const lastSavedContentRef = useRef(null) // Track last saved content to prevent duplicate saves
-  const pendingContentRef = useRef(null) // Store content to load when editor is ready
+  const pendingAutosaveContentRef = useRef(null) // Track latest content for the next autosave
   const isDocumentDeletedRef = useRef(false) // Track if document was deleted
   const isLoadedRef = useRef(false) // Track if initial document content is loaded
   const hasChangesRef = useRef(false) // Track if there are unsaved changes for snapshot
@@ -101,293 +50,99 @@ export default function DocumentPage() {
   const {
     currentDocument,
     setCurrentDocument,
+    currentContent,
     setCurrentContent,
     markSaved,
+    setVersion,
     currentVersion
   } = useEditorStore()
 
-  // Debounced autosave - increased debounce time and prevent multiple saves
+  // Robust debounced autosave
   const handleAutosave = useCallback(async (content) => {
     if (!documentId || loading || !isLoadedRef.current || isDocumentDeletedRef.current || (!isOwner && !isAdmin)) return
 
-    // Check if content actually changed
+    // Update the pending content ref - this ensures the timeout always uses the VERY LATEST content
+    pendingAutosaveContentRef.current = content
     const contentStr = JSON.stringify(content)
+
+    // Skip if already saved
     if (lastSavedContentRef.current === contentStr) {
-      return // No changes, skip save
+      return
     }
+
+    // Set UI to "waiting to save"
+    setHasChanges(true)
+    hasChangesRef.current = true
 
     // Clear existing timeout
     if (autosaveTimeoutRef.current) {
       clearTimeout(autosaveTimeoutRef.current)
     }
 
-    // Set new timeout - increased to 2 seconds to batch changes
+    // Schedule the save
     autosaveTimeoutRef.current = setTimeout(async () => {
-      // If already saving, reschedule this check
-      if (saving) {
-        handleAutosave(content)
-        return
-      }
+      // Use the very latest content captured by the ref
+      const contentToSave = pendingAutosaveContentRef.current
+      if (!contentToSave) return
 
-      // Double check content hasn't changed during timeout
-      const currentState = useEditorStore.getState()
-      const currentContentStr = JSON.stringify(currentState.currentContent)
-      if (lastSavedContentRef.current === currentContentStr) {
-        return // Content was already saved
+      const contentToSaveStr = JSON.stringify(contentToSave)
+
+      // Final check if already saved by another process (like manual save)
+      if (lastSavedContentRef.current === contentToSaveStr) {
+        setHasChanges(false)
+        return
       }
 
       setSaving(true)
       try {
-        // Calculate diff (simplified - in production, use proper ProseMirror steps)
-        const diff = calculateDiff(null, content)
-
-        // Get current version
         const version = useEditorStore.getState().currentVersion
+        const diff = calculateDiff(null, contentToSave)
 
-        // Send event
         const eventResponse = await fetch(`/api/documents/${documentId}/events`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type: diff.type || 'meta',
-            payload: diff.payload || { content },
+            payload: diff.payload || { content: contentToSave },
             version
           })
         })
 
-        if (!eventResponse.ok) {
-          // If 404 or 401, user doesn't have access or document was deleted
-          if (eventResponse.status === 404 || eventResponse.status === 401) {
-            // Mark as deleted to prevent further autosave attempts
-            isDocumentDeletedRef.current = true
-            // Clear any pending autosaves
-            if (autosaveTimeoutRef.current) {
-              clearTimeout(autosaveTimeoutRef.current)
-              autosaveTimeoutRef.current = null
-            }
-            // Close tab and redirect
-            window.dispatchEvent(new CustomEvent('documentDeleted', {
-              detail: { documentId }
-            }))
-            router.push('/drive')
-            return
+        if (eventResponse.ok) {
+          lastSavedContentRef.current = contentToSaveStr
+          markSaved()
+          setHasChanges(false)
+          hasChangesRef.current = false
+        } else {
+          console.error('Autosave failed:', eventResponse.status)
+          // If auth error, redirect
+          if (eventResponse.status === 401 || eventResponse.status === 403) {
+            router.push('/login')
           }
-          // For other errors, don't throw - just log and continue
-          console.error('Failed to save event:', eventResponse.status, eventResponse.statusText)
-          setSaving(false)
-          return
         }
-
-        // Mark as saved and update last saved content
-        lastSavedContentRef.current = currentContentStr
-        // Content is saved in an event, no need for immediate snapshot anymore
-        // This was redundant and causing DB bloat. Snapshots occur every 10 mins.
-        markSaved()
-        hasChangesRef.current = true
       } catch (err) {
         console.error('Autosave error:', err)
-        setError(err.message)
-        showToast('Failed to save: ' + err.message, 'error')
       } finally {
         setSaving(false)
       }
-    }, 800) // Reduced from 2s to 800ms for better responsiveness
-  }, [documentId, loading, saving, markSaved, showToast, router, isOwner])
+    }, 1000)
+  }, [documentId, loading, markSaved, router, isOwner, isAdmin])
 
-  const editor = useEditor({
-    immediatelyRender: false,
-    autofocus: 'end',
-    extensions: [
-      StarterKit.configure({
-        paragraph: false, // We use DraggableParagraph instead
-        heading: false, // We use DraggableHeading instead
-        bulletList: false, // We use DraggableBulletList instead
-        orderedList: false, // We use DraggableOrderedList instead
-        blockquote: false, // We use DraggableBlockquote instead
-        codeBlock: false,
-        taskList: false, // We configure it separately with TaskList extension
-        dropcursor: false, // We configure it separately
-        gapcursor: false, // We configure it separately
-      }),
-      DraggableParagraph,
-      DraggableHeading,
-      DraggableBulletList,
-      DraggableOrderedList,
-      DraggableBlockquote,
-      Placeholder.configure({
-        placeholder: ({ node }) => {
-          if (node.type.name === 'heading') {
-            return 'Title'
-          }
-          return 'Tell your story...'
-        },
-      }),
-      ResizableImage.configure({
-        inline: false,
-        allowBase64: true,
-        HTMLAttributes: {
-          class: 'max-w-full h-auto rounded',
-        },
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-cyan-600 underline cursor-pointer',
-        },
-      }),
-      Underline,
-      Subscript,
-      Superscript,
-      DraggableCodeBlock.configure({
-        HTMLAttributes: {
-          class: 'bg-gray-100 rounded-md p-4 font-mono text-sm',
-        },
-      }),
-      TextStyle,
-      Color,
-      Highlight.configure({
-        multicolor: true,
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph', 'linkPreview'],
-      }),
-      CharacterCount,
-      Dropcursor.configure({
-        color: '#3b82f6',
-        width: 2,
-      }),
-      Focus.configure({
-        className: 'has-focus',
-        mode: 'all',
-      }),
-      Gapcursor,
-      Typography,
-      FileHandler.configure({
-        allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
-        onDrop: (currentEditor, files, pos) => {
-          files.forEach(file => {
-            const fileReader = new FileReader()
-            fileReader.readAsDataURL(file)
-            fileReader.onload = () => {
-              currentEditor.chain().insertContentAt(pos, {
-                type: 'image',
-                attrs: { src: fileReader.result, alt: file.name },
-              }).focus().run()
-            }
-          })
-        },
-        onPaste: (currentEditor, files, htmlContent) => {
-          files.forEach(file => {
-            if (file.type.startsWith('image/')) {
-              const fileReader = new FileReader()
-              fileReader.readAsDataURL(file)
-              fileReader.onload = () => {
-                currentEditor.chain().insertContent({
-                  type: 'image',
-                  attrs: { src: fileReader.result, alt: file.name },
-                }).focus().run()
-              }
-            }
-          })
-        },
-      }),
-      FontFamily,
-      FontSize,
-      LineHeight,
-      // InvisibleCharacters, // Disabled - user doesn't want invisible characters
-      ListKeymap,
-      UniqueID.configure({
-        attributeName: 'id',
-        types: ['heading', 'paragraph'],
-      }),
-      Details,
-      DetailsSummary,
-      DetailsContent,
-      Emoji.configure({
-        enableEmoticons: true,
-        suggestion: {
-          char: ':',
-          allowSpaces: false,
-          allowedPrefixes: [' '],
-          startOfLine: false,
-        },
-      }),
-      Youtube.configure({
-        width: 640,
-        height: 480,
-        controls: true,
-        nocookie: false,
-      }),
-      TaskList,
-      TaskItem,
-      Drawing,
-      LinkPreview,
-      ChatConversation,
-      Video,
-      Audio,
-    ],
-    content: null,
-    editable: true,
-    editorProps: {
-      handleClick: (view, pos, event) => {
-        const { state } = view
-        const { selection } = state
-        const { $from } = selection
+  const [editor, setEditor] = useState(null)
 
-        // Check if clicking on a link
-        const linkMark = state.schema.marks.link
-        if (linkMark) {
-          const linkAttrs = linkMark.isInSet($from.marks())
-          if (linkAttrs) {
-            event.preventDefault()
-            const linkElement = event.target.closest('a')
-            if (linkElement) {
-              const rect = linkElement.getBoundingClientRect()
-              const editorContainer = editor.view.dom.closest('.prose') || editor.view.dom.parentElement
-              const containerRect = editorContainer?.getBoundingClientRect()
-              if (containerRect) {
-                setLinkEditorPosition({
-                  top: rect.bottom - containerRect.top + 8,
-                  left: rect.left - containerRect.left,
-                })
-              } else {
-                setLinkEditorPosition({
-                  top: rect.bottom + 8,
-                  left: rect.left,
-                })
-              }
-            }
-            return true
-          }
-        }
-        return false
-      },
-    },
-    onUpdate: ({ editor }) => {
-      // Content changes are handled in a separate useEffect
-    },
-  })
-
-  // Handle updates in a separate effect to ensure handleAutosave is fresh
-  useEffect(() => {
-    if (!editor) return
-
-    const handleUpdate = () => {
-      const content = editor.getJSON()
-      // Use queueMicrotask to avoid flushSync error during render
-      queueMicrotask(() => {
-        setCurrentContent(content)
+  const handleEditorUpdate = useCallback((content) => {
+    // Use queueMicrotask to avoid flushSync error during render
+    queueMicrotask(() => {
+      setCurrentContent(content)
+      if (isLoadedRef.current) {
         handleAutosave(content)
-      })
-    }
+        hasChangesRef.current = true
+        setHasChanges(true)
+      }
+    })
+  }, [handleAutosave, setCurrentContent])
 
-    editor.on('update', handleUpdate)
-    return () => {
-      editor.off('update', handleUpdate)
-    }
-  }, [editor, handleAutosave, setCurrentContent])
-
-  // Set mounted state to prevent flushSync errors during hydration
+  // Set mounted state
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -706,7 +461,13 @@ export default function DocumentPage() {
       setError(null)
 
       try {
-        const response = await fetch(`/api/documents/${documentId}`)
+        const response = await fetch(`/api/documents/${documentId}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        })
         if (!response.ok) {
           // If 404 or 401, user doesn't have access - redirect to drive
           if (response.status === 404 || response.status === 401) {
@@ -834,71 +595,24 @@ export default function DocumentPage() {
           }
         }
 
-        // Always store content to load when editor is ready
-        pendingContentRef.current = content
-        setPendingContentReady(true) // Trigger useEffect
+        // Set metadata
+        setTitle(document.title)
+        setIsPublic(document.is_public || false)
+        setIsFullWidth(document.is_full_width || false)
+        setIsOwner(ownerFlag !== false)
+        setIsFeatured(document.is_featured || false)
+        setIsAdmin(adminFlag || false)
+        setIsCurator(curatorFlag || adminFlag || false)
+        setKeywords(document.keywords || [])
 
-        // Normalize JSON for comparison
-        const normalizeJSON = (obj) => {
-          if (obj === null || typeof obj !== 'object') {
-            return obj
-          }
-          if (Array.isArray(obj)) {
-            return obj.map(normalizeJSON).sort((a, b) => {
-              const aStr = JSON.stringify(a)
-              const bStr = JSON.stringify(b)
-              return aStr < bStr ? -1 : aStr > bStr ? 1 : 0
-            })
-          }
-          const sorted = {}
-          Object.keys(obj).sort().forEach(key => {
-            sorted[key] = normalizeJSON(obj[key])
-          })
-          return sorted
-        }
+        // Initialize state for editor
+        const maxVersion = events.reduce((max, e) => Math.max(max, e.version || 0), snapshot?.version || 0)
+        setCurrentDocument(document, content, maxVersion)
 
-        // Initialize lastSnapshotContentRef with normalized content
-        const normalizedContent = normalizeJSON(content)
-        lastSnapshotContentRef.current = JSON.stringify(normalizedContent)
-
-        // Try to set content immediately if editor is ready (same as handleRestore)
-        if (editor && content && editor.state && editor.state.doc) {
-          try {
-            const currentEditorContent = editor.getJSON()
-            const normalizedCurrent = normalizeJSON(currentEditorContent)
-            const currentEditorContentStr = JSON.stringify(normalizedCurrent)
-            const contentStr = JSON.stringify(normalizedContent)
-
-            // Only set if editor is empty or content is different
-            const isEmpty = !currentEditorContent ||
-              (currentEditorContent.type === 'doc' &&
-                (!currentEditorContent.content || currentEditorContent.content.length === 0))
-            const isDifferent = currentEditorContentStr !== contentStr
-
-            if (isEmpty || isDifferent) {
-              // Use same method as handleRestore
-              // Wrap in queueMicrotask to avoid flushSync error
-              queueMicrotask(() => {
-                requestAnimationFrame(() => {
-                  editor.commands.setContent(content)
-                  setCurrentContent(content)
-                  lastSnapshotContentRef.current = contentStr
-                  isLoadedRef.current = true // Mark as loaded once initial content is set
-                })
-              })
-              pendingContentRef.current = null // Clear pending content
-              setPendingContentReady(false)
-            } else {
-              pendingContentRef.current = null
-              setPendingContentReady(false)
-              isLoadedRef.current = true // Still mark as loaded even if no change needed
-            }
-          } catch (error) {
-            console.error('Error setting editor content:', error)
-            // Content will be loaded by the useEffect retry logic
-          }
-        }
-
+        const contentStr = JSON.stringify(content)
+        lastSavedContentRef.current = contentStr
+        lastSnapshotContentRef.current = contentStr
+        isLoadedRef.current = true
         setLoading(false)
       } catch (err) {
         console.error('Error loading document:', err)
@@ -908,7 +622,7 @@ export default function DocumentPage() {
     }
 
     loadDocument()
-  }, [documentId, router])
+  }, [documentId, router, setCurrentDocument, setCurrentContent])
 
   // Listen for document deletion to stop autosave
   useEffect(() => {
@@ -940,111 +654,6 @@ export default function DocumentPage() {
   useEffect(() => {
     isDocumentDeletedRef.current = false
   }, [documentId])
-
-  // State to trigger useEffect when pendingContentRef changes
-  const [pendingContentReady, setPendingContentReady] = useState(false)
-
-  // Load pending content when editor becomes ready AND content is available
-  useEffect(() => {
-    if (!editor || !pendingContentRef.current) {
-      return
-    }
-
-    // Use the same approach as handleRestore - direct setContent call
-    const trySetContent = (attempt = 0) => {
-      if (attempt > 20) {
-        console.error('Failed to set editor content after multiple attempts', {
-          pendingContent: pendingContentRef.current,
-          editorState: editor.state ? 'exists' : 'missing',
-          editorDoc: editor.state?.doc ? 'exists' : 'missing'
-        })
-        pendingContentRef.current = null
-        return
-      }
-
-      try {
-        const content = pendingContentRef.current
-        if (!content) {
-          return
-        }
-
-        // Check if editor has a valid state (same check as handleRestore)
-        if (editor.state && editor.state.doc) {
-          // Normalize JSON for comparison
-          const normalizeJSON = (obj) => {
-            if (obj === null || typeof obj !== 'object') {
-              return obj
-            }
-            if (Array.isArray(obj)) {
-              return obj.map(normalizeJSON).sort((a, b) => {
-                const aStr = JSON.stringify(a)
-                const bStr = JSON.stringify(b)
-                return aStr < bStr ? -1 : aStr > bStr ? 1 : 0
-              })
-            }
-            const sorted = {}
-            Object.keys(obj).sort().forEach(key => {
-              sorted[key] = normalizeJSON(obj[key])
-            })
-            return sorted
-          }
-
-          const normalizedContent = normalizeJSON(content)
-          const contentStr = JSON.stringify(normalizedContent)
-          const currentEditorContent = editor.getJSON()
-          const normalizedCurrent = normalizeJSON(currentEditorContent)
-          const currentEditorContentStr = JSON.stringify(normalizedCurrent)
-
-          // Only set if different
-          if (contentStr !== currentEditorContentStr) {
-            // Use the exact same method as handleRestore
-            // Wrap in queueMicrotask to avoid flushSync error
-            queueMicrotask(() => {
-              requestAnimationFrame(() => {
-                editor.commands.setContent(content)
-                setCurrentContent(content)
-                lastSnapshotContentRef.current = contentStr
-                isLoadedRef.current = true // Mark as loaded once initial content is set
-              })
-            })
-
-            pendingContentRef.current = null
-            setPendingContentReady(false)
-          } else {
-            pendingContentRef.current = null
-            setPendingContentReady(false)
-            isLoadedRef.current = true // Still mark as loaded
-          }
-        } else {
-          // Retry after delay
-          setTimeout(() => trySetContent(attempt + 1), 100 * (attempt + 1))
-        }
-      } catch (error) {
-        console.error(`Error setting pending editor content (attempt ${attempt}):`, error)
-        if (attempt < 20) {
-          setTimeout(() => trySetContent(attempt + 1), 100 * (attempt + 1))
-        } else {
-          pendingContentRef.current = null
-          setPendingContentReady(false)
-        }
-      }
-    }
-
-    // Start trying immediately, then retry if needed
-    trySetContent(0)
-
-    // Also set up an interval to check periodically (in case editor becomes ready later)
-    const intervalId = setInterval(() => {
-      if (editor && pendingContentRef.current && editor.state && editor.state.doc) {
-        trySetContent(0)
-        clearInterval(intervalId)
-      }
-    }, 200)
-
-    return () => {
-      clearInterval(intervalId)
-    }
-  }, [editor, pendingContentReady])
 
   // Save title
   const handleTitleSave = async () => {
@@ -1549,244 +1158,72 @@ export default function DocumentPage() {
                 </button>
               </div>
 
-              {/* Save status and character count */}
-              <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                {saving && <span className="text-gray-600">Saving...</span>}
-                {!saving && useEditorStore.getState().hasUnsavedChanges && (
-                  <span className="text-amber-600">•</span>
-                )}
-                {!saving && !useEditorStore.getState().hasUnsavedChanges && (
-                  <span className="text-green-600">✓</span>
-                )}
-                {editor && (
-                  <span>
-                    {editor.storage.characterCount.characters()} chars
-                    {editor.storage.characterCount.words() > 0 && ` • ${editor.storage.characterCount.words()} words`}
-                  </span>
-                )}
-              </div>
             </div>
           </div>
         </div>
 
         {/* Editor */}
-        {editor && (
+        {mounted && !loading && (
+          <UnifiedEditor
+            onEditorReady={setEditor}
+            onUpdate={handleEditorUpdate}
+            onSave={() => { }} // Autosave handles it
+            saving={saving}
+            hasChanges={hasChanges}
+            initialContent={currentContent}
+            editable={isOwner || isAdmin}
+            features={{
+              showToolbar: true,
+              showBubbleMenu: true,
+              showFloatingMenu: true,
+              showContextMenu: true,
+              showIpfsBrowser: true,
+              showSaveButton: false,
+              saveButtonIconOnly: true
+            }}
+            className="font-['DM_Sans',sans-serif] min-h-[500px] pb-24 md:pb-32"
+          />
+        )}
+
+        {showHistory && (
+          <HistoryPanel
+            documentId={documentId}
+            onRestore={handleRestore}
+            onClose={() => setShowHistory(false)}
+          />
+        )}
+
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
           <>
-            <div className="mb-4">
-              <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} />
-            </div>
             <div
-              className="prose max-w-none min-h-[500px] p-4 md:p-0 transition-all pb-24 md:pb-32 relative cursor-text"
-              onClick={(e) => {
-                // Only handle clicks directly on the prose container (empty space below content)
-                if (e.target === e.currentTarget && editor) {
-                  const { state } = editor
-                  const { doc } = state
-                  const lastNode = doc.lastChild
-
-                  // If there's already an empty paragraph at the end, just focus it
-                  if (lastNode?.type.name === 'paragraph' && lastNode.content.size === 0) {
-                    editor.chain().focus('end').run()
-                  } else {
-                    // Insert a new paragraph at the END of the document (not replacing selection)
-                    const endPos = doc.content.size
-                    editor.chain()
-                      .insertContentAt(endPos, { type: 'paragraph' })
-                      .focus('end')
-                      .run()
-                  }
-                }
-              }}
-            >
-              {mounted && editor && (
-                <>
-                  <BubbleMenu
-                    editor={editor}
-                    tippyOptions={{ duration: 100 }}
-                    shouldShow={({ editor: bubbleEditor, state, from, to }) => {
-                      // Never show on linkPreview nodes
-                      if (bubbleEditor.isActive('linkPreview')) return false
-
-                      // Only show if there's a text selection and no media nodes involved
-                      if (from === to) return false
-
-                      const mediaNodes = ['resizableImage', 'video', 'youtube', 'audio', 'drawing', 'linkPreview', 'image']
-
-                      // Check if it's a node selection (clicking on a node)
-                      if (state.selection.node) {
-                        if (mediaNodes.includes(state.selection.node.type.name)) {
-                          return false
-                        }
-                      }
-
-                      // Check if the selection is inside a media node (check $from)
-                      const $from = state.selection.$from
-                      for (let d = $from.depth; d >= 0; d--) {
-                        const node = $from.node(d)
-                        if (mediaNodes.includes(node.type.name)) {
-                          return false
-                        }
-                      }
-
-                      // Check $to position as well
-                      const $to = state.selection.$to
-                      for (let d = $to.depth; d >= 0; d--) {
-                        const node = $to.node(d)
-                        if (mediaNodes.includes(node.type.name)) {
-                          return false
-                        }
-                      }
-
-                      // Check the node directly at the from position
-                      const nodeAtFrom = state.doc.nodeAt(from)
-                      if (nodeAtFrom && mediaNodes.includes(nodeAtFrom.type.name)) {
-                        return false
-                      }
-
-                      // Check if selection contains any media nodes
-                      let hasMedia = false
-                      state.doc.nodesBetween(from, to, (node) => {
-                        if (mediaNodes.includes(node.type.name)) {
-                          hasMedia = true
-                          return false
-                        }
-                      })
-
-                      return !hasMedia
-                    }}
-                  >
-                    <BubbleToolbar
-                      editor={editor}
-                      onOpenLinkEditor={() => {
-                        const { view } = editor
-                        const { state } = view
-                        const { selection } = state
-                        const { from } = selection
-                        const coords = view.coordsAtPos(from)
-                        const container = view.dom.closest('.prose') || view.dom.parentElement
-                        const containerRect = container?.getBoundingClientRect()
-
-                        if (containerRect) {
-                          setLinkEditorPosition({
-                            top: coords.bottom - containerRect.top + 8,
-                            left: coords.left - containerRect.left,
-                          })
-                        }
-                      }}
-                    />
-                  </BubbleMenu>
-
-                  <FloatingMenu
-                    editor={editor}
-                    tippyOptions={{ duration: 100 }}
-                    shouldShow={({ state }) => {
-                      const { selection } = state
-                      const { $from, empty } = selection
-                      return empty && $from.parent.type.name === 'paragraph' && $from.parent.content.size === 0
-                    }}
-                  >
-                    <FloatingToolbar
-                      editor={editor}
-                      onOpenIpfsBrowser={() => setShowIpfsBrowser(true)}
-                    />
-                  </FloatingMenu>
-
-                  <EditorContent editor={editor} />
-                </>
-              )}
-              <ContextMenu editor={editor} />
-              {linkEditorPosition && (
-                <LinkEditor
-                  editor={editor}
-                  position={linkEditorPosition}
-                  mode={linkEditorMode}
-                  onClose={() => {
-                    setLinkEditorPosition(null)
-                    setLinkEditorMode(null)
-                  }}
-                />
-              )}
+              className="fixed inset-0 bg-black/50 z-[9999]"
+              onClick={() => setShowDeleteModal(false)}
+            />
+            <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-6 z-[10000] w-full max-w-md mx-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Document</h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete this document? This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </>
         )}
       </div>
-
-      {showHistory && (
-        <HistoryPanel
-          documentId={documentId}
-          onRestore={handleRestore}
-          onClose={() => setShowHistory(false)}
-        />
-      )}
-
-      {/* IPFS Browser Modal */}
-      <IpfsBrowser
-        isOpen={showIpfsBrowser}
-        onClose={() => setShowIpfsBrowser(false)}
-        onSelectFile={(file) => {
-          if (!editor || !file.gatewayUrl) return
-
-          const ext = file.key.split('.').pop()?.toLowerCase()
-          const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']
-          const videoExts = ['mp4', 'webm', 'mov', 'avi', 'mkv']
-          const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac']
-
-          if (imageExts.includes(ext)) {
-            editor.chain().focus().insertContent({
-              type: 'image',
-              attrs: { src: file.gatewayUrl, alt: file.key },
-            }).run()
-          } else if (videoExts.includes(ext)) {
-            editor.chain().focus().insertContent({
-              type: 'video',
-              attrs: { src: file.gatewayUrl, controls: true },
-            }).run()
-          } else if (audioExts.includes(ext)) {
-            editor.chain().focus().insertContent({
-              type: 'audio',
-              attrs: { src: file.gatewayUrl, controls: true },
-            }).run()
-          } else {
-            editor.chain().focus().insertContent({
-              type: 'text',
-              marks: [{ type: 'link', attrs: { href: file.gatewayUrl } }],
-              text: file.key,
-            }).run()
-          }
-
-          setShowIpfsBrowser(false)
-        }}
-      />
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/50 z-[9999]"
-            onClick={() => setShowDeleteModal(false)}
-          />
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-6 z-[10000] w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Document</h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this document? This action cannot be undone.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   )
 }

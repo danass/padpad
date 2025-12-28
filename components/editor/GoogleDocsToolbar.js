@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useSession } from 'next-auth/react'
 import {
   Bold,
   Italic,
@@ -32,6 +33,7 @@ import {
 } from 'lucide-react'
 import Tooltip from '@/components/ui/Tooltip'
 import { useLanguage } from '@/app/i18n/LanguageContext'
+import ImportConversationButton from '@/components/toolbar/ImportConversationButton'
 
 const FONT_FAMILIES = [
   'Arial',
@@ -77,7 +79,15 @@ const HIGHLIGHT_COLORS = [
   '#F9CB9C', '#FFE599', '#B6D7A8', '#A2C4C9', '#A4C2F4', '#9FC5E8', '#B4A7D6', '#D5A6BD', '#EA9999'
 ]
 
-export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, saving, hasChanges = true }) {
+export default function GoogleDocsToolbar({
+  editor,
+  onOpenIpfsBrowser,
+  onSave,
+  saving,
+  hasChanges = true,
+  showSaveButton = true, // Toggle to hide the manual save button but keep status
+  saveButtonIconOnly = false, // Set to true for anonymous home page
+}) {
   const { t } = useLanguage()
   const [showFontFamily, setShowFontFamily] = useState(false)
   const [showFontSize, setShowFontSize] = useState(false)
@@ -89,6 +99,25 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
   const [textColorPosition, setTextColorPosition] = useState({ top: 0, left: 0 })
   const [highlightColorPosition, setHighlightColorPosition] = useState({ top: 0, left: 0 })
   const [alignPosition, setAlignPosition] = useState({ top: 0, left: 0 })
+  const [isAdmin, setIsAdmin] = useState(false)
+  const { data: session } = useSession() || {}
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!session?.user?.email) return
+      try {
+        const res = await fetch('/api/admin/check')
+        if (res.ok) {
+          const data = await res.json()
+          setIsAdmin(data.isAdmin)
+        }
+      } catch (err) {
+        console.error('Error checking admin status:', err)
+      }
+    }
+    checkAdmin()
+  }, [session])
+
   const [lineHeightPosition, setLineHeightPosition] = useState({ top: 0, left: 0 })
   const fontFamilyRef = useRef(null)
   const fontSizeRef = useRef(null)
@@ -96,6 +125,7 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
   const textColorRef = useRef(null)
   const highlightColorRef = useRef(null)
   const alignRef = useRef(null)
+
 
   // Active style state - stores the current active formatting
   const [activeStyle, setActiveStyle] = useState({
@@ -282,6 +312,7 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
 
     // Only add listener if at least one dropdown is open
     const hasOpenDropdown = showFontFamily || showFontSize || showLineHeight || showTextColor || showHighlightColor || showAlign
+
 
     if (hasOpenDropdown) {
       // Use setTimeout to avoid immediate execution during render
@@ -1341,8 +1372,7 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
 
       {/* Group: Alignment */}
       <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 p-0.5 overflow-hidden">
-        {/* Alignment - hidden on mobile */}
-        <div className="relative hidden xs:block" ref={alignRef}>
+        <div className="relative" ref={alignRef}>
           <Tooltip label={t?.alignment || 'Alignment'}>
             <button
               onClick={() => {
@@ -1352,7 +1382,11 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
                 }
                 setShowAlign(!showAlign)
               }}
-              className={`p-1.5 h-8 rounded-lg hover:bg-white flex items-center justify-center gap-1 transition-all ${showAlign ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-900'
+              onMouseDown={(e) => {
+                // Hide tooltip immediately on click
+                e.currentTarget.blur()
+              }}
+              className={`p-1.5 h-7 rounded-lg hover:bg-white flex items-center justify-center gap-1 transition-all ${showAlign ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-900'
                 }`}
               aria-label={t?.alignment || 'Alignment'}
             >
@@ -1371,17 +1405,22 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
                 style={{ zIndex: 60 }}
               />
               <div
-                className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-1 flex gap-0.5"
+                className="fixed bg-white border border-gray-100 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] p-1 flex gap-0.5"
                 style={{
                   zIndex: 70,
                   position: 'fixed',
                   top: `${alignPosition.top}px`,
                   left: `${alignPosition.left}px`
                 }}
+                onMouseDown={(e) => e.stopPropagation()}
               >
                 <button
-                  onClick={() => handleAlignChange('left')}
-                  className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'left' ? 'bg-gray-200' : ''
+                  onClick={() => {
+                    handleAlignChange('left')
+                    setShowAlign(false)
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  className={`p-2 rounded-lg hover:bg-gray-100 ${currentAlign === 'left' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
                     }`}
                   title={t?.left || 'Left'}
                   aria-label={t?.left || 'Left'}
@@ -1389,8 +1428,12 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
                   <AlignLeft className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => handleAlignChange('center')}
-                  className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'center' ? 'bg-gray-200' : ''
+                  onClick={() => {
+                    handleAlignChange('center')
+                    setShowAlign(false)
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  className={`p-2 rounded-lg hover:bg-gray-100 ${currentAlign === 'center' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
                     }`}
                   title={t?.center || 'Center'}
                   aria-label={t?.center || 'Center'}
@@ -1398,8 +1441,12 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
                   <AlignCenter className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => handleAlignChange('right')}
-                  className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'right' ? 'bg-gray-200' : ''
+                  onClick={() => {
+                    handleAlignChange('right')
+                    setShowAlign(false)
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  className={`p-2 rounded-lg hover:bg-gray-100 ${currentAlign === 'right' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
                     }`}
                   title={t?.right || 'Right'}
                   aria-label={t?.right || 'Right'}
@@ -1407,8 +1454,12 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
                   <AlignRight className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => handleAlignChange('justify')}
-                  className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'justify' ? 'bg-gray-200' : ''
+                  onClick={() => {
+                    handleAlignChange('justify')
+                    setShowAlign(false)
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  className={`p-2 rounded-lg hover:bg-gray-100 ${currentAlign === 'justify' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
                     }`}
                   title={t?.justified || 'Justified'}
                   aria-label={t?.justified || 'Justified'}
@@ -1548,47 +1599,49 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
         </div>
 
         {/* Import Instagram Chat - hidden on mobile */}
-        <div className="hidden xs:block">
-          <Tooltip label={t?.importInstagramChat || 'Import Instagram Chat'}>
-            <button
-              aria-label={t?.importInstagramChat || 'Import Instagram Chat'}
-              onClick={() => {
-                const input = document.createElement('input')
-                input.type = 'file'
-                input.accept = '.json'
-                input.onchange = async (e) => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  try {
-                    const text = await file.text()
-                    const data = JSON.parse(text)
-                    const { decodeInstagramObject } = await import('@/lib/utils/instagram-decoder')
-                    const decoded = decodeInstagramObject(data)
-                    if (editor && editor.can().setChatConversation) {
-                      editor.chain().focus().setChatConversation({
-                        messages: decoded.messages || [],
-                        participants: decoded.participants || [],
-                        title: decoded.title || null,
-                        currentUser: 'Daniel',
-                      }).run()
+        {isAdmin && (
+          <div className="hidden xs:block">
+            <Tooltip label={t?.importInstagramChat || 'Import Instagram Chat'}>
+              <button
+                aria-label={t?.importInstagramChat || 'Import Instagram Chat'}
+                onClick={() => {
+                  const input = document.createElement('input')
+                  input.type = 'file'
+                  input.accept = '.json'
+                  input.onchange = async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    try {
+                      const text = await file.text()
+                      const data = JSON.parse(text)
+                      const { decodeInstagramObject } = await import('@/lib/utils/instagram-decoder')
+                      const decoded = decodeInstagramObject(data)
+                      if (editor && editor.can().setChatConversation) {
+                        editor.chain().focus().setChatConversation({
+                          messages: decoded.messages || [],
+                          participants: decoded.participants || [],
+                          title: decoded.title || null,
+                          currentUser: 'Daniel',
+                        }).run()
+                      }
+                    } catch (err) {
+                      console.error('Error importing Instagram chat:', err)
+                      alert('Failed to import chat: ' + err.message)
                     }
-                  } catch (err) {
-                    console.error('Error importing Instagram chat:', err)
-                    alert('Failed to import chat: ' + err.message)
                   }
-                }
-                setTimeout(() => {
-                  input.click()
-                }, 100)
-              }}
-              className="p-1.5 h-7 w-7 rounded-lg text-gray-400 hover:bg-white hover:text-gray-900 flex items-center justify-center transition-all"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </Tooltip>
-        </div>
+                  setTimeout(() => {
+                    input.click()
+                  }, 100)
+                }}
+                className="p-1.5 h-7 w-7 rounded-lg text-gray-400 hover:bg-white hover:text-gray-900 flex items-center justify-center transition-all"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </Tooltip>
+          </div>
+        )}
 
         {/* Link */}
         <div className="hidden xs:block">
@@ -1597,13 +1650,14 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
               aria-label={t?.insertLink || 'Insert link'}
               onClick={() => {
                 const { selection } = editor.state
-                const { $from, $to } = selection
-                if ($from.pos === $to.pos) {
-                  editor.chain().focus().setLink({ href: '' }).run()
-                }
+                const { $from } = selection
                 const coords = editor.view.coordsAtPos($from.pos)
                 const editorContainer = editor.view.dom.closest('.prose') || editor.view.dom.parentElement
                 const containerRect = editorContainer?.getBoundingClientRect()
+
+                // Check if cursor is on an existing link
+                const existingLink = editor.isActive('link') ? editor.getAttributes('link').href : null
+
                 let position
                 if (containerRect) {
                   position = {
@@ -1617,7 +1671,11 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
                   }
                 }
                 window.dispatchEvent(new CustomEvent('showLinkEditor', {
-                  detail: { position }
+                  detail: {
+                    position,
+                    mode: 'linkPreviewCreate',
+                    existingLink: existingLink
+                  }
                 }))
               }}
               className={`p-1.5 h-7 w-7 rounded-lg flex items-center justify-center transition-all ${editor.isActive('link') ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:bg-white hover:text-gray-900'
@@ -1625,6 +1683,13 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
             >
               <Link className="w-4 h-4" />
             </button>
+          </Tooltip>
+
+          {/* Import Conversation Button */}
+          <Tooltip label="Import Conversation">
+            <div>
+              <ImportConversationButton editor={editor} isAdmin={isAdmin} />
+            </div>
           </Tooltip>
         </div>
       </div>
@@ -1656,36 +1721,45 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
         </Tooltip>
       </div>
 
-      {/* Save button / Status indicator - icon only, aligned right */}
-      {onSave && (
-        <div className="ml-auto">
-          {saving ? (
-            /* Saving in progress */
-            <div className="h-8 px-3 rounded-xl flex items-center gap-1.5 bg-amber-50 text-amber-600 border border-amber-100">
-              <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs font-medium hidden xs:inline">{t?.saving || 'Saving'}</span>
-            </div>
-          ) : hasChanges ? (
-            /* Has unsaved changes - clickable to force save */
-            <Tooltip label={t?.save || 'Save'} shortcut={['⌘', 'S']}>
-              <button
-                onClick={onSave}
-                className="h-8 px-3 rounded-xl flex items-center gap-1.5 bg-gray-900 text-white hover:bg-black hover:scale-[1.02] active:scale-95 transition-all shadow-md shadow-gray-200"
-                aria-label={t?.save || 'Save'}
-              >
-                <Save className="w-4 h-4" />
-                <span className="text-xs font-medium hidden xs:inline">{t?.save || 'Save'}</span>
-              </button>
-            </Tooltip>
-          ) : (
-            /* All saved */
-            <div className="h-8 px-3 rounded-xl flex items-center gap-1.5 bg-emerald-50 text-emerald-600 border border-emerald-100">
-              <Check className="w-4 h-4" />
-              <span className="text-xs font-medium hidden xs:inline">{t?.saved || 'Saved'}</span>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Save status / Button - icon only, aligned right */}
+      <div className="ml-auto">
+        {saving ? (
+          /* Saving in progress */
+          <div className="h-8 px-2 rounded-xl flex items-center gap-1.5 bg-amber-50 text-amber-600 border border-amber-100">
+            <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+            {!saveButtonIconOnly && <span className="text-xs font-medium hidden xs:inline">{t?.saving || 'Saving'}</span>}
+          </div>
+        ) : hasChanges && onSave && showSaveButton ? (
+          /* Has unsaved changes and manual save button requested */
+          <Tooltip label={t?.save || 'Save'} shortcut={['⌘', 'S']}>
+            <button
+              onClick={onSave}
+              className={`h-8 ${saveButtonIconOnly ? 'w-8' : 'px-3'} rounded-xl flex items-center justify-center gap-1.5 bg-gray-900 text-white hover:bg-black hover:scale-[1.02] active:scale-95 transition-all shadow-md shadow-gray-200`}
+              aria-label={t?.save || 'Save'}
+            >
+              <Save className="w-4 h-4" />
+              {!saveButtonIconOnly && <span className="text-xs font-medium hidden xs:inline">{t?.save || 'Save'}</span>}
+            </button>
+          </Tooltip>
+        ) : (
+          /* All saved or just status indicator */
+          <div className={`h-8 ${saveButtonIconOnly ? 'w-8' : 'px-3'} rounded-xl flex items-center justify-center gap-1.5 transition-all duration-300 ${hasChanges && !showSaveButton
+            ? 'bg-amber-50 text-amber-600 border border-amber-100 opacity-80'
+            : 'bg-emerald-50 text-emerald-600 border border-emerald-100 opacity-60 hover:opacity-100'
+            }`}>
+            {hasChanges && !showSaveButton ? (
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            ) : (
+              <Check className="w-3.5 h-3.5" />
+            )}
+            {!saveButtonIconOnly && (
+              <span className="text-xs font-medium hidden xs:inline">
+                {hasChanges && !showSaveButton ? (t?.saving || 'Saving') : (t?.saved || 'Saved')}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

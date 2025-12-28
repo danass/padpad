@@ -60,9 +60,27 @@ export default function LinkPreviewComponent({ node, updateAttributes, deleteNod
     const handleClick = (e) => {
         if (editor.isEditable) {
             e.stopPropagation()
-            // Select the node in the editor
-            if (typeof getPos === 'function') {
-                editor.commands.setNodeSelection(getPos())
+            e.preventDefault()
+
+            // Get the position for the modal
+            const nodeElement = e.currentTarget
+            const rect = nodeElement.getBoundingClientRect()
+            const container = editor.view.dom.closest('.prose') || editor.view.dom.parentElement
+            const containerRect = container?.getBoundingClientRect()
+
+            if (containerRect) {
+                // Dispatch event to open link editor with existing preview data
+                window.dispatchEvent(new CustomEvent('showLinkEditor', {
+                    detail: {
+                        position: {
+                            top: rect.bottom - containerRect.top + 8,
+                            left: rect.left - containerRect.left,
+                        },
+                        mode: 'linkPreviewCreate',
+                        existingLink: url,
+                        existingSize: size
+                    }
+                }))
             }
         } else if (url) {
             window.open(url, '_blank', 'noopener,noreferrer')
@@ -270,7 +288,7 @@ export default function LinkPreviewComponent({ node, updateAttributes, deleteNod
                     </div>
                 </div>
 
-                {/* Unified Hover Toolbar - positioned relative to preview container */}
+                {/* Unified Hover Toolbar - Disabled for now
                 {editor.isEditable && showHoverMenu && (
                     <div className="absolute bottom-2 right-2 bg-white border border-gray-200 rounded-lg shadow-lg p-1 flex gap-1 z-20 animate-in fade-in slide-in-from-bottom-1 duration-200">
                         <button
@@ -308,6 +326,7 @@ export default function LinkPreviewComponent({ node, updateAttributes, deleteNod
                         </button>
                     </div>
                 )}
+                */}
             </div>
         </NodeViewWrapper>
     )

@@ -93,14 +93,14 @@ function ArticleRenderer({ id, content, title, author, date, keywords }) {
                         <NextLink
                             key={tag}
                             href={`/feed?keyword=${encodeURIComponent(tag)}`}
-                            className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full hover:bg-gray-200 transition-colors"
+                            className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full hover:bg-cyan-50 hover:text-cyan-600 transition-colors"
                         >
                             #{tag}
                         </NextLink>
                     ))}
                 </div>
 
-                <h2 className="text-3xl font-bold text-gray-900 mb-3 hover:text-blue-600 transition-colors">
+                <h2 className="text-3xl font-bold text-gray-900 mb-3 hover:text-cyan-600 transition-colors">
                     <NextLink href={`/public/doc/${id}`}>{title || 'Untitled'}</NextLink>
                 </h2>
 
@@ -115,7 +115,7 @@ function ArticleRenderer({ id, content, title, author, date, keywords }) {
                         )}
                         <NextLink
                             href={`/public/archive/${author.username || author.archive_id}`}
-                            className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                            className="font-medium text-gray-900 hover:text-cyan-600 transition-colors"
                         >
                             @{author.username || author.archive_id || 'anonymous'}
                         </NextLink>

@@ -10,7 +10,7 @@ import {
     Heading2
 } from 'lucide-react'
 
-export default function BubbleToolbar({ editor, onOpenLinkEditor }) {
+export default function BubbleToolbar({ editor, onOpenLink }) {
     if (!editor) return null
 
     const isBold = editor.isActive('bold')
@@ -46,7 +46,7 @@ export default function BubbleToolbar({ editor, onOpenLinkEditor }) {
                         if (isLink) {
                             editor.chain().focus().unsetLink().run()
                         } else {
-                            onOpenLinkEditor()
+                            onOpenLink('link')
                         }
                     }}
                     className={`p-2 hover:bg-gray-800 rounded transition-colors ${isLink ? 'text-blue-400' : 'text-gray-200'}`}

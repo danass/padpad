@@ -359,7 +359,7 @@ export default function ChatComponent({ node, updateAttributes, deleteNode, edit
         <NodeViewWrapper
             className={`chat-conversation-wrapper my-6 ${selected ? 'ring-2 ring-blue-500 rounded-xl' : ''}`}
             data-drag-handle
-            onContextMenu={handleContextMenu}
+        /* onContextMenu={handleContextMenu} - Disabled for now */
         >
             <div className={`rounded-xl overflow-hidden ${isSober ? 'bg-white border border-gray-100' : 'bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 shadow-sm'
                 }`}>

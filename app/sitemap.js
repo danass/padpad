@@ -82,3 +82,4 @@ export default async function sitemap() {
   return [...staticRoutes, ...documentRoutes, ...archiveRoutes]
 }
 
+

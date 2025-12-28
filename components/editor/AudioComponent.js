@@ -46,7 +46,7 @@ export default function AudioComponent({ node, updateAttributes, deleteNode, edi
                     }
                 }}
             >
-                {/* Unified Hover Toolbar */}
+                {/* Unified Hover Toolbar - Disabled for now
                 {editor?.isEditable && showHoverMenu && (
                     <div className="absolute bottom-2 right-2 bg-white border border-gray-200 rounded-lg shadow-lg p-1 flex gap-1 z-20 animate-in fade-in slide-in-from-bottom-1 duration-200">
                         <button
@@ -99,6 +99,7 @@ export default function AudioComponent({ node, updateAttributes, deleteNode, edi
                         </button>
                     </div>
                 )}
+                */}
 
                 {/* Audio Element */}
                 <audio

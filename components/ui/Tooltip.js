@@ -9,6 +9,7 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
   const [coords, setCoords] = useState({ top: 0, left: 0 })
   const [isMobile, setIsMobile] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [mousePressed, setMousePressed] = useState(false)
   const triggerRef = useRef(null)
   const tooltipRef = useRef(null)
   const timeoutRef = useRef(null)
@@ -66,8 +67,8 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
   }, [position])
 
   const showTooltip = () => {
-    // Don't show tooltips on mobile/touch devices
-    if (isMobile) return
+    // Don't show tooltips on mobile/touch devices or if mouse is pressed
+    if (isMobile || mousePressed) return
 
     // Calculate position before showing
     const initialPos = calculatePosition()
@@ -86,6 +87,21 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
     setIsVisible(false)
     setIsPositioned(false)
   }
+
+  const handleMouseDown = () => {
+    setMousePressed(true)
+    hideTooltip()
+  }
+
+  const handleMouseUp = () => {
+    setMousePressed(false)
+  }
+
+  // Listen for global mouseup to reset pressed state
+  useEffect(() => {
+    window.addEventListener('mouseup', handleMouseUp)
+    return () => window.removeEventListener('mouseup', handleMouseUp)
+  }, [])
 
   // Refine position after tooltip is rendered
   useEffect(() => {
@@ -174,6 +190,7 @@ export default function Tooltip({ children, label, shortcut, position = 'bottom'
       ref={triggerRef}
       onMouseEnter={showTooltip}
       onMouseLeave={hideTooltip}
+      onMouseDown={handleMouseDown}
       onFocus={showTooltip}
       onBlur={hideTooltip}
       className="inline-flex"

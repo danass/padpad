@@ -663,202 +663,45 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
             </>
           )}
 
-          {/* Hover menu - positioned relative to canvas container */}
-          {editor.isEditable && showHoverMenu && (
-            <div className="absolute bottom-2 right-2 bg-white border border-gray-200 rounded-lg shadow-lg p-1 flex gap-1 z-20">
-              {/* Alignment buttons - only show when not absolute */}
-              {!isAbsolute && (
-                <>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleAlign('left') }}
-                    className={`p-2 rounded transition-colors ${align === 'left' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-                    title={t?.alignLeft || 'Align left'}
-                    aria-label={t?.alignLeft || 'Align left'}
-                  >
-                    <AlignLeft className="w-4 h-4 text-gray-600" />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleAlign('center') }}
-                    className={`p-2 rounded transition-colors ${align === 'center' || !align ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-                    title={t?.alignCenter || 'Align center'}
-                    aria-label={t?.alignCenter || 'Align center'}
-                  >
-                    <AlignCenter className="w-4 h-4 text-gray-600" />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleAlign('right') }}
-                    className={`p-2 rounded transition-colors ${align === 'right' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-                    title={t?.alignRight || 'Align right'}
-                    aria-label={t?.alignRight || 'Align right'}
-                  >
-                    <AlignRight className="w-4 h-4 text-gray-600" />
-                  </button>
-                  <div className="w-px h-6 bg-gray-200 mx-0.5" />
-                </>
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleUndo()
-                }}
-                className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title={t?.undoLastStroke || 'Undo last stroke'}
-                aria-label={t?.undoLastStroke || 'Undo last stroke'}
-              >
-                <Undo2 className="w-4 h-4 text-gray-600" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleExportPNG()
-                }}
-                className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title={t?.exportAsPng || 'Export as PNG'}
-                aria-label={t?.exportAsPng || 'Export as PNG'}
-              >
-                <Download className="w-4 h-4 text-gray-600" />
-              </button>
-              {isAbsolute ? (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    disableAbsolutePosition()
-                  }}
-                  className="p-2 hover:bg-gray-100 rounded transition-colors"
-                  title={t?.returnToFlow || 'Return to text flow'}
-                  aria-label={t?.returnToFlow || 'Return to text flow'}
-                >
-                  <AlignLeft className="w-4 h-4 text-gray-600" />
-                </button>
-              ) : (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    enableAbsolutePosition()
-                  }}
-                  className="p-2 hover:bg-gray-100 rounded transition-colors"
-                  title={t?.makeAbsolute || 'Make absolute'}
-                  aria-label={t?.makeAbsolute || 'Make absolute'}
-                >
-                  <Move className="w-4 h-4 text-gray-600" />
-                </button>
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  deleteNode()
-                }}
-                className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title={t?.delete || 'Delete'}
-                aria-label={t?.delete || 'Delete'}
-              >
-                <Trash2 className="w-4 h-4 text-red-600" />
-              </button>
-            </div>
-          )}
-
-          {/* Custom Context Menu for Drawing */}
-          {showContextMenu && editor.isEditable && (
-            <>
-              {/* Backdrop to close menu */}
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowContextMenu(false)}
-              />
-              <div
-                className="absolute bg-white border border-gray-200 rounded-lg shadow-xl p-2 z-50 min-w-[160px]"
-                style={{
-                  left: contextMenuPos.x,
-                  top: contextMenuPos.y,
-                  maxWidth: '200px'
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Move mode toggle - only for absolute drawings */}
-                {isAbsolute && (
-                  <button
-                    onClick={() => {
-                      setMoveMode(!moveMode)
-                      setShowContextMenu(false)
-                    }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-gray-100 ${moveMode ? 'bg-blue-50 text-blue-700' : 'text-gray-700'}`}
-                  >
-                    <Move className="w-4 h-4" />
-                    <span>{moveMode ? 'Drawing Mode' : 'Move Mode'}</span>
-                  </button>
+          {/* Hover and Context Menus Disabled - Preserving code for reference
+        {false && editor.isEditable && (
+          <>
+            {showHoverMenu && (
+              <div className="absolute bottom-2 right-2 bg-white border border-gray-200 rounded-lg shadow-lg p-1 flex gap-1 z-20">
+                {!isAbsolute && (
+                  <>
+                    <button onClick={(e) => { e.stopPropagation(); handleAlign('left') }} className={`p-2 rounded transition-colors ${align === 'left' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}><AlignLeft className="w-4 h-4 text-gray-600" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); handleAlign('center') }} className={`p-2 rounded transition-colors ${align === 'center' || !align ? 'bg-gray-200' : 'hover:bg-gray-100'}`}><AlignCenter className="w-4 h-4 text-gray-600" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); handleAlign('right') }} className={`p-2 rounded transition-colors ${align === 'right' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}><AlignRight className="w-4 h-4 text-gray-600" /></button>
+                    <div className="w-px h-6 bg-gray-200 mx-0.5" />
+                  </>
                 )}
-
-                {/* Color picker for pen */}
-                <div className="px-3 py-2">
-                  <label className="text-xs text-gray-500 block mb-1">Pen Color</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={currentColorRef.current}
-                      onChange={(e) => {
-                        currentColorRef.current = e.target.value
-                        lastSelectedColorRef.current = e.target.value
-                        // Update global pen color
-                        if (typeof window !== 'undefined') {
-                          window.__drawingPenColor = e.target.value
-                        }
-                        // Dispatch event for other components
-                        window.dispatchEvent(new CustomEvent('textColorChanged', {
-                          detail: { color: e.target.value }
-                        }))
-                        setShowContextMenu(false)
-                      }}
-                      className="w-8 h-8 rounded cursor-pointer border border-gray-200"
-                    />
-                    <div
-                      className="w-6 h-6 rounded border border-gray-300"
-                      style={{ backgroundColor: currentColorRef.current }}
-                    />
-                  </div>
-                </div>
-
-                <div className="border-t border-gray-100 my-1" />
-
-                {/* Quick actions */}
-                <button
-                  onClick={() => {
-                    handleUndo()
-                    setShowContextMenu(false)
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded hover:bg-gray-100"
-                >
-                  <Undo2 className="w-4 h-4" />
-                  <span>Undo Stroke</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    handleExportPNG()
-                    setShowContextMenu(false)
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded hover:bg-gray-100"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Export PNG</span>
-                </button>
-
-                <div className="border-t border-gray-100 my-1" />
-
-                <button
-                  onClick={() => {
-                    deleteNode()
-                    setShowContextMenu(false)
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 rounded hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Delete Drawing</span>
-                </button>
+                <button onClick={(e) => { e.stopPropagation(); handleUndo() }} className="p-2 hover:bg-gray-100 rounded transition-colors"><Undo2 className="w-4 h-4 text-gray-600" /></button>
+                <button onClick={(e) => { e.stopPropagation(); handleExportPNG() }} className="p-2 hover:bg-gray-100 rounded transition-colors"><Download className="w-4 h-4 text-gray-600" /></button>
+                <button onClick={(e) => { e.stopPropagation(); deleteNode() }} className="p-2 hover:bg-gray-100 rounded transition-colors"><Trash2 className="w-4 h-4 text-red-600" /></button>
               </div>
-            </>
-          )}
+            )}
+            {showContextMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowContextMenu(false)} />
+                <div className="absolute bg-white border border-gray-200 rounded-lg shadow-xl p-2 z-50 min-w-[160px]" style={{ left: contextMenuPos.x, top: contextMenuPos.y, maxWidth: '200px' }} onClick={(e) => e.stopPropagation()}>
+                  {isAbsolute && (
+                    <button onClick={() => { setMoveMode(!moveMode); setShowContextMenu(false) }} className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-gray-100 ${moveMode ? 'bg-blue-50 text-blue-700' : 'text-gray-700'}`}>
+                      <Move className="w-4 h-4" />
+                      <span>{moveMode ? 'Drawing Mode' : 'Move Mode'}</span>
+                    </button>
+                  )}
+                  <button onClick={() => { handleUndo(); setShowContextMenu(false) }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded hover:bg-gray-100"><Undo2 className="w-4 h-4" /><span>Undo Stroke</span></button>
+                  <button onClick={() => { handleExportPNG(); setShowContextMenu(false) }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded hover:bg-gray-100"><Download className="w-4 h-4" /><span>Export PNG</span></button>
+                  <button onClick={() => { deleteNode(); setShowContextMenu(false) }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 rounded hover:bg-red-50"><Trash2 className="w-4 h-4" /><span>Delete Drawing</span></button>
+                </div>
+              </>
+            )}
+          </>
+        )}
+        */}
         </div>
       </div>
-    </NodeViewWrapper>
+    </NodeViewWrapper >
   )
 }
