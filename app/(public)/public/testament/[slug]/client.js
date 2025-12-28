@@ -45,6 +45,7 @@ export default function TestamentClient({ initialData }) {
                                 <Link
                                     key={doc.id}
                                     href={`/public/doc/${doc.id}`}
+                                    prefetch={false}
                                     className="block border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors"
                                 >
                                     <div className="flex items-start justify-between">

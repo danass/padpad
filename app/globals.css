@@ -167,7 +167,7 @@ body {
 .ProseMirror img {
   max-width: 100%;
   height: auto;
-  border-radius: 0.5rem;
+  border-radius: 0;
   margin: 1.5rem 0;
   display: block;
 }
@@ -301,7 +301,7 @@ body {
 .ProseMirror img.editor-image {
   max-width: 100%;
   height: auto;
-  border-radius: 0.5rem;
+  border-radius: 0;
   margin: 1.5rem 0;
   display: block;
   cursor: pointer;

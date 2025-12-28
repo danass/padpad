@@ -140,6 +140,7 @@ export default async function PublicArchivePage({ params }) {
             <Link
               key={doc.id}
               href={`/public/doc/${doc.id}`}
+              prefetch={false}
               className="block group"
             >
               <div className="flex items-baseline justify-between py-3 px-4 -mx-4 rounded-lg hover:bg-gray-50 transition-colors">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import NextLink from 'next/link'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -36,14 +37,14 @@ export default function PublicDocumentClient({ serverData }) {
 
     // Extract data from serverData (passed from server component)
     const error = serverData?.error
-    const document = serverData?.document
+    const docData = serverData?.document
     const content = serverData?.content
     const navigation = serverData?.navigation || { prev: null, next: null }
 
-    const title = document?.title || ''
-    const isFullWidth = document?.is_full_width || false
-    const archiveId = document?.archive_id
-    const authorName = document?.author_name
+    const title = docData?.title || ''
+    const isFullWidth = docData?.is_full_width || false
+    const archiveId = docData?.archive_id
+    const authorName = docData?.author_name
 
     const editor = useEditor({
         editable: false,
@@ -155,28 +156,34 @@ export default function PublicDocumentClient({ serverData }) {
 
     return (
         <div className="min-h-screen bg-white">
-            <div className={isFullWidth ? 'px-4 sm:px-6 py-12' : 'max-w-4xl mx-auto px-6 py-12'}>
-                {document?.isOwner && (
-                    <div className="flex justify-end mb-4">
+            {mounted && docData?.isOwner && docData?.id && (
+                (() => {
+                    const portalTarget = typeof window !== 'undefined' ? window.document.getElementById('header-actions') : null
+                    if (!portalTarget) return null
+                    return createPortal(
                         <NextLink
-                            href={`/doc/${document.id}`}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 hover:text-gray-900 transition-colors"
+                            href={`/doc/${docData.id}`}
+                            className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm font-medium transition-colors"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                             </svg>
                             {t?.edit || 'Edit'}
-                        </NextLink>
-                    </div>
-                )}
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                        </NextLink>,
+                        portalTarget
+                    )
+                })()
+            )}
+
+            <div className={isFullWidth ? 'px-4 sm:px-6 py-12' : 'max-w-4xl mx-auto px-6 py-12'}>
+                <h1 className="text-4xl font-bold text-gray-900 mb-8">
                     {title && title !== 'Untitled' ? title : (t?.untitledPad || 'Untitled Pad')}
                 </h1>
 
                 {/* Keywords/Tags */}
-                {document?.keywords && document.keywords.length > 0 && (
+                {docData?.keywords && docData.keywords.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-8">
-                        {document.keywords.map((k) => (
+                        {docData.keywords.map((k) => (
                             <NextLink
                                 key={k}
                                 href={`/feed?keyword=${encodeURIComponent(k)}`}
@@ -194,52 +201,59 @@ export default function PublicDocumentClient({ serverData }) {
 
                 {(navigation.prev || navigation.next || archiveId) && (
                     <div className="mt-12 pt-8 border-t border-gray-200">
-                        <div className="flex items-center justify-between">
-                            {navigation.prev ? (
-                                <NextLink
-                                    href={`/public/doc/${navigation.prev.id}`}
-                                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
-                                >
-                                    <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                    <div className="text-left">
-                                        <div className="text-xs text-gray-400">{t?.previous || 'Previous'}</div>
-                                        <div className="text-sm font-medium truncate max-w-[200px]">{navigation.prev.title || (t?.noTitle || 'Untitled')}</div>
-                                    </div>
-                                </NextLink>
-                            ) : <div />}
+                        <div className="grid grid-cols-3 items-center">
+                            <div className="flex justify-start">
+                                {navigation.prev && (
+                                    <NextLink
+                                        href={`/public/doc/${navigation.prev.id}`}
+                                        prefetch={false}
+                                        className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors group text-sm"
+                                    >
+                                        <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                        <span className="truncate max-w-[100px] sm:max-w-[180px]">
+                                            {navigation.prev.title || (t?.noTitle || 'Untitled')}
+                                        </span>
+                                    </NextLink>
+                                )}
+                            </div>
 
-                            {archiveId && (
-                                <NextLink
-                                    href={`/public/archive/${archiveId}`}
-                                    className="flex flex-col items-center text-gray-500 hover:text-gray-900 transition-colors"
-                                >
-                                    <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                    </svg>
-                                    <span className="text-xs">@{archiveId}</span>
-                                </NextLink>
-                            )}
+                            <div className="flex justify-center">
+                                {archiveId && (
+                                    <NextLink
+                                        href={`/public/archive/${archiveId}`}
+                                        prefetch={false}
+                                        className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors text-sm font-medium"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                        </svg>
+                                        <span>@{archiveId}</span>
+                                    </NextLink>
+                                )}
+                            </div>
 
-                            {navigation.next ? (
-                                <NextLink
-                                    href={`/public/doc/${navigation.next.id}`}
-                                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
-                                >
-                                    <div className="text-right">
-                                        <div className="text-xs text-gray-400">{t?.next || 'Next'}</div>
-                                        <div className="text-sm font-medium truncate max-w-[200px]">{navigation.next.title || (t?.noTitle || 'Untitled')}</div>
-                                    </div>
-                                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </NextLink>
-                            ) : <div />}
+                            <div className="flex justify-end">
+                                {navigation.next && (
+                                    <NextLink
+                                        href={`/public/doc/${navigation.next.id}`}
+                                        prefetch={false}
+                                        className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors group text-sm"
+                                    >
+                                        <span className="truncate max-w-[100px] sm:max-w-[180px]">
+                                            {navigation.next.title || (t?.noTitle || 'Untitled')}
+                                        </span>
+                                        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </NextLink>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     )
 }

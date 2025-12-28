@@ -214,6 +214,7 @@ export default async function FeaturedPage({ searchParams }) {
                                 <Link
                                     key={article.id}
                                     href={`/public/doc/${article.id}`}
+                                    prefetch={false}
                                     className="group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all"
                                 >
                                     {/* Image */}

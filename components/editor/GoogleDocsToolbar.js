@@ -714,20 +714,20 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
   ]
 
   return (
-    <div className="flex items-center gap-1 md:gap-0.5 p-2 md:p-1 bg-white overflow-x-auto flex-wrap sticky top-0 z-50" style={{ position: 'sticky', top: 0, zIndex: 50 }}>
+    <div className="flex items-center gap-1 md:gap-1 p-2 md:p-1.5 bg-white/90 backdrop-blur-xl border border-gray-100 overflow-x-auto flex-wrap sticky top-2 z-[60] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] font-['DM_Sans',sans-serif]" style={{ position: 'sticky', top: '0.5rem', zIndex: 60 }}>
       {/* Font Family with navigation */}
-      <div className="flex items-center">
+      <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 p-0.5 overflow-hidden">
         <button
           onClick={() => {
             const currentIndex = FONT_FAMILIES.indexOf(currentFontFamily)
             const prevIndex = currentIndex > 0 ? currentIndex - 1 : FONT_FAMILIES.length - 1
             handleFontFamilyChange(FONT_FAMILIES[prevIndex])
           }}
-          className="p-1.5 h-8 rounded-l border border-r-0 border-gray-300 hover:bg-gray-100 flex items-center justify-center"
+          className="p-1 h-7 w-7 rounded-lg hover:bg-white flex items-center justify-center transition-colors"
           title={t?.prevFont || 'Previous font'}
           aria-label={t?.prevFont || 'Previous font'}
         >
-          <ChevronLeft className="w-3 h-3 text-gray-500" />
+          <ChevronLeft className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600" />
         </button>
         <div className="relative" ref={fontFamilyRef}>
           <button
@@ -772,12 +772,12 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
                 setShowFontFamily(false)
               }
             }}
-            className="px-2 py-1.5 h-8 text-left text-xs border-y border-gray-300 hover:bg-gray-50 flex items-center justify-between gap-1"
+            className="px-2.5 h-7 text-xs hover:bg-white flex items-center justify-between gap-2 max-w-[120px] rounded-lg transition-colors"
             title={currentFontFamily}
             aria-label={`Font family: ${currentFontFamily}`}
           >
-            <span style={{ fontFamily: currentFontFamily }} className="truncate flex-1">{currentFontFamily}</span>
-            <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />
+            <span style={{ fontFamily: currentFontFamily }} className="truncate flex-1 font-medium">{currentFontFamily}</span>
+            <ChevronDown className="w-3 h-3 text-gray-400 flex-shrink-0" />
           </button>
           {showFontFamily && (
             <>
@@ -850,26 +850,26 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
             const nextIndex = currentIndex < FONT_FAMILIES.length - 1 ? currentIndex + 1 : 0
             handleFontFamilyChange(FONT_FAMILIES[nextIndex])
           }}
-          className="p-1.5 h-8 rounded-r border border-l-0 border-gray-300 hover:bg-gray-100 flex items-center justify-center"
+          className="p-1 h-7 w-7 rounded-lg hover:bg-white flex items-center justify-center transition-colors"
           title={t?.nextFont || 'Next font'}
           aria-label={t?.nextFont || 'Next font'}
         >
-          <ChevronRight className="w-3 h-3 text-gray-500" />
+          <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600" />
         </button>
       </div>
 
       {/* Font Size */}
-      <div className="relative flex items-center border border-gray-300 rounded h-8" ref={fontSizeRef}>
+      <div className="relative flex items-center bg-gray-50 rounded-xl border border-gray-100 h-8 p-0.5" ref={fontSizeRef}>
         <button
           onMouseDown={() => startFontSizeRepeat(handleFontSizeDecrease)}
           onMouseUp={stopFontSizeRepeat}
           onMouseLeave={stopFontSizeRepeat}
           onTouchStart={() => startFontSizeRepeat(handleFontSizeDecrease)}
           onTouchEnd={stopFontSizeRepeat}
-          className="px-1.5 h-full hover:bg-gray-100 text-gray-700 flex items-center select-none"
+          className="w-7 h-7 rounded-lg hover:bg-white text-gray-400 hover:text-gray-900 flex items-center justify-center transition-colors select-none"
           aria-label="Decrease font size"
         >
-          <Minus className="w-4 h-4" />
+          <Minus className="w-3.5 h-3.5" />
         </button>
         <div className="relative h-full flex items-center">
           <input
@@ -950,7 +950,7 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
             }}
             min="8"
             max="400"
-            className="w-12 px-1 h-full text-center text-sm md:text-xs border-x border-gray-300 focus:outline-none focus:ring-0 font-mono"
+            className="w-10 px-0 h-7 text-center text-xs focus:outline-none focus:ring-0 font-medium bg-transparent text-gray-700"
             style={{
               WebkitAppearance: 'textfield',
               MozAppearance: 'textfield'
@@ -965,26 +965,25 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
           onMouseLeave={stopFontSizeRepeat}
           onTouchStart={() => startFontSizeRepeat(handleFontSizeIncrease)}
           onTouchEnd={stopFontSizeRepeat}
-          className="px-1.5 h-full hover:bg-gray-100 text-gray-700 flex items-center select-none"
+          className="w-7 h-7 rounded-lg hover:bg-white text-gray-400 hover:text-gray-900 flex items-center justify-center transition-colors select-none"
           aria-label="Increase font size"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Line break on mobile - font and size on first row, rest on second row */}
       <div className="w-full md:hidden" />
 
-      {/* Paint Mode Toggle - hidden on mobile */}
-      <div className="relative hidden xs:block">
+      {/* Group: Core Tools */}
+      <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 p-0.5 overflow-hidden">
         <Tooltip label={t?.brushMode || 'Brush mode'}>
           <button
             onClick={togglePaintMode}
-            className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${paintMode ? 'bg-blue-100 text-blue-600' : ''
+            className={`p-1.5 h-8 w-8 rounded-lg hover:bg-white flex items-center justify-center transition-all ${paintMode ? 'bg-cyan-100 text-cyan-600 shadow-sm' : 'text-gray-400'
               }`}
             aria-label={t?.brushMode || 'Brush mode'}
           >
-            {/* Paint bucket icon */}
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 11l-8-8-8.6 8.6a2 2 0 000 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11z" />
               <path d="M5 17l-2 4" strokeLinecap="round" />
@@ -992,667 +991,649 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
             </svg>
           </button>
         </Tooltip>
-
-        {/* Tooltip on first activation */}
-        {showPaintTooltip && paintMode && (
-          <>
-            <div
-              className="fixed inset-0 z-[10002] bg-black bg-opacity-50"
-              onClick={dismissPaintTooltip}
-            />
-            <div
-              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 bg-gray-900 text-white text-sm rounded-lg p-4 shadow-xl z-[10003]"
-            >
-              <div className="font-semibold mb-2 text-lg">Paint Mode</div>
-              <div className="text-gray-300 text-sm mb-4">
-                When Paint Mode is active, your current style settings (font, size, color, etc.) will be automatically applied to any text you select or click on. The style won't change when you click on different text - it stays fixed to your preset.
-              </div>
-              <button
-                onClick={dismissPaintTooltip}
-                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium"
-              >
-                Got it
-              </button>
-            </div>
-          </>
-        )}
       </div>
+
+      {showPaintTooltip && paintMode && (
+        <>
+          <div
+            className="fixed inset-0 z-[10002] bg-black bg-opacity-50"
+            onClick={dismissPaintTooltip}
+          />
+          <div
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 bg-gray-900 text-white text-sm rounded-lg p-4 shadow-xl z-[10003]"
+          >
+            <div className="font-semibold mb-2 text-lg">Paint Mode</div>
+            <div className="text-gray-300 text-sm mb-4">
+              When Paint Mode is active, your current style settings (font, size, color, etc.) will be automatically applied to any text you select or click on. The style won't change when you click on different text - it stays fixed to your preset.
+            </div>
+            <button
+              onClick={dismissPaintTooltip}
+              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium"
+            >
+              Got it
+            </button>
+          </div>
+        </>
+      )}
 
       <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5 hidden md:block" />
 
-      {/* Formatting Buttons */}
-      <div className="hidden xs:block">
-        <Tooltip label={t?.bold || 'Bold'} shortcut={['⌘', 'B']}>
-          <button
-            onClick={() => {
-              const newBold = !editor.isActive('bold')
-              editor.chain().focus().toggleBold().run()
-              setActiveStyle(prev => ({ ...prev, bold: newBold }))
-              shouldApplyActiveStyleRef.current = true
-            }}
-            className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('bold') ? 'bg-blue-100 text-blue-600' : ''
-              }`}
-            aria-label={t?.bold || 'Bold'}
-          >
-            <Bold className="w-5 h-5 md:w-4 md:h-4" />
-          </button>
-        </Tooltip>
-      </div>
-
-      {/* Italic - hidden on mobile */}
-      <div className="hidden xs:block">
-        <Tooltip label={t?.italic || 'Italic'} shortcut={['⌘', 'I']}>
-          <button
-            onClick={() => {
-              const newItalic = !editor.isActive('italic')
-              editor.chain().focus().toggleItalic().run()
-              setActiveStyle(prev => ({ ...prev, italic: newItalic }))
-              shouldApplyActiveStyleRef.current = true
-            }}
-            className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('italic') ? 'bg-blue-100 text-blue-600' : ''
-              }`}
-            aria-label={t?.italic || 'Italic'}
-          >
-            <Italic className="w-5 h-5 md:w-4 md:h-4" />
-          </button>
-        </Tooltip>
-      </div>
-
-      {/* Underline - hidden on mobile */}
-      <div className="hidden xs:block">
-        <Tooltip label={t?.underline || 'Underline'} shortcut={['⌘', 'U']}>
-          <button
-            onClick={() => {
-              const newUnderline = !editor.isActive('underline')
-              editor.chain().focus().toggleUnderline().run()
-            }}
-            className={`p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('underline') ? 'bg-blue-100 text-blue-600' : ''
-              }`}
-            aria-label={t?.underline || 'Underline'}
-          >
-            <Underline className="w-5 h-5 md:w-4 md:h-4" />
-          </button>
-        </Tooltip>
-      </div>
-
-      <Tooltip label={t?.clearFormatting || 'Clear formatting'}>
-        <button
-          onClick={() => {
-            editor.chain().focus()
-              .unsetBold()
-              .unsetItalic()
-              .unsetUnderline()
-              .unsetStrike()
-              .unsetColor()
-              .unsetHighlight()
-              .unsetLink()
-              .unsetFontFamily()
-              .unsetFontSize()
-              .setTextAlign('left')
-              .run()
-          }}
-          className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
-          aria-label={t?.clearFormatting || 'Clear formatting'}
-        >
-          <Eraser className="w-5 h-5 md:w-4 md:h-4" />
-        </button>
-      </Tooltip>
-
-      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
-
-      {/* Text Color */}
-      <div className="relative" ref={textColorRef}>
-        <Tooltip label={t?.textColor || 'Text color'}>
-          <button
-            onClick={() => {
-              if (textColorRef.current) {
-                const rect = textColorRef.current.getBoundingClientRect()
-                setTextColorPosition({ top: rect.bottom + 4, left: rect.left })
-              }
-              setShowTextColor(!showTextColor)
-            }}
-            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${showTextColor ? 'bg-gray-200' : ''
-              }`}
-            aria-label={t?.textColor || 'Text color'}
-          >
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-sm font-bold leading-none" style={{ color: currentTextColor }}>A</span>
-              <div
-                className="w-4 h-1 rounded-sm mt-0.5"
-                style={{ backgroundColor: currentTextColor }}
-              />
-            </div>
-          </button>
-        </Tooltip>
-        {showTextColor && (
-          <>
-            <div
-              className="fixed inset-0"
-              onClick={(e) => {
-                if (e.target === e.currentTarget) {
-                  setShowTextColor(false)
-                }
+      {/* Group: Basic Formatting */}
+      <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 p-0.5 overflow-hidden">
+        <div className="hidden xs:block">
+          <Tooltip label={t?.bold || 'Bold'} shortcut={['⌘', 'B']}>
+            <button
+              onClick={() => {
+                const newBold = !editor.isActive('bold')
+                editor.chain().focus().toggleBold().run()
+                setActiveStyle(prev => ({ ...prev, bold: newBold }))
+                shouldApplyActiveStyleRef.current = true
               }}
-              style={{ zIndex: 60 }}
-            />
-            <div
-              className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]"
-              style={{
-                zIndex: 70,
-                top: `${textColorPosition.top}px`,
-                left: `${textColorPosition.left}px`
-              }}
-              onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
+              className={`p-1.5 h-7 w-7 rounded-lg flex items-center justify-center transition-all ${editor.isActive('bold') ? 'bg-white text-cyan-600 shadow-sm' : 'text-gray-500 hover:bg-white hover:text-gray-900'
+                }`}
+              aria-label={t?.bold || 'Bold'}
             >
-              {/* Preset Colors Grid */}
-              <div className="mb-3">
-                <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
-                  {t?.presetColors || 'Preset Colors'}
-                </div>
-                <div className="grid grid-cols-10 gap-1">
-                  {PRESET_COLORS.map((color) => (
-                    <button
-                      key={color}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleTextColorChange(color)
-                      }}
-                      className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${currentTextColor === color
-                        ? 'border-blue-500 ring-2 ring-blue-300'
-                        : 'border-gray-300 hover:border-gray-400'
-                        }`}
-                      style={{ backgroundColor: color }}
-                      title={color}
-                      aria-label={`Select text color ${color}`}
-                    />
-                  ))}
-                </div>
-              </div>
+              <Bold className="w-4 h-4" />
+            </button>
+          </Tooltip>
+        </div>
 
-              {/* Custom Color */}
-              <div className="border-t border-gray-200 pt-3">
-                <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
-                  {t?.customColor || 'Custom Color'}
+        {/* Italic - hidden on mobile */}
+        <div className="hidden xs:block">
+          <Tooltip label={t?.italic || 'Italic'} shortcut={['⌘', 'I']}>
+            <button
+              onClick={() => {
+                const newItalic = !editor.isActive('italic')
+                editor.chain().focus().toggleItalic().run()
+                setActiveStyle(prev => ({ ...prev, italic: newItalic }))
+                shouldApplyActiveStyleRef.current = true
+              }}
+              className={`p-1.5 h-7 w-7 rounded-lg flex items-center justify-center transition-all ${editor.isActive('italic') ? 'bg-white text-cyan-600 shadow-sm' : 'text-gray-500 hover:bg-white hover:text-gray-900'
+                }`}
+              aria-label={t?.italic || 'Italic'}
+            >
+              <Italic className="w-4 h-4" />
+            </button>
+          </Tooltip>
+        </div>
+
+        {/* Underline - hidden on mobile */}
+        <div className="hidden xs:block">
+          <Tooltip label={t?.underline || 'Underline'} shortcut={['⌘', 'U']}>
+            <button
+              onClick={() => {
+                const newUnderline = !editor.isActive('underline')
+                editor.chain().focus().toggleUnderline().run()
+              }}
+              className={`p-1.5 h-7 w-7 rounded-lg flex items-center justify-center transition-all ${editor.isActive('underline') ? 'bg-white text-cyan-600 shadow-sm' : 'text-gray-500 hover:bg-white hover:text-gray-900'
+                }`}
+              aria-label={t?.underline || 'Underline'}
+            >
+              <Underline className="w-4 h-4" />
+            </button>
+          </Tooltip>
+        </div>
+
+        <Tooltip label={t?.clearFormatting || 'Clear formatting'}>
+          <button
+            onClick={() => {
+              editor.chain().focus()
+                .unsetBold()
+                .unsetItalic()
+                .unsetUnderline()
+                .unsetStrike()
+                .unsetColor()
+                .unsetHighlight()
+                .unsetLink()
+                .unsetFontFamily()
+                .unsetFontSize()
+                .setTextAlign('left')
+                .run()
+            }}
+            className="p-1.5 h-7 w-7 rounded-lg text-gray-400 hover:bg-white hover:text-gray-900 flex items-center justify-center transition-all"
+            aria-label={t?.clearFormatting || 'Clear formatting'}
+          >
+            <Eraser className="w-4 h-4" />
+          </button>
+        </Tooltip>
+      </div>
+
+      <div className="w-px h-6 md:h-5 bg-gray-100 mx-1 md:mx-0.5" />
+
+      {/* Group: Colors */}
+      <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 p-0.5 overflow-hidden">
+        {/* Text Color */}
+        <div className="relative" ref={textColorRef}>
+          <Tooltip label={t?.textColor || 'Text color'}>
+            <button
+              onClick={() => {
+                if (textColorRef.current) {
+                  const rect = textColorRef.current.getBoundingClientRect()
+                  setTextColorPosition({ top: rect.bottom + 4, left: rect.left })
+                }
+                setShowTextColor(!showTextColor)
+              }}
+              className={`p-1.5 h-8 w-8 rounded-lg hover:bg-white flex items-center justify-center transition-all ${showTextColor ? 'bg-white shadow-sm' : ''
+                }`}
+              aria-label={t?.textColor || 'Text color'}
+            >
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-sm font-bold leading-none" style={{ color: currentTextColor }}>A</span>
+                <div
+                  className="w-4 h-1 rounded-sm mt-0.5"
+                  style={{ backgroundColor: currentTextColor }}
+                />
+              </div>
+            </button>
+          </Tooltip>
+          {showTextColor && (
+            <>
+              <div
+                className="fixed inset-0"
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) {
+                    setShowTextColor(false)
+                  }
+                }}
+                style={{ zIndex: 60 }}
+              />
+              <div
+                className="fixed bg-white border border-gray-100 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] p-3 min-w-[280px]"
+                style={{
+                  zIndex: 70,
+                  top: `${textColorPosition.top}px`,
+                  left: `${textColorPosition.left}px`
+                }}
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                {/* Preset Colors Grid */}
+                <div className="mb-3">
+                  <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
+                    {t?.presetColors || 'Preset Colors'}
+                  </div>
+                  <div className="grid grid-cols-10 gap-1">
+                    {PRESET_COLORS.map((color) => (
+                      <button
+                        key={color}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleTextColorChange(color)
+                        }}
+                        className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${currentTextColor === color
+                          ? 'border-blue-500 ring-2 ring-blue-300'
+                          : 'border-gray-300 hover:border-gray-400'
+                          }`}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                        aria-label={`Select text color ${color}`}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={currentTextColor}
-                    onChange={(e) => handleTextColorChange(e.target.value)}
-                    className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
-                    aria-label="Custom text color picker"
-                  />
-                  <input
-                    type="text"
-                    value={currentTextColor}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      if (/^#[0-9A-Fa-f]{0,6}$/.test(value) || value === '') {
+
+                {/* Custom Color */}
+                <div className="border-t border-gray-200 pt-3">
+                  <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
+                    {t?.customColor || 'Custom Color'}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={currentTextColor}
+                      onChange={(e) => handleTextColorChange(e.target.value)}
+                      className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
+                      aria-label="Custom text color picker"
+                    />
+                    <input
+                      type="text"
+                      value={currentTextColor}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (/^#[0-9A-Fa-f]{0,6}$/.test(value) || value === '') {
+                          if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+                            handleTextColorChange(value)
+                          }
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = e.target.value
                         if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
                           handleTextColorChange(value)
+                        } else {
+                          e.target.value = currentTextColor
                         }
-                      }
-                    }}
-                    onBlur={(e) => {
-                      const value = e.target.value
-                      if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
-                        handleTextColorChange(value)
-                      } else {
-                        e.target.value = currentTextColor
-                      }
-                    }}
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-black"
-                    placeholder="#000000"
-                    maxLength={7}
-                    aria-label="Custom text color hex code"
-                  />
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Highlight Color */}
-      <div className="relative" ref={highlightColorRef}>
-        <Tooltip label={t?.highlighter || 'Highlighter'}>
-          <button
-            onClick={() => {
-              if (highlightColorRef.current) {
-                const rect = highlightColorRef.current.getBoundingClientRect()
-                setHighlightColorPosition({ top: rect.bottom + 4, left: rect.left })
-              }
-              setShowHighlightColor(!showHighlightColor)
-            }}
-            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${showHighlightColor ? 'bg-gray-200' : ''
-              }`}
-            aria-label={t?.highlighter || 'Highlighter'}
-          >
-            <div className="flex flex-col items-center justify-center">
-              <Highlighter className="w-4 h-4" />
-              <div
-                className="w-4 h-1 rounded-sm mt-0.5"
-                style={{ backgroundColor: currentHighlightColor || '#FFFF00' }}
-              />
-            </div>
-          </button>
-        </Tooltip>
-        {showHighlightColor && (
-          <>
-            <div
-              className="fixed inset-0"
-              onClick={(e) => {
-                if (e.target === e.currentTarget) {
-                  setShowHighlightColor(false)
-                }
-              }}
-              style={{ zIndex: 60 }}
-            />
-            <div
-              className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]"
-              style={{
-                zIndex: 70,
-                top: `${highlightColorPosition.top}px`,
-                left: `${highlightColorPosition.left}px`
-              }}
-              onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              {/* Preset Colors Grid */}
-              <div className="mb-3">
-                <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
-                  {t?.presetColors || 'Preset Colors'}
-                </div>
-                <div className="grid grid-cols-10 gap-1">
-                  {PRESET_COLORS.map((color) => (
-                    <button
-                      key={color}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleHighlightColorChange(color)
                       }}
-                      className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${currentHighlightColor === color
-                        ? 'border-blue-500 ring-2 ring-blue-300'
-                        : 'border-gray-300 hover:border-gray-400'
-                        }`}
-                      style={{ backgroundColor: color }}
-                      title={color}
-                      aria-label={`Select highlight color ${color}`}
+                      className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-black"
+                      placeholder="#000000"
+                      maxLength={7}
+                      aria-label="Custom text color hex code"
                     />
-                  ))}
+                  </div>
                 </div>
               </div>
+            </>
+          )}
+        </div>
 
-              {/* Custom Color */}
-              <div className="border-t border-gray-200 pt-3">
-                <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
-                  {t?.customColor || 'Custom Color'}
+        {/* Highlight Color */}
+        <div className="relative" ref={highlightColorRef}>
+          <Tooltip label={t?.highlighter || 'Highlighter'}>
+            <button
+              onClick={() => {
+                if (highlightColorRef.current) {
+                  const rect = highlightColorRef.current.getBoundingClientRect()
+                  setHighlightColorPosition({ top: rect.bottom + 4, left: rect.left })
+                }
+                setShowHighlightColor(!showHighlightColor)
+              }}
+              className={`p-1.5 h-8 w-8 rounded-lg hover:bg-white flex items-center justify-center transition-all ${showHighlightColor ? 'bg-white shadow-sm' : ''
+                }`}
+              aria-label={t?.highlighter || 'Highlighter'}
+            >
+              <div className="flex flex-col items-center justify-center">
+                <Highlighter className="w-4 h-4 text-gray-500" />
+                <div
+                  className="w-4 h-1 rounded-sm mt-0.5"
+                  style={{ backgroundColor: currentHighlightColor || '#FFFF00' }}
+                />
+              </div>
+            </button>
+          </Tooltip>
+          {showHighlightColor && (
+            <>
+              <div
+                className="fixed inset-0"
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) {
+                    setShowHighlightColor(false)
+                  }
+                }}
+                style={{ zIndex: 60 }}
+              />
+              <div
+                className="fixed bg-white border border-gray-300 rounded-md shadow-lg p-3 min-w-[280px]"
+                style={{
+                  zIndex: 70,
+                  top: `${highlightColorPosition.top}px`,
+                  left: `${highlightColorPosition.left}px`
+                }}
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                {/* Preset Colors Grid */}
+                <div className="mb-3">
+                  <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
+                    {t?.presetColors || 'Preset Colors'}
+                  </div>
+                  <div className="grid grid-cols-10 gap-1">
+                    {PRESET_COLORS.map((color) => (
+                      <button
+                        key={color}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleHighlightColorChange(color)
+                        }}
+                        className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${currentHighlightColor === color
+                          ? 'border-blue-500 ring-2 ring-blue-300'
+                          : 'border-gray-300 hover:border-gray-400'
+                          }`}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                        aria-label={`Select highlight color ${color}`}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={currentHighlightColor || '#fef08a'}
-                    onChange={(e) => handleHighlightColorChange(e.target.value)}
-                    className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
-                    aria-label="Custom highlight color picker"
-                  />
-                  <input
-                    type="text"
-                    value={currentHighlightColor || ''}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      if (/^#[0-9A-Fa-f]{0,6}$/.test(value) || value === '') {
+
+                {/* Custom Color */}
+                <div className="border-t border-gray-200 pt-3">
+                  <div className="text-xs font-semibold text-gray-500 mb-2 px-1">
+                    {t?.customColor || 'Custom Color'}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={currentHighlightColor || '#fef08a'}
+                      onChange={(e) => handleHighlightColorChange(e.target.value)}
+                      className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
+                      aria-label="Custom highlight color picker"
+                    />
+                    <input
+                      type="text"
+                      value={currentHighlightColor || ''}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (/^#[0-9A-Fa-f]{0,6}$/.test(value) || value === '') {
+                          if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+                            handleHighlightColorChange(value)
+                          }
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = e.target.value
                         if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
                           handleHighlightColorChange(value)
+                        } else {
+                          e.target.value = currentHighlightColor || ''
                         }
-                      }
-                    }}
-                    onBlur={(e) => {
-                      const value = e.target.value
-                      if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
-                        handleHighlightColorChange(value)
-                      } else {
-                        e.target.value = currentHighlightColor || ''
-                      }
-                    }}
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-black"
-                    placeholder="#fef08a"
-                    maxLength={7}
-                    aria-label="Custom highlight color hex code"
-                  />
+                      }}
+                      className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-black"
+                      placeholder="#fef08a"
+                      maxLength={7}
+                      aria-label="Custom highlight color hex code"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5 hidden xs:block" />
+      <div className="w-px h-6 md:h-5 bg-gray-100 mx-1 md:mx-0.5 hidden xs:block" />
 
-      {/* Alignment - hidden on mobile */}
-      <div className="relative hidden xs:block" ref={alignRef}>
-        <Tooltip label={t?.alignment || 'Alignment'}>
-          <button
-            onClick={() => {
-              if (alignRef.current) {
-                const rect = alignRef.current.getBoundingClientRect()
-                setAlignPosition({ top: rect.bottom + 4, left: rect.left })
-              }
-              setShowAlign(!showAlign)
-            }}
-            className={`p-2 md:p-1.5 h-10 md:h-8 rounded hover:bg-gray-100 flex items-center justify-center gap-1 ${showAlign ? 'bg-gray-200' : ''
-              }`}
-            aria-label={t?.alignment || 'Alignment'}
-          >
-            {currentAlign === 'left' && <AlignLeft className="w-5 h-5 md:w-4 md:h-4" />}
-            {currentAlign === 'center' && <AlignCenter className="w-5 h-5 md:w-4 md:h-4" />}
-            {currentAlign === 'right' && <AlignRight className="w-5 h-5 md:w-4 md:h-4" />}
-            {currentAlign === 'justify' && <AlignJustify className="w-5 h-5 md:w-4 md:h-4" />}
-            <ChevronDown className="w-4 h-4 md:w-3 md:h-3 text-gray-500" />
-          </button>
-        </Tooltip>
-        {showAlign && (
-          <>
-            <div
-              className="fixed inset-0"
-              onClick={() => setShowAlign(false)}
-              style={{ zIndex: 60 }}
-            />
-            <div
-              className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-1 flex gap-0.5"
-              style={{
-                zIndex: 70,
-                position: 'fixed',
-                top: `${alignPosition.top}px`,
-                left: `${alignPosition.left}px`
+      {/* Group: Alignment */}
+      <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 p-0.5 overflow-hidden">
+        {/* Alignment - hidden on mobile */}
+        <div className="relative hidden xs:block" ref={alignRef}>
+          <Tooltip label={t?.alignment || 'Alignment'}>
+            <button
+              onClick={() => {
+                if (alignRef.current) {
+                  const rect = alignRef.current.getBoundingClientRect()
+                  setAlignPosition({ top: rect.bottom + 4, left: rect.left })
+                }
+                setShowAlign(!showAlign)
               }}
+              className={`p-1.5 h-8 rounded-lg hover:bg-white flex items-center justify-center gap-1 transition-all ${showAlign ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-900'
+                }`}
+              aria-label={t?.alignment || 'Alignment'}
             >
-              <button
-                onClick={() => handleAlignChange('left')}
-                className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'left' ? 'bg-gray-200' : ''
-                  }`}
-                title={t?.left || 'Left'}
-                aria-label={t?.left || 'Left'}
+              {currentAlign === 'left' && <AlignLeft className="w-4 h-4" />}
+              {currentAlign === 'center' && <AlignCenter className="w-4 h-4" />}
+              {currentAlign === 'right' && <AlignRight className="w-4 h-4" />}
+              {currentAlign === 'justify' && <AlignJustify className="w-4 h-4" />}
+              <ChevronDown className="w-3 h-3 text-gray-400" />
+            </button>
+          </Tooltip>
+          {showAlign && (
+            <>
+              <div
+                className="fixed inset-0"
+                onClick={() => setShowAlign(false)}
+                style={{ zIndex: 60 }}
+              />
+              <div
+                className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-1 flex gap-0.5"
+                style={{
+                  zIndex: 70,
+                  position: 'fixed',
+                  top: `${alignPosition.top}px`,
+                  left: `${alignPosition.left}px`
+                }}
               >
-                <AlignLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => handleAlignChange('center')}
-                className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'center' ? 'bg-gray-200' : ''
-                  }`}
-                title={t?.center || 'Center'}
-                aria-label={t?.center || 'Center'}
-              >
-                <AlignCenter className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => handleAlignChange('right')}
-                className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'right' ? 'bg-gray-200' : ''
-                  }`}
-                title={t?.right || 'Right'}
-                aria-label={t?.right || 'Right'}
-              >
-                <AlignRight className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => handleAlignChange('justify')}
-                className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'justify' ? 'bg-gray-200' : ''
-                  }`}
-                title={t?.justified || 'Justified'}
-                aria-label={t?.justified || 'Justified'}
-              >
-                <AlignJustify className="w-4 h-4" />
-              </button>
-            </div>
-          </>
-        )}
+                <button
+                  onClick={() => handleAlignChange('left')}
+                  className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'left' ? 'bg-gray-200' : ''
+                    }`}
+                  title={t?.left || 'Left'}
+                  aria-label={t?.left || 'Left'}
+                >
+                  <AlignLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleAlignChange('center')}
+                  className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'center' ? 'bg-gray-200' : ''
+                    }`}
+                  title={t?.center || 'Center'}
+                  aria-label={t?.center || 'Center'}
+                >
+                  <AlignCenter className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleAlignChange('right')}
+                  className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'right' ? 'bg-gray-200' : ''
+                    }`}
+                  title={t?.right || 'Right'}
+                  aria-label={t?.right || 'Right'}
+                >
+                  <AlignRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleAlignChange('justify')}
+                  className={`p-2 rounded hover:bg-gray-100 ${currentAlign === 'justify' ? 'bg-gray-200' : ''
+                    }`}
+                  title={t?.justified || 'Justified'}
+                  aria-label={t?.justified || 'Justified'}
+                >
+                  <AlignJustify className="w-4 h-4" />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5 hidden xs:block" />
+      <div className="w-px h-6 md:h-5 bg-gray-100 mx-1 md:mx-0.5 hidden xs:block" />
 
       {/* Lists - hidden on mobile */}
-      <div className="hidden xs:flex items-center">
+      <div className="hidden xs:flex items-center bg-gray-50 rounded-xl border border-gray-100 p-0.5 overflow-hidden">
         <Tooltip label={t?.bulletList || 'Bullet list'} shortcut={['⌘', '⇧', '8']}>
           <button
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('bulletList') ? 'bg-gray-200' : ''
+            className={`p-1.5 h-7 w-7 rounded-lg hover:bg-white flex items-center justify-center transition-all ${editor.isActive('bulletList') ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'
               }`}
             aria-label={t?.bulletList || 'Bullet list'}
           >
-            <List className="w-5 h-5 md:w-4 md:h-4" />
+            <List className="w-4 h-4" />
           </button>
         </Tooltip>
 
         <Tooltip label={t?.numberedList || 'Numbered list'} shortcut={['⌘', '⇧', '7']}>
           <button
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('orderedList') ? 'bg-gray-200' : ''
+            className={`p-1.5 h-7 w-7 rounded-lg hover:bg-white flex items-center justify-center transition-all ${editor.isActive('orderedList') ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'
               }`}
             aria-label={t?.numberedList || 'Numbered list'}
           >
-            <ListOrdered className="w-5 h-5 md:w-4 md:h-4" />
+            <ListOrdered className="w-4 h-4" />
           </button>
         </Tooltip>
       </div>
 
-      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5" />
+      <div className="w-px h-6 md:h-5 bg-gray-100 mx-1 md:mx-0.5" />
 
-      {/* Image */}
-      <Tooltip label={t?.insertImage || 'Insert image'}>
-        <button
-          aria-label={t?.insertImage || 'Insert image'}
-          onClick={() => {
-            const input = document.createElement('input')
-            input.type = 'file'
-            input.accept = 'image/*'
-            // Explicitly set multiple to false to ensure single file selection
-            input.multiple = false
-            // Don't use capture - let user choose between camera and gallery
-            // Append to body to prevent garbage collection on some mobile browsers
-            input.style.cssText = 'position:absolute;top:-9999px;left:-9999px;opacity:0;'
-            document.body.appendChild(input)
-
-            const handleChange = (e) => {
-              const file = e.target.files?.[0]
-              if (file) {
-                // Validate it's an image
-                if (!file.type.startsWith('image/')) {
-                  alert('Please select an image file')
-                  cleanup()
-                  return
-                }
-
-                const reader = new FileReader()
-                reader.onload = () => {
-                  if (reader.result) {
-                    // Use insertContent instead of setImage to ensure it's inserted
-                    editor.chain().focus().insertContent({
-                      type: 'image',
-                      attrs: { src: reader.result, alt: file.name || 'image' },
-                    }).run()
-                  }
-                  cleanup()
-                }
-                reader.onerror = (err) => {
-                  console.error('Error reading file:', err)
-                  alert('Failed to load image')
-                  cleanup()
-                }
-                reader.readAsDataURL(file)
-              } else {
-                cleanup()
-              }
-            }
-
-            const cleanup = () => {
-              input.removeEventListener('change', handleChange)
-              if (input.parentNode) {
-                input.parentNode.removeChild(input)
-              }
-            }
-
-            input.addEventListener('change', handleChange)
-
-            // Use setTimeout to ensure the input is in the DOM before clicking
-            // This helps with iOS Safari
-            setTimeout(() => {
-              input.click()
-            }, 100)
-          }}
-          className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
-        >
-          <ImagePlus className="w-4 h-4" />
-        </button>
-      </Tooltip>
-
-      {/* Drawing */}
-      <Tooltip label={t?.drawingArea || 'Drawing area'}>
-        <button
-          aria-label={t?.drawingArea || 'Drawing area'}
-          onClick={() => {
-            if (editor && editor.can().setDrawing) {
-              // Responsive size: smaller on mobile
-              const isMobile = window.innerWidth < 768
-              const width = isMobile ? Math.min(window.innerWidth - 48, 320) : 400
-              const height = isMobile ? Math.round(width * 0.75) : 300
-              editor.chain().focus().setDrawing({ paths: [], width, height }).run()
-            } else {
-              console.warn('Drawing extension not available')
-            }
-          }}
-          className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center relative"
-        >
-          {/* Custom drawing canvas icon */}
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <path d="M7 17c3-3 5-8 10-10" strokeLinecap="round" />
-            <circle cx="17" cy="7" r="1.5" fill="currentColor" stroke="none" />
-          </svg>
-        </button>
-      </Tooltip>
-
-      {/* IPFS Storage - hidden on mobile */}
-      <div className="hidden xs:block">
-        <Tooltip label="IPFS Storage">
+      {/* Group: Objects & Links */}
+      <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 p-0.5 overflow-hidden">
+        {/* Image */}
+        <Tooltip label={t?.insertImage || 'Insert image'}>
           <button
-            aria-label="IPFS Storage"
-            onClick={onOpenIpfsBrowser}
-            className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
-          >
-            <HardDrive className="w-4 h-4 text-purple-600" />
-          </button>
-        </Tooltip>
-      </div>
-
-      {/* Import Instagram Chat - hidden on mobile */}
-      <div className="hidden xs:block">
-        <Tooltip label={t?.importInstagramChat || 'Import Instagram Chat'}>
-          <button
-            aria-label={t?.importInstagramChat || 'Import Instagram Chat'}
+            aria-label={t?.insertImage || 'Insert image'}
             onClick={() => {
               const input = document.createElement('input')
               input.type = 'file'
-              input.accept = '.json'
-              input.onchange = async (e) => {
+              input.accept = 'image/*'
+              input.multiple = false
+              input.style.cssText = 'position:absolute;top:-9999px;left:-9999px;opacity:0;'
+              document.body.appendChild(input)
+
+              const handleChange = (e) => {
                 const file = e.target.files?.[0]
-                if (!file) return
-
-                try {
-                  const text = await file.text()
-                  const data = JSON.parse(text)
-
-                  // Decode Instagram's encoding
-                  const { decodeInstagramObject } = await import('@/lib/utils/instagram-decoder')
-                  const decoded = decodeInstagramObject(data)
-
-                  if (editor && editor.can().setChatConversation) {
-                    editor.chain().focus().setChatConversation({
-                      messages: decoded.messages || [],
-                      participants: decoded.participants || [],
-                      title: decoded.title || null,
-                      currentUser: 'Daniel',
-                    }).run()
-                  } else {
-                    console.warn('ChatConversation extension not available')
+                if (file) {
+                  if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file')
+                    cleanup()
+                    return
                   }
-                } catch (err) {
-                  console.error('Error importing Instagram chat:', err)
-                  alert('Failed to import chat: ' + err.message)
+                  const reader = new FileReader()
+                  reader.onload = () => {
+                    if (reader.result) {
+                      editor.chain().focus().insertContent({
+                        type: 'image',
+                        attrs: { src: reader.result, alt: file.name || 'image' },
+                      }).run()
+                    }
+                    cleanup()
+                  }
+                  reader.onerror = (err) => {
+                    console.error('Error reading file:', err)
+                    alert('Failed to load image')
+                    cleanup()
+                  }
+                  reader.readAsDataURL(file)
+                } else {
+                  cleanup()
                 }
               }
+
+              const cleanup = () => {
+                input.removeEventListener('change', handleChange)
+                if (input.parentNode) {
+                  input.parentNode.removeChild(input)
+                }
+              }
+
+              input.addEventListener('change', handleChange)
               setTimeout(() => {
                 input.click()
               }, 100)
             }}
-            className="p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center"
+            className="p-1.5 h-7 w-7 rounded-lg text-gray-500 hover:bg-white hover:text-gray-900 flex items-center justify-center transition-all"
           >
-            {/* Instagram-style chat icon */}
+            <ImagePlus className="w-4 h-4" />
+          </button>
+        </Tooltip>
+
+        {/* Drawing */}
+        <Tooltip label={t?.drawingArea || 'Drawing area'}>
+          <button
+            aria-label={t?.drawingArea || 'Drawing area'}
+            onClick={() => {
+              if (editor && editor.can().setDrawing) {
+                const isMobile = window.innerWidth < 768
+                const width = isMobile ? Math.min(window.innerWidth - 48, 320) : 400
+                const height = isMobile ? Math.round(width * 0.75) : 300
+                editor.chain().focus().setDrawing({ paths: [], width, height }).run()
+              }
+            }}
+            className="p-1.5 h-7 w-7 rounded-lg text-gray-500 hover:bg-white hover:text-gray-900 flex items-center justify-center transition-all"
+          >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" strokeLinecap="round" strokeLinejoin="round" />
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M7 17c3-3 5-8 10-10" strokeLinecap="round" />
+              <circle cx="17" cy="7" r="1.5" fill="currentColor" stroke="none" />
             </svg>
           </button>
         </Tooltip>
+
+        {/* IPFS Storage - hidden on mobile */}
+        <div className="hidden xs:block">
+          <Tooltip label="IPFS Storage">
+            <button
+              aria-label="IPFS Storage"
+              onClick={onOpenIpfsBrowser}
+              className="p-1.5 h-7 w-7 rounded-lg text-gray-400 hover:bg-white hover:text-purple-600 flex items-center justify-center transition-all"
+            >
+              <HardDrive className="w-4 h-4" />
+            </button>
+          </Tooltip>
+        </div>
+
+        {/* Import Instagram Chat - hidden on mobile */}
+        <div className="hidden xs:block">
+          <Tooltip label={t?.importInstagramChat || 'Import Instagram Chat'}>
+            <button
+              aria-label={t?.importInstagramChat || 'Import Instagram Chat'}
+              onClick={() => {
+                const input = document.createElement('input')
+                input.type = 'file'
+                input.accept = '.json'
+                input.onchange = async (e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  try {
+                    const text = await file.text()
+                    const data = JSON.parse(text)
+                    const { decodeInstagramObject } = await import('@/lib/utils/instagram-decoder')
+                    const decoded = decodeInstagramObject(data)
+                    if (editor && editor.can().setChatConversation) {
+                      editor.chain().focus().setChatConversation({
+                        messages: decoded.messages || [],
+                        participants: decoded.participants || [],
+                        title: decoded.title || null,
+                        currentUser: 'Daniel',
+                      }).run()
+                    }
+                  } catch (err) {
+                    console.error('Error importing Instagram chat:', err)
+                    alert('Failed to import chat: ' + err.message)
+                  }
+                }
+                setTimeout(() => {
+                  input.click()
+                }, 100)
+              }}
+              className="p-1.5 h-7 w-7 rounded-lg text-gray-400 hover:bg-white hover:text-gray-900 flex items-center justify-center transition-all"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </Tooltip>
+        </div>
+
+        {/* Link */}
+        <div className="hidden xs:block">
+          <Tooltip label={t?.insertLink || 'Insert link'} shortcut={['⌘', 'K']}>
+            <button
+              aria-label={t?.insertLink || 'Insert link'}
+              onClick={() => {
+                const { selection } = editor.state
+                const { $from, $to } = selection
+                if ($from.pos === $to.pos) {
+                  editor.chain().focus().setLink({ href: '' }).run()
+                }
+                const coords = editor.view.coordsAtPos($from.pos)
+                const editorContainer = editor.view.dom.closest('.prose') || editor.view.dom.parentElement
+                const containerRect = editorContainer?.getBoundingClientRect()
+                let position
+                if (containerRect) {
+                  position = {
+                    top: coords.bottom - containerRect.top + 8,
+                    left: coords.left - containerRect.left,
+                  }
+                } else {
+                  position = {
+                    top: coords.bottom + 8,
+                    left: coords.left,
+                  }
+                }
+                window.dispatchEvent(new CustomEvent('showLinkEditor', {
+                  detail: { position }
+                }))
+              }}
+              className={`p-1.5 h-7 w-7 rounded-lg flex items-center justify-center transition-all ${editor.isActive('link') ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:bg-white hover:text-gray-900'
+                }`}
+            >
+              <Link className="w-4 h-4" />
+            </button>
+          </Tooltip>
+        </div>
       </div>
 
-      {/* Link */}
-      <div className="hidden xs:block">
-        <Tooltip label={t?.insertLink || 'Insert link'} shortcut={['⌘', 'K']}>
-          <button
-            aria-label={t?.insertLink || 'Insert link'}
-            onClick={() => {
-              // Get selection position to show LinkEditor
-              const { selection } = editor.state
-              const { $from, $to } = selection
+      <div className="w-px h-6 md:h-5 bg-gray-100 mx-1 md:mx-0.5 hidden md:block" />
 
-              // If no text is selected, insert a link at cursor position
-              if ($from.pos === $to.pos) {
-                // No selection - create empty link
-                editor.chain().focus().setLink({ href: '' }).run()
-              }
-
-              const coords = editor.view.coordsAtPos($from.pos)
-              const editorContainer = editor.view.dom.closest('.prose') || editor.view.dom.parentElement
-              const containerRect = editorContainer?.getBoundingClientRect()
-
-              let position
-              if (containerRect) {
-                position = {
-                  top: coords.bottom - containerRect.top + 8,
-                  left: coords.left - containerRect.left,
-                }
-              } else {
-                position = {
-                  top: coords.bottom + 8,
-                  left: coords.left,
-                }
-              }
-
-              // Dispatch custom event to show LinkEditor
-              window.dispatchEvent(new CustomEvent('showLinkEditor', {
-                detail: { position }
-              }))
-            }}
-            className={`p-1.5 h-8 w-8 rounded hover:bg-gray-100 flex items-center justify-center ${editor.isActive('link') ? 'bg-gray-200' : ''
-              }`}
-          >
-            <Link className="w-5 h-5 md:w-4 md:h-4" />
-          </button>
-        </Tooltip>
-      </div>
-
-      <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5 hidden md:block" />
-
-      {/* Undo/Redo - Wrapped together */}
-      <div className="flex items-center flex-nowrap">
+      {/* Group: History */}
+      <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 p-0.5 overflow-hidden">
         <Tooltip label={t?.undo || 'Undo'} shortcut={['⌘', 'Z']}>
           <button
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().chain().focus().undo().run()}
-            className="p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center"
+            className="p-1.5 h-7 w-7 rounded-lg text-gray-500 hover:bg-white hover:text-gray-900 disabled:opacity-30 disabled:hover:bg-transparent flex items-center justify-center transition-all"
             aria-label={t?.undo || 'Undo'}
           >
-            <Undo className="w-5 h-5 md:w-4 md:h-4" />
+            <Undo className="w-4 h-4" />
           </button>
         </Tooltip>
 
@@ -1660,13 +1641,12 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
           <button
             onClick={() => editor.chain().focus().redo().run()}
             disabled={!editor.can().chain().focus().redo().run()}
-            className="p-2 md:p-1.5 h-10 w-10 md:h-8 md:w-8 rounded hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center"
+            className="p-1.5 h-7 w-7 rounded-lg text-gray-500 hover:bg-white hover:text-gray-900 disabled:opacity-30 disabled:hover:bg-transparent flex items-center justify-center transition-all"
             aria-label={t?.redo || 'Redo'}
           >
-            <Redo className="w-5 h-5 md:w-4 md:h-4" />
+            <Redo className="w-4 h-4" />
           </button>
         </Tooltip>
-
       </div>
 
       {/* Save button - icon only, aligned right */}
@@ -1676,13 +1656,13 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
             <button
               onClick={onSave}
               disabled={saving || !hasChanges}
-              className={`p-1.5 xs:p-2 md:p-1.5 h-8 w-8 xs:h-10 xs:w-10 md:h-8 md:w-8 rounded flex items-center justify-center ${hasChanges
-                ? 'bg-black text-white hover:bg-gray-800 disabled:opacity-50'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              className={`p-1.5 xs:p-2 md:p-1.5 h-8 w-8 xs:h-9 xs:w-9 md:h-8 md:w-8 rounded-xl flex items-center justify-center transition-all ${hasChanges
+                ? 'bg-gray-900 text-white hover:bg-black hover:scale-[1.05] active:scale-95 shadow-md shadow-gray-200'
+                : 'bg-gray-50 text-gray-300 cursor-not-allowed border border-gray-100'
                 }`}
               aria-label={t?.save || 'Save'}
             >
-              <Save className="w-5 h-5 xs:w-6 xs:h-6 md:w-4 md:h-4" />
+              <Save className="w-4 h-4 xs:w-5 xs:h-5 md:w-4 md:h-4" />
             </button>
           </Tooltip>
         </div>

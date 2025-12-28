@@ -165,6 +165,7 @@ export default function UniversalHeader() {
                             </a>
                         </div>
                         <div className="flex items-center gap-3">
+                            <div id="header-actions" />
                             <a
                                 href="https://www.textpad.cloud"
                                 className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium transition-colors"
@@ -207,6 +208,7 @@ export default function UniversalHeader() {
 
                     {/* Right side */}
                     <div className="flex items-center gap-3">
+                        <div id="header-actions" className="flex items-center gap-2" />
                         {status === 'loading' && !session ? (
                             <div className="w-8 h-8 rounded-full bg-gray-100 animate-pulse" />
                         ) : session ? (

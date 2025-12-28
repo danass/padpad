@@ -276,251 +276,358 @@ export default function SettingsPage() {
   const subdomainUrl = testamentUsername ? `https://${testamentUsername}.textpad.cloud` : null
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-3xl mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t?.settings || 'Settings'}</h1>
-          <p className="text-sm text-gray-500">{t?.accountSettings || 'Manage your account settings'}</p>
+    <div className="min-h-screen bg-white font-['DM_Sans',sans-serif]">
+      <div className="max-w-4xl mx-auto px-6 py-12 md:py-20">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-6xl font-medium text-gray-900 mb-6 tracking-tight leading-[1.1]">
+            Account <span className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-600 bg-clip-text text-transparent">Settings</span>
+          </h1>
+          <p className="text-lg md:text-xl text-gray-500 font-normal max-w-2xl mx-auto">
+            {t?.accountSettings || 'Manage your profile, storage, and legacy preferences.'}
+          </p>
         </div>
 
-        {/* Profile Section */}
-        <div className="bg-white border border-gray-200 rounded-md p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Profile</h2>
+        <div className="space-y-12">
+          {/* Profile Section */}
+          <section className="bg-white rounded-[2.5rem] p-8 md:p-12 border border-gray-100 shadow-sm transition-all">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-8 tracking-tight underline decoration-emerald-400 decoration-4 underline-offset-4 inline-block">Profile</h2>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Avatar</label>
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
+            <div className="grid md:grid-cols-[1fr_2fr] gap-12 items-start">
+              {/* Avatar Column */}
+              <div className="flex flex-col items-center gap-6">
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
                   <img
                     src={avatarUrl || session?.user?.image || `https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(session?.user?.email || 'user')}`}
                     alt="Avatar"
-                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
+                    className="relative w-32 h-32 rounded-full object-cover border-4 border-white shadow-xl"
                     onError={(e) => {
                       e.target.src = `https://api.dicebear.com/9.x/croodles/svg?seed=${encodeURIComponent(session?.user?.email || 'user')}`
                     }}
                   />
                 </div>
 
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {session?.user?.image && (
-                      <button
-                        onClick={() => setAvatarUrl(session.user.image)}
-                        className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all hover:scale-110 flex items-center justify-center bg-white ${avatarUrl === session.user.image ? 'border-black ring-2 ring-black ring-offset-2' : 'border-gray-300'}`}
-                        title="Use Google avatar"
-                      >
-                        <img
-                          src={session.user.image}
-                          alt=""
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.style.display = 'none'
-                            e.target.parentElement.innerHTML = '<span class="text-xs font-bold text-red-500">G</span>'
-                          }}
-                        />
-                      </button>
-                    )}
-
+                <div className="flex flex-wrap justify-center gap-3">
+                  {session?.user?.image && (
                     <button
-                      onClick={() => setAvatarUrl(`https://api.dicebear.com/9.x/croodles/svg?seed=${Math.random().toString(36).substring(2)}`)}
-                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center bg-gray-50"
-                      title="Random avatar"
+                      onClick={() => setAvatarUrl(session.user.image)}
+                      className={`w-10 h-10 rounded-full border-2 overflow-hidden transition-all hover:scale-110 flex items-center justify-center bg-white ${avatarUrl === session.user.image ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-gray-200'}`}
                     >
-                      🎨
-                    </button>
-
-                    <button
-                      onClick={() => setAvatarUrl(`https://api.dicebear.com/9.x/pixel-art/svg?seed=${Math.random().toString(36).substring(2)}`)}
-                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 flex items-center justify-center bg-gray-50"
-                      title="Pixel art avatar"
-                    >
-                      👾
-                    </button>
-
-                    <button
-                      onClick={() => setAvatarUrl('')}
-                      className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-red-400 flex items-center justify-center bg-gray-50"
-                      title="Reset"
-                    >
-                      ✕
-                    </button>
-
-                    <div className="w-px h-8 bg-gray-200 mx-1" />
-
-                    {/* Save button with state feedback */}
-                    <button
-                      onClick={handleSaveAvatar}
-                      disabled={savingAvatar || !avatarChanged}
-                      className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${!avatarChanged
-                        ? 'border-gray-200 bg-gray-100 cursor-default'
-                        : 'border-black bg-black hover:bg-gray-800'
-                        }`}
-                      title={avatarChanged ? 'Save' : 'No changes'}
-                    >
-                      {savingAvatar ? (
-                        <svg className="w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                      ) : (
-                        <svg className={`w-5 h-5 ${avatarChanged ? 'text-white' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-
-                  <input
-                    type="url"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    placeholder="Or paste custom avatar URL..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Email - Read only */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                value={session?.user?.email || ''}
-                disabled
-                className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-500 text-sm cursor-not-allowed"
-              />
-              <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
-            </div>
-          </div>
-        </div>
-
-        {/* External Storage Section */}
-        <div className="bg-white border border-gray-200 rounded-md p-6 mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">External Storage (IPFS)</h2>
-              <p className="text-sm text-gray-500">Connect decentralized storage for your files</p>
-            </div>
-          </div>
-
-          {/* Provider List */}
-          {ipfsProviders.length > 0 ? (
-            <div className="space-y-2 mb-4">
-              {ipfsProviders.map(p => (
-                <div key={p.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-md">
-                  <div>
-                    <p className="font-medium text-sm">{p.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {p.provider === 'filebase' ? `Filebase • ${p.bucket}` : `Gateway • ${p.gateway}`}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteProvider(p.id)}
-                    className="text-sm text-red-600 hover:text-red-800"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-600 mb-4">
-              No storage configured. Add a provider to host files via IPFS gateway.
-            </p>
-          )}
-
-          <button
-            onClick={() => setShowAddProviderModal(true)}
-            className="px-4 py-2 bg-black text-white rounded-md text-sm font-medium hover:bg-gray-800"
-          >
-            + Add Storage
-          </button>
-        </div>
-
-        {/* Add Provider Modal */}
-        {showAddProviderModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-4">Add IPFS Storage</h3>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name (optional)</label>
-                  <input
-                    type="text"
-                    value={newProviderName}
-                    onChange={(e) => setNewProviderName(e.target.value)}
-                    placeholder="My Storage"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Provider Type</label>
-                  <select
-                    value={newProviderType}
-                    onChange={(e) => { setNewProviderType(e.target.value); setIpfsTestResult(null) }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  >
-                    <option value="filebase">Filebase (S3) - Upload + List</option>
-                    <option value="storacha_gateway">Storacha/IPFS Gateway - List only</option>
-                  </select>
-                </div>
-
-                {newProviderType === 'filebase' ? (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Access Key</label>
-                      <input type="text" value={newAccessKey} onChange={(e) => setNewAccessKey(e.target.value)} placeholder="Access key" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Secret Key</label>
-                      <input type="password" value={newSecretKey} onChange={(e) => setNewSecretKey(e.target.value)} placeholder="Secret key" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Bucket Name</label>
-                      <input type="text" value={newBucket} onChange={(e) => setNewBucket(e.target.value)} placeholder="my-bucket" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Root CID</label>
-                      <input type="text" value={newRootCid} onChange={(e) => setNewRootCid(e.target.value)} placeholder="bafybeie..." className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Gateway</label>
-                      <input type="text" value={newGateway} onChange={(e) => setNewGateway(e.target.value)} placeholder="w3s.link" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" />
-                    </div>
-                  </>
-                )}
-
-                {ipfsTestResult && (
-                  <div className={`p-3 rounded-md text-sm ${ipfsTestResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-                    {ipfsTestResult.success ? '✓ Connection successful!' : `✗ ${ipfsTestResult.error}`}
-                  </div>
-                )}
-
-                <div className="flex gap-2 justify-end pt-2">
-                  <button onClick={() => { setShowAddProviderModal(false); setIpfsTestResult(null) }} className="px-4 py-2 border border-gray-300 rounded-md text-sm">Cancel</button>
-                  {newProviderType === 'filebase' && (
-                    <button onClick={handleTestIpfs} disabled={testingIpfs || !newAccessKey || !newSecretKey || !newBucket} className="px-4 py-2 border border-gray-300 rounded-md text-sm disabled:opacity-50">
-                      {testingIpfs ? 'Testing...' : 'Test'}
+                      <img src={session.user.image} alt="" className="w-full h-full object-cover" />
                     </button>
                   )}
                   <button
+                    onClick={() => setAvatarUrl(`https://api.dicebear.com/9.x/croodles/svg?seed=${Math.random().toString(36).substring(2)}`)}
+                    className="w-10 h-10 rounded-full border-2 border-gray-100 hover:border-emerald-500 transition-all flex items-center justify-center bg-gray-50 text-base"
+                    title="Random avatar"
+                  >🎨</button>
+                  <button
+                    onClick={() => setAvatarUrl(`https://api.dicebear.com/9.x/pixel-art/svg?seed=${Math.random().toString(36).substring(2)}`)}
+                    className="w-10 h-10 rounded-full border-2 border-gray-100 hover:border-cyan-500 transition-all flex items-center justify-center bg-gray-50 text-base"
+                    title="Pixel art avatar"
+                  >👾</button>
+                  <button
+                    onClick={() => setAvatarUrl('')}
+                    className="w-10 h-10 rounded-full border-2 border-gray-100 hover:border-red-500 transition-all flex items-center justify-center bg-gray-50 text-sm text-gray-400"
+                    title="Reset"
+                  >✕</button>
+                </div>
+              </div>
+
+              {/* Form Column */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Avatar URL</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={avatarUrl}
+                      onChange={(e) => setAvatarUrl(e.target.value)}
+                      placeholder="Paste custom avatar URL..."
+                      className="flex-1 px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all text-sm outline-none"
+                    />
+                    <button
+                      onClick={handleSaveAvatar}
+                      disabled={savingAvatar || !avatarChanged}
+                      className={`px-6 rounded-2xl font-medium transition-all flex items-center justify-center ${!avatarChanged
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-gray-900 text-white hover:bg-black shadow-lg shadow-gray-200'
+                        }`}
+                    >
+                      {savingAvatar ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        'Save'
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <div className="px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-gray-500 text-sm flex items-center justify-between">
+                    <span>{session?.user?.email}</span>
+                    <span className="text-[10px] uppercase tracking-widest font-bold opacity-30">Permanent Account</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Public Blog Section */}
+          <section className="bg-blue-50/30 rounded-[2.5rem] p-8 md:p-12 border border-blue-100 shadow-sm transition-all">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight underline decoration-blue-400 decoration-4 underline-offset-4 inline-block">Public Blog</h2>
+            <p className="text-gray-600 mb-8 max-w-2xl leading-relaxed">
+              Claim your personal subdomain to publish your documents as a clean, professional blog. All documents marked as public will automatically appear on your page.
+            </p>
+
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative flex items-center">
+                  <div className="absolute left-4 text-gray-400 text-sm font-medium border-r border-gray-200 pr-3 hidden sm:block">https://</div>
+                  <input
+                    type="text"
+                    value={testamentUsername}
+                    onChange={(e) => setTestamentUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                    placeholder="your-name"
+                    className="w-full pl-4 sm:pl-20 pr-32 py-4 bg-white border border-blue-100 rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm outline-none font-medium"
+                  />
+                  <div className="absolute right-4 text-gray-400 text-sm font-medium hidden sm:block">.textpad.cloud</div>
+                </div>
+                <button
+                  onClick={handleSaveUsername}
+                  disabled={savingUsername || !usernameChanged}
+                  className={`px-10 py-4 rounded-2xl font-medium transition-all shadow-lg ${!usernameChanged
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-blue-200'
+                    }`}
+                >
+                  {savingUsername ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" /> : 'Save Handle'}
+                </button>
+              </div>
+
+              {originalUsername && (
+                <div className="p-6 bg-white border border-blue-100 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-1">Your blog is live</p>
+                    <a
+                      href={`https://${originalUsername}.textpad.cloud`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-lg font-medium text-gray-900 hover:text-blue-600 transition-colors break-all"
+                    >
+                      {originalUsername}.textpad.cloud
+                    </a>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => navigator.clipboard.writeText(`https://${originalUsername}.textpad.cloud`)}
+                      className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
+                      title="Copy URL"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                    <a
+                      href={`https://${originalUsername}.textpad.cloud`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* External Storage Section */}
+          <section className="bg-purple-50/30 rounded-[2.5rem] p-8 md:p-12 border border-purple-100 shadow-sm transition-all">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight underline decoration-purple-400 decoration-4 underline-offset-4 inline-block">External Storage</h2>
+            <p className="text-gray-600 mb-8 max-w-2xl leading-relaxed">
+              Connect your decentralized storage providers. Files and media will be persisted on IPFS via the providers you configure here.
+            </p>
+
+            <div className="space-y-4 mb-8">
+              {ipfsProviders.length > 0 ? (
+                ipfsProviders.map(p => (
+                  <div key={p.id} className="bg-white border border-purple-100 p-6 rounded-3xl flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{p.name}</p>
+                        <p className="text-xs font-medium text-purple-500 uppercase tracking-widest">
+                          {p.provider === 'filebase' ? `Filebase · ${p.bucket}` : `IPFS Gateway · ${p.gateway}`}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteProvider(p.id)}
+                      className="text-xs font-bold text-red-500 hover:text-red-700 uppercase tracking-widest p-2"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="bg-white border border-dashed border-purple-200 p-12 rounded-3xl text-center">
+                  <p className="text-gray-400 italic font-normal">No external storage providers connected.</p>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowAddProviderModal(true)}
+              className="w-full md:w-auto px-10 py-4 bg-purple-600 text-white font-medium rounded-2xl hover:bg-purple-700 transition-all shadow-lg hover:shadow-purple-200 flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Provider
+            </button>
+          </section>
+
+          {/* Digital Legacy Section */}
+          <section className="bg-amber-50/30 rounded-[2.5rem] p-8 md:p-12 border border-amber-100 shadow-sm transition-all">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight underline decoration-amber-400 decoration-4 underline-offset-4 inline-block">Digital Legacy</h2>
+            <p className="text-gray-600 mb-8 max-w-2xl leading-relaxed">
+              Plan for the centennial. Set your birth date to automatically transition your private documents to your public archive on your 99th birthday.
+            </p>
+
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 flex gap-2">
+                  <input
+                    type="date"
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                    className="flex-1 px-4 py-4 bg-white border border-amber-100 rounded-2xl focus:ring-2 focus:ring-amber-500 transition-all text-sm outline-none font-medium"
+                  />
+                  {birthDate && (
+                    <button
+                      onClick={handleClearBirthDate}
+                      className="px-4 bg-white border border-amber-100 text-gray-400 hover:text-red-500 rounded-2xl transition-all"
+                      title="Clear date"
+                    >✕</button>
+                  )}
+                </div>
+                <button
+                  onClick={handleSaveBirthDate}
+                  disabled={savingBirthDate || !birthDateChanged}
+                  className={`px-10 py-4 rounded-2xl font-medium transition-all shadow-lg ${!birthDateChanged
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-amber-600 text-white hover:bg-amber-700 hover:shadow-amber-200'
+                    }`}
+                >
+                  {savingBirthDate ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" /> : 'Lock Legacy'}
+                </button>
+              </div>
+
+              {originalBirthDate ? (
+                <div className="p-8 bg-white border border-amber-100 rounded-[2rem] space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="text-3xl">⏳</div>
+                    <div>
+                      <p className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-1">Legacy Deployment Scheduled</p>
+                      <p className="text-lg font-medium text-gray-900">
+                        {(() => {
+                          const birth = new Date(originalBirthDate)
+                          const age99 = new Date(birth)
+                          age99.setFullYear(birth.getFullYear() + 99)
+                          return age99.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                        })()}
+                      </p>
+                    </div>
+                  </div>
+
+                  {originalUsername && (
+                    <div className="pt-6 border-t border-amber-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <p className="text-sm text-gray-500">Documents will be preserved on your public blog.</p>
+                      <Link
+                        href="/testament/preview"
+                        className="w-full sm:w-auto px-6 py-3 bg-amber-50 text-amber-700 font-medium rounded-xl hover:bg-amber-100 transition-all flex items-center justify-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Preview Legacy
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="p-6 bg-gray-50 border border-gray-100 rounded-3xl text-center italic text-gray-400 text-sm">
+                  Legacy mode is not active. No birth date established.
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+
+        {/* Add Provider Modal - THEMED */}
+        {showAddProviderModal && (
+          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl border border-gray-100">
+              <h3 className="text-2xl font-semibold mb-6 tracking-tight">Add Storage</h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Provider Type</label>
+                  <select
+                    value={newProviderType}
+                    onChange={(e) => { setNewProviderType(e.target.value); setIpfsTestResult(null) }}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-purple-500 transition-all text-sm outline-none font-medium"
+                  >
+                    <option value="filebase">Filebase (S3) - Full Sync</option>
+                    <option value="storacha_gateway">IPFS Gateway - Read Only</option>
+                  </select>
+                </div>
+
+                <div className="space-y-4 pt-2">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Friendly Name</label>
+                    <input type="text" value={newProviderName} onChange={(e) => setNewProviderName(e.target.value)} placeholder="Main Storage" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm outline-none font-medium" />
+                  </div>
+
+                  {newProviderType === 'filebase' ? (
+                    <>
+                      <input type="text" value={newAccessKey} onChange={(e) => setNewAccessKey(e.target.value)} placeholder="Access Key" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm outline-none font-medium shadow-inner" />
+                      <input type="password" value={newSecretKey} onChange={(e) => setNewSecretKey(e.target.value)} placeholder="Secret Key" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm outline-none font-medium shadow-inner" />
+                      <input type="text" value={newBucket} onChange={(e) => setNewBucket(e.target.value)} placeholder="Bucket Name" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm outline-none font-medium shadow-inner" />
+                    </>
+                  ) : (
+                    <>
+                      <input type="text" value={newRootCid} onChange={(e) => setNewRootCid(e.target.value)} placeholder="Root CID (bafy...)" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm outline-none font-medium shadow-inner" />
+                      <input type="text" value={newGateway} onChange={(e) => setNewGateway(e.target.value)} placeholder="Gateway (e.g. w3s.link)" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm outline-none font-medium shadow-inner" />
+                    </>
+                  )}
+                </div>
+
+                {ipfsTestResult && (
+                  <div className={`p-4 rounded-2xl text-xs font-medium ${ipfsTestResult.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                    {ipfsTestResult.success ? '✓ Connection Verified' : `✗ ${ipfsTestResult.error}`}
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-6">
+                  <button onClick={() => { setShowAddProviderModal(false); setIpfsTestResult(null) }} className="flex-1 py-4 bg-gray-100 text-gray-500 font-medium rounded-2xl hover:bg-gray-200 transition-all">Cancel</button>
+                  <button
                     onClick={handleAddProvider}
                     disabled={savingIpfs || (newProviderType === 'filebase' ? (!newAccessKey || !newSecretKey || !newBucket) : !newRootCid)}
-                    className="px-4 py-2 bg-black text-white rounded-md text-sm disabled:opacity-50"
+                    className="flex-1 py-4 bg-purple-600 text-white font-medium rounded-2xl hover:bg-purple-700 transition-all shadow-lg shadow-purple-100 disabled:opacity-50"
                   >
-                    {savingIpfs ? 'Adding...' : 'Add Storage'}
+                    {savingIpfs ? 'Adding...' : 'Connect'}
                   </button>
                 </div>
               </div>
@@ -528,205 +635,15 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* Public Blog Section - PRIMARY */}
-        <div className="bg-white border border-gray-200 rounded-md p-6 mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Public Blog</h2>
-              <p className="text-sm text-gray-500">Get your own subdomain for public documents</p>
-            </div>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
-            <p className="text-sm text-blue-900">
-              Set a username to get your own public blog at <strong>username.textpad.cloud</strong>.
-              All documents you mark as public will be listed there.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <div className="flex items-center">
-                  <span className="hidden sm:inline-flex items-center px-3 py-2 text-sm text-gray-500 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md whitespace-nowrap">
-                    https://
-                  </span>
-                  <input
-                    type="text"
-                    value={testamentUsername}
-                    onChange={(e) => setTestamentUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                    placeholder="your-name"
-                    className="flex-1 px-3 py-2 border border-gray-300 sm:rounded-l-none rounded-md focus:ring-2 focus:ring-black text-sm"
-                  />
-                  <span className="hidden sm:inline-flex items-center px-3 py-2 text-sm text-gray-500 bg-gray-100 border border-l-0 border-gray-300 rounded-r-md whitespace-nowrap">
-                    .textpad.cloud
-                  </span>
-                </div>
-              </div>
-
-              {/* Save button with state feedback */}
-              <button
-                onClick={handleSaveUsername}
-                disabled={savingUsername || !usernameChanged}
-                className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${!usernameChanged
-                  ? 'bg-gray-100 text-gray-400 cursor-default'
-                  : 'bg-black text-white hover:bg-gray-800'
-                  }`}
-              >
-                {savingUsername ? (
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-                {usernameChanged ? 'Save' : 'Saved'}
-              </button>
-            </div>
-
-            <p className="text-xs text-gray-500 mt-2">
-              Lowercase letters, numbers, hyphens, and underscores only.
-            </p>
-
-            {/* Show URL if username is set */}
-            {originalUsername && (
-              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
-                <p className="text-xs font-medium text-green-800 mb-1">Your blog is live:</p>
-                <div className="flex items-center gap-2">
-                  <a
-                    href={`https://${originalUsername}.textpad.cloud`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-green-700 hover:text-green-900 underline break-all"
-                  >
-                    https://{originalUsername}.textpad.cloud
-                  </a>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(`https://${originalUsername}.textpad.cloud`)}
-                    className="text-green-600 hover:text-green-800 p-1"
-                    title="Copy URL"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Digital Legacy Section - SECONDARY/OPTIONAL */}
-        <div className="bg-white border border-gray-200 rounded-md p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Digital Legacy</h2>
-              <p className="text-sm text-gray-500">Optional: preserve your writings for future generations</p>
-            </div>
-          </div>
-
-          <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6">
-            <p className="text-sm text-amber-900">
-              Set your birth date to automatically make <strong>all documents public</strong> on your 99th birthday.
-              This ensures your writings are preserved for future generations.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                max={new Date().toISOString().split('T')[0]}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black text-sm"
-              />
-
-              {birthDate && (
-                <button
-                  onClick={handleClearBirthDate}
-                  className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-red-400 bg-white hover:bg-red-50 flex items-center justify-center"
-                  title="Remove birth date"
-                >
-                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-
-              {/* Save button with state feedback */}
-              <button
-                onClick={handleSaveBirthDate}
-                disabled={savingBirthDate || !birthDateChanged}
-                className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${!birthDateChanged
-                  ? 'bg-gray-100 text-gray-400 cursor-default'
-                  : 'bg-black text-white hover:bg-gray-800'
-                  }`}
-              >
-                {savingBirthDate ? (
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-                {birthDateChanged ? 'Save' : 'Saved'}
-              </button>
-            </div>
-
-            {originalBirthDate ? (
-              <p className="text-xs text-gray-500 mt-2">
-                All documents will become public on {(() => {
-                  const birth = new Date(originalBirthDate)
-                  const age99 = new Date(birth)
-                  age99.setFullYear(birth.getFullYear() + 99)
-                  return age99.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-                })()}
-              </p>
-            ) : (
-              <p className="text-xs text-gray-400 mt-2 italic">
-                No birth date set — documents will remain private unless marked public individually.
-              </p>
-            )}
-          </div>
-
-          {/* Preview link */}
-          {originalBirthDate && originalUsername && (
-            <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-200">
-              <div>
-                <p className="text-sm font-medium text-gray-700">Preview your legacy page</p>
-                <p className="text-xs text-gray-500">See how it will appear to visitors</p>
-              </div>
-              <Link
-                href="/testament/preview"
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                Preview
-              </Link>
-            </div>
-          )}
+        {/* Footer Nav */}
+        <div className="pt-12 mt-20 border-t border-gray-100 text-center">
+          <p className="text-sm text-gray-400">
+            <Link href="/" className="text-gray-900 hover:text-emerald-600 transition-colors font-medium">My Drive</Link>
+            {' · '}
+            <Link href="/features" className="text-gray-900 hover:text-emerald-600 transition-colors font-medium">Features</Link>
+            {' · '}
+            <Link href="/privacy" className="text-gray-900 hover:text-emerald-600 transition-colors font-medium">Privacy Policy</Link>
+          </p>
         </div>
       </div>
     </div>

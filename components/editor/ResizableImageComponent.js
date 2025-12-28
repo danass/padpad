@@ -170,9 +170,10 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
 
   const imageStyle = {
     width: width ? `${width}px` : 'auto',
-    height: width && aspectRatio ? `${width * aspectRatio}px` : (height ? `${height}px` : 'auto'),
+    height: 'auto',
+    aspectRatio: aspectRatio ? `1 / ${aspectRatio}` : 'auto',
     maxWidth: '100%',
-    objectFit: 'contain', // Preserve aspect ratio
+    objectFit: 'contain',
     display: 'block',
     margin: align === 'left' ? '0 auto 0 0' : align === 'right' ? '0 0 0 auto' : '0 auto',
     cursor: 'pointer',
@@ -201,7 +202,7 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
             style={{
               ...imageStyle,
               cursor: editor.isEditable ? 'pointer' : 'default',
-              touchAction: 'none'
+              touchAction: editor.isEditable ? 'none' : 'auto'
             }}
             onClick={(e) => {
               e.stopPropagation()
@@ -216,11 +217,13 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
                 editor.chain().focus().setNodeSelection(pos).run()
               }
             }}
-            className={`rounded-lg transition-all ${editor.isEditable ? 'group-hover:ring-2 group-hover:ring-blue-400' : ''} ${editor.isEditable && editor.isActive('resizableImage') ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
+            className={`transition-all ${editor.isEditable ? 'group-hover:ring-2 group-hover:ring-blue-400' : ''} ${editor.isEditable && editor.isActive('resizableImage') ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
             draggable={false}
             onTouchStart={(e) => {
-              // Prevent scroll when touching image on mobile
-              e.stopPropagation()
+              // Only prevent scroll when in edit mode to allow selection/drag
+              if (editor.isEditable) {
+                e.stopPropagation()
+              }
             }}
             onLoad={(e) => {
               // Set initial dimensions if not set, preserving aspect ratio

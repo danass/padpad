@@ -118,63 +118,63 @@ export default function BubbleMenu({ editor }) {
       }}
       className="bubble-menu"
     >
-      <div className="flex items-center gap-0.5 bg-white border border-gray-200 rounded-md shadow-lg px-1.5 py-1.5">
+      <div className="flex items-center gap-0.5 bg-white border border-gray-200 rounded-md shadow-lg px-2 py-2 md:px-1.5 md:py-1.5">
 
         {/* Formatting buttons */}
         <div className="flex items-center gap-0.5">
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`p-1.5 rounded-md transition-all ${editor.isActive('bold')
-                ? 'bg-gray-100 text-gray-900'
-                : 'hover:bg-gray-100 text-gray-700'
+            className={`p-2.5 md:p-1.5 rounded-md transition-all ${editor.isActive('bold')
+              ? 'bg-gray-100 text-gray-900'
+              : 'hover:bg-gray-100 text-gray-700'
               } active:scale-95`}
             title={`${t?.bold || 'Bold'} (Ctrl+B)`}
           >
-            <Bold className="w-4 h-4" />
+            <Bold className="w-5 h-5 md:w-4 md:h-4" />
           </button>
 
           <button
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`p-1.5 rounded-md transition-all ${editor.isActive('italic')
-                ? 'bg-gray-100 text-gray-900'
-                : 'hover:bg-gray-100 text-gray-700'
+            className={`p-2.5 md:p-1.5 rounded-md transition-all ${editor.isActive('italic')
+              ? 'bg-gray-100 text-gray-900'
+              : 'hover:bg-gray-100 text-gray-700'
               } active:scale-95`}
             title={`${t?.italic || 'Italic'} (Ctrl+I)`}
           >
-            <Italic className="w-4 h-4" />
+            <Italic className="w-5 h-5 md:w-4 md:h-4" />
           </button>
 
           <button
             onClick={() => editor.chain().focus().toggleUnderline().run()}
-            className={`p-1.5 rounded-md transition-all ${editor.isActive('underline')
-                ? 'bg-gray-100 text-gray-900'
-                : 'hover:bg-gray-100 text-gray-700'
+            className={`p-2.5 md:p-1.5 rounded-md transition-all ${editor.isActive('underline')
+              ? 'bg-gray-100 text-gray-900'
+              : 'hover:bg-gray-100 text-gray-700'
               } active:scale-95`}
             title={`${t?.underline || 'Underline'} (Ctrl+U)`}
           >
-            <Underline className="w-4 h-4" />
+            <Underline className="w-5 h-5 md:w-4 md:h-4" />
           </button>
 
           <button
             onClick={() => editor.chain().focus().toggleStrike().run()}
-            className={`p-1.5 rounded-md transition-all ${editor.isActive('strike')
-                ? 'bg-gray-100 text-gray-900'
-                : 'hover:bg-gray-100 text-gray-700'
+            className={`p-2.5 md:p-1.5 rounded-md transition-all ${editor.isActive('strike')
+              ? 'bg-gray-100 text-gray-900'
+              : 'hover:bg-gray-100 text-gray-700'
               } active:scale-95`}
             title={t?.strikethrough || 'Strikethrough'}
           >
-            <Strikethrough className="w-4 h-4" />
+            <Strikethrough className="w-5 h-5 md:w-4 md:h-4" />
           </button>
 
           <button
             onClick={() => editor.chain().focus().toggleCode().run()}
-            className={`p-1.5 rounded-md transition-all ${editor.isActive('code')
-                ? 'bg-gray-100 text-gray-900'
-                : 'hover:bg-gray-100 text-gray-700'
+            className={`p-2.5 md:p-1.5 rounded-md transition-all ${editor.isActive('code')
+              ? 'bg-gray-100 text-gray-900'
+              : 'hover:bg-gray-100 text-gray-700'
               } active:scale-95`}
             title={t?.inlineCode || 'Inline Code'}
           >
-            <Code className="w-4 h-4" />
+            <Code className="w-5 h-5 md:w-4 md:h-4" />
           </button>
         </div>
 
@@ -192,13 +192,13 @@ export default function BubbleMenu({ editor }) {
               }
             }
           }}
-          className={`p-1.5 rounded-md transition-all ${editor.isActive('link')
-              ? 'bg-gray-100 text-gray-900'
-              : 'hover:bg-gray-100 text-gray-700'
+          className={`p-2.5 md:p-1.5 rounded-md transition-all ${editor.isActive('link')
+            ? 'bg-gray-100 text-gray-900'
+            : 'hover:bg-gray-100 text-gray-700'
             } active:scale-95`}
           title={`${t?.link || 'Link'} (Ctrl+K)`}
         >
-          <Link className="w-4 h-4" />
+          <Link className="w-5 h-5 md:w-4 md:h-4" />
         </button>
 
         <div className="w-px h-6 bg-gray-200 mx-0.5"></div>
@@ -222,13 +222,13 @@ export default function BubbleMenu({ editor }) {
         <div className="relative">
           <button
             onClick={() => setShowMoreOptions(!showMoreOptions)}
-            className={`p-1.5 rounded-md transition-all ${showMoreOptions
-                ? 'bg-gray-100'
-                : 'hover:bg-gray-100'
+            className={`p-2.5 md:p-1.5 rounded-md transition-all ${showMoreOptions
+              ? 'bg-gray-100'
+              : 'hover:bg-gray-100'
               } text-gray-700 active:scale-95`}
             title={t?.other || 'More options'}
           >
-            <MoreHorizontal className="w-4 h-4" />
+            <MoreHorizontal className="w-5 h-5 md:w-4 md:h-4" />
           </button>
 
           {showMoreOptions && (
@@ -243,26 +243,26 @@ export default function BubbleMenu({ editor }) {
                     editor.chain().focus().toggleSubscript().run()
                     setShowMoreOptions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive('subscript')
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'hover:bg-gray-50 text-gray-700'
+                  className={`w-full text-left px-4 py-3 md:px-3 md:py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive('subscript')
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'hover:bg-gray-50 text-gray-700'
                     }`}
                 >
-                  <Subscript className="w-4 h-4" />
-                  <span>{t?.subscript || 'Subscript'}</span>
+                  <Subscript className="w-5 h-5 md:w-4 md:h-4" />
+                  <span className="md:text-sm text-base">{t?.subscript || 'Subscript'}</span>
                 </button>
                 <button
                   onClick={() => {
                     editor.chain().focus().toggleSuperscript().run()
                     setShowMoreOptions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive('superscript')
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'hover:bg-gray-50 text-gray-700'
+                  className={`w-full text-left px-4 py-3 md:px-3 md:py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive('superscript')
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'hover:bg-gray-50 text-gray-700'
                     }`}
                 >
-                  <Superscript className="w-4 h-4" />
-                  <span>{t?.superscript || 'Superscript'}</span>
+                  <Superscript className="w-5 h-5 md:w-4 md:h-4" />
+                  <span className="md:text-sm text-base">{t?.superscript || 'Superscript'}</span>
                 </button>
                 <div className="border-t border-gray-200 my-1"></div>
                 <button
@@ -270,52 +270,52 @@ export default function BubbleMenu({ editor }) {
                     editor.chain().focus().setTextAlign('left').run()
                     setShowMoreOptions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive({ textAlign: 'left' })
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'hover:bg-gray-50 text-gray-700'
+                  className={`w-full text-left px-4 py-3 md:px-3 md:py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive({ textAlign: 'left' })
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'hover:bg-gray-50 text-gray-700'
                     }`}
                 >
-                  <AlignLeft className="w-4 h-4" />
-                  <span>{t?.alignLeft || 'Align Left'}</span>
+                  <AlignLeft className="w-5 h-5 md:w-4 md:h-4" />
+                  <span className="md:text-sm text-base">{t?.alignLeft || 'Align Left'}</span>
                 </button>
                 <button
                   onClick={() => {
                     editor.chain().focus().setTextAlign('center').run()
                     setShowMoreOptions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive({ textAlign: 'center' })
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'hover:bg-gray-50 text-gray-700'
+                  className={`w-full text-left px-4 py-3 md:px-3 md:py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive({ textAlign: 'center' })
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'hover:bg-gray-50 text-gray-700'
                     }`}
                 >
-                  <AlignCenter className="w-4 h-4" />
-                  <span>{t?.alignCenter || 'Align Center'}</span>
+                  <AlignCenter className="w-5 h-5 md:w-4 md:h-4" />
+                  <span className="md:text-sm text-base">{t?.alignCenter || 'Align Center'}</span>
                 </button>
                 <button
                   onClick={() => {
                     editor.chain().focus().setTextAlign('right').run()
                     setShowMoreOptions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive({ textAlign: 'right' })
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'hover:bg-gray-50 text-gray-700'
+                  className={`w-full text-left px-4 py-3 md:px-3 md:py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive({ textAlign: 'right' })
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'hover:bg-gray-50 text-gray-700'
                     }`}
                 >
-                  <AlignRight className="w-4 h-4" />
-                  <span>{t?.alignRight || 'Align Right'}</span>
+                  <AlignRight className="w-5 h-5 md:w-4 md:h-4" />
+                  <span className="md:text-sm text-base">{t?.alignRight || 'Align Right'}</span>
                 </button>
                 <button
                   onClick={() => {
                     editor.chain().focus().setTextAlign('justify').run()
                     setShowMoreOptions(false)
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive({ textAlign: 'justify' })
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'hover:bg-gray-50 text-gray-700'
+                  className={`w-full text-left px-4 py-3 md:px-3 md:py-2 text-sm transition-colors flex items-center gap-2 ${editor.isActive({ textAlign: 'justify' })
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'hover:bg-gray-50 text-gray-700'
                     }`}
                 >
-                  <AlignJustify className="w-4 h-4" />
-                  <span>{t?.alignJustify || 'Justify'}</span>
+                  <AlignJustify className="w-5 h-5 md:w-4 md:h-4" />
+                  <span className="md:text-sm text-base">{t?.alignJustify || 'Justify'}</span>
                 </button>
               </div>
             </>

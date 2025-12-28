@@ -522,12 +522,12 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
               border: editor.isEditable
                 ? (isSelected ? `2px solid ${currentColorRef.current}` : '1px solid #e5e7eb')
                 : 'none',
-              borderRadius: '0.5rem',
+              borderRadius: '0',
               backgroundColor: 'transparent',
               cursor: editor.isEditable
                 ? (isDragging || moveMode ? 'grab' : (isResizing ? 'nwse-resize' : 'crosshair'))
                 : 'default',
-              touchAction: 'none',
+              touchAction: editor.isEditable ? 'none' : 'auto',
               display: 'block',
             }}
             onContextMenu={(e) => {
