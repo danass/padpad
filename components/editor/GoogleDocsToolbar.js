@@ -28,6 +28,7 @@ import {
   Type,
   HardDrive,
   Save,
+  Check,
 } from 'lucide-react'
 import Tooltip from '@/components/ui/Tooltip'
 import { useLanguage } from '@/app/i18n/LanguageContext'
@@ -1655,22 +1656,34 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
         </Tooltip>
       </div>
 
-      {/* Save button - icon only, aligned right */}
+      {/* Save button / Status indicator - icon only, aligned right */}
       {onSave && (
         <div className="ml-auto">
-          <Tooltip label={hasChanges ? (t?.save || 'Save') : (t?.noChanges || 'No changes to save')} shortcut={hasChanges ? ['⌘', 'S'] : undefined}>
-            <button
-              onClick={onSave}
-              disabled={saving || !hasChanges}
-              className={`p-1.5 xs:p-2 md:p-1.5 h-8 w-8 xs:h-9 xs:w-9 md:h-8 md:w-8 rounded-xl flex items-center justify-center transition-all ${hasChanges
-                ? 'bg-gray-900 text-white hover:bg-black hover:scale-[1.05] active:scale-95 shadow-md shadow-gray-200'
-                : 'bg-gray-50 text-gray-300 cursor-not-allowed border border-gray-100'
-                }`}
-              aria-label={t?.save || 'Save'}
-            >
-              <Save className="w-4 h-4 xs:w-5 xs:h-5 md:w-4 md:h-4" />
-            </button>
-          </Tooltip>
+          {saving ? (
+            /* Saving in progress */
+            <div className="h-8 px-3 rounded-xl flex items-center gap-1.5 bg-amber-50 text-amber-600 border border-amber-100">
+              <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs font-medium hidden xs:inline">{t?.saving || 'Saving'}</span>
+            </div>
+          ) : hasChanges ? (
+            /* Has unsaved changes - clickable to force save */
+            <Tooltip label={t?.save || 'Save'} shortcut={['⌘', 'S']}>
+              <button
+                onClick={onSave}
+                className="h-8 px-3 rounded-xl flex items-center gap-1.5 bg-gray-900 text-white hover:bg-black hover:scale-[1.02] active:scale-95 transition-all shadow-md shadow-gray-200"
+                aria-label={t?.save || 'Save'}
+              >
+                <Save className="w-4 h-4" />
+                <span className="text-xs font-medium hidden xs:inline">{t?.save || 'Save'}</span>
+              </button>
+            </Tooltip>
+          ) : (
+            /* All saved */
+            <div className="h-8 px-3 rounded-xl flex items-center gap-1.5 bg-emerald-50 text-emerald-600 border border-emerald-100">
+              <Check className="w-4 h-4" />
+              <span className="text-xs font-medium hidden xs:inline">{t?.saved || 'Saved'}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

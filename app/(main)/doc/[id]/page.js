@@ -1573,7 +1573,7 @@ export default function DocumentPage() {
         {editor && (
           <>
             <div className="mb-4">
-              <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} onSave={handleManualSave} saving={saving} hasChanges={hasChanges} />
+              <GoogleDocsToolbar editor={editor} onOpenIpfsBrowser={() => setShowIpfsBrowser(true)} />
             </div>
             <div
               className="prose max-w-none min-h-[500px] p-4 md:p-0 transition-all pb-24 md:pb-32 relative cursor-text"

@@ -245,19 +245,19 @@ export default function ContextMenu({ editor }) {
           icon: <AlignLeft className="w-4 h-4" />,
           label: t?.alignLeft || 'Align Left',
           action: () => editor.chain().focus().setTextAlign('left').run(),
-          isActive: editor?.isActive({ textAlign: 'left' }),
+          isActive: editor?.isActive({ textAlign: 'left' }) || (!editor?.isActive({ textAlign: 'center' }) && !editor?.isActive({ textAlign: 'right' })),
         },
         {
           icon: <AlignCenter className="w-4 h-4" />,
           label: t?.alignCenter || 'Align Center',
           action: () => editor.chain().focus().setTextAlign('center').run(),
-          isActive: editor?.isActive({ textAlign: 'center' }),
+          isActive: editor?.isActive({ textAlign: 'center' }) === true,
         },
         {
           icon: <AlignRight className="w-4 h-4" />,
           label: t?.alignRight || 'Align Right',
           action: () => editor.chain().focus().setTextAlign('right').run(),
-          isActive: editor?.isActive({ textAlign: 'right' }),
+          isActive: editor?.isActive({ textAlign: 'right' }) === true,
         },
       ]
     },
