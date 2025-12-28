@@ -11,7 +11,7 @@ export default function Footer() {
 
   return (
     <footer className="w-full py-4 mt-auto">
-      <div className="flex items-center justify-center gap-4">
+      <div className="flex items-center justify-center gap-4 flex-wrap">
         {/* Show Feed and Featured links when not logged in */}
         {!session && (
           <div className="flex items-center gap-4">
@@ -23,7 +23,13 @@ export default function Footer() {
             </Link>
           </div>
         )}
-        {/* Credits always visible */}
+        {/* Legal links - always visible */}
+        <Link href="/privacy" className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
+          {t?.privacy || 'Privacy'}
+        </Link>
+        <Link href="/terms" className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
+          {t?.terms || 'Terms'}
+        </Link>
         <Link href="/credits" className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
           {t?.credits || 'Credits'}
         </Link>
