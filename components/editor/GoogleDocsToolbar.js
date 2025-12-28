@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Bold,
   Italic,
@@ -779,7 +780,7 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
             <span style={{ fontFamily: currentFontFamily }} className="truncate flex-1 font-medium">{currentFontFamily}</span>
             <ChevronDown className="w-3 h-3 text-gray-400 flex-shrink-0" />
           </button>
-          {showFontFamily && (
+          {showFontFamily && createPortal(
             <>
               <div
                 className="fixed inset-0"
@@ -841,7 +842,8 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
                   </button>
                 ))}
               </div>
-            </>
+            </>,
+            document.body
           )}
         </div>
         <button
@@ -993,7 +995,7 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
         </Tooltip>
       </div>
 
-      {showPaintTooltip && paintMode && (
+      {showPaintTooltip && paintMode && createPortal(
         <>
           <div
             className="fixed inset-0 z-[10002] bg-black bg-opacity-50"
@@ -1013,7 +1015,8 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
               Got it
             </button>
           </div>
-        </>
+        </>,
+        document.body
       )}
 
       <div className="w-px h-8 md:h-6 bg-gray-300 mx-1 md:mx-0.5 hidden md:block" />
@@ -1126,7 +1129,7 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
               </div>
             </button>
           </Tooltip>
-          {showTextColor && (
+          {showTextColor && createPortal(
             <>
               <div
                 className="fixed inset-0"
@@ -1212,7 +1215,8 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
                   </div>
                 </div>
               </div>
-            </>
+            </>,
+            document.body
           )}
         </div>
 
@@ -1240,7 +1244,7 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
               </div>
             </button>
           </Tooltip>
-          {showHighlightColor && (
+          {showHighlightColor && createPortal(
             <>
               <div
                 className="fixed inset-0"
@@ -1326,7 +1330,8 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
                   </div>
                 </div>
               </div>
-            </>
+            </>,
+            document.body
           )}
         </div>
       </div>
@@ -1357,7 +1362,7 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
               <ChevronDown className="w-3 h-3 text-gray-400" />
             </button>
           </Tooltip>
-          {showAlign && (
+          {showAlign && createPortal(
             <>
               <div
                 className="fixed inset-0"
@@ -1410,7 +1415,8 @@ export default function GoogleDocsToolbar({ editor, onOpenIpfsBrowser, onSave, s
                   <AlignJustify className="w-4 h-4" />
                 </button>
               </div>
-            </>
+            </>,
+            document.body
           )}
         </div>
       </div>

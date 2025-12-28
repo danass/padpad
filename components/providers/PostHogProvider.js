@@ -15,6 +15,11 @@ export function PostHogProvider({ children }) {
                 person_profiles: 'identified_only',
                 capture_pageview: false,
                 capture_pageleave: true,
+                // Disable unused features to reduce bundle size
+                disable_surveys: true,
+                disable_web_experiments: true,
+                autocapture: false,
+                persistence: 'localStorage',
                 defaults: '2025-11-30',
             })
         }
