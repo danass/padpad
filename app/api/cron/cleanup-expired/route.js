@@ -3,14 +3,20 @@ import { sql } from '@vercel/postgres'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request) {
-    // Basic security: Check for Vercel Cron Secret or a custom header
-    // Vercel sets a CRON_SECRET env var and sends it in the Authorization header
+    // Basic security: Check for Vercel Cron Secret or authenticated admin
     const authHeader = request.headers.get('authorization')
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-        // Only enforce if secret is set
-        if (process.env.NODE_ENV === 'production') {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 })
-        }
+    const isCronSecret = process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`
+
+    let isAuthorized = isCronSecret
+
+    if (!isAuthorized) {
+        // If not cron secret, check if it's an authenticated admin
+        const { isAdmin } = require('@/lib/auth/isAdmin')
+        isAuthorized = await isAdmin()
+    }
+
+    if (!isAuthorized && process.env.NODE_ENV === 'production') {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     try {
