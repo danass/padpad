@@ -41,8 +41,12 @@ export default function ShareableLinksPage() {
                                 No databases to leak personal credentials. No forced sign-ups. Your privacy is protected by the very structure of the URL.
                             </p>
                         </div>
-                        <div className="bg-gray-50 aspect-video rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
-                            Secure Link Visualization...
+                        <div className="bg-gray-50 p-2 rounded-3xl border border-gray-100 flex items-center justify-center overflow-hidden shadow-2xl">
+                            <img
+                                src="/features/showcase/shareable-links.png"
+                                alt="Shareable Links Modal in Textpad"
+                                className="w-full h-auto rounded-2xl"
+                            />
                         </div>
                     </section>
 

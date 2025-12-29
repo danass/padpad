@@ -41,11 +41,11 @@ export default function DigitalTestamentPage() {
                                 On your 99th birthday, our system automatically transitions your selected works to your public archive—creating a permanent digital testament for future generations.
                             </p>
                         </div>
-                        <div className="rounded-3xl overflow-hidden shadow-2xl border border-gray-100">
+                        <div className="rounded-3xl overflow-hidden shadow-2xl border border-gray-100 bg-gray-50 p-2">
                             <img
-                                src="/features/screens/digital_testament_public_view.png"
-                                alt="Digital Testament Public Archive Preview"
-                                className="w-full h-auto"
+                                src="/features/showcase/digital-testament.png"
+                                alt="Digital Testament Settings in Textpad"
+                                className="w-full h-auto rounded-2xl"
                             />
                         </div>
                     </section>

@@ -36,8 +36,12 @@ export default function DecentralizedStoragePage() {
                                 Textpad makes this complex technology as easy as clicking a "Save to IPFS" button.
                             </p>
                         </div>
-                        <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
-                            Visualizing Decentralization...
+                        <div className="bg-gray-50 p-2 rounded-3xl border border-gray-100 flex items-center justify-center overflow-hidden">
+                            <img
+                                src="/features/showcase/decentralized-storage.png"
+                                alt="Textpad IPFS Storage Interface"
+                                className="w-full h-auto rounded-2xl shadow-sm"
+                            />
                         </div>
                     </section>
 

@@ -41,8 +41,12 @@ export default function VersionHistoryPage() {
                                 Preview any past version and restore it with a single click. Your history is permanent and secure.
                             </p>
                         </div>
-                        <div className="bg-gray-50 aspect-video rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
-                            History Timeline Preview...
+                        <div className="bg-gray-50 p-2 rounded-3xl border border-gray-100 flex items-center justify-center overflow-hidden shadow-2xl">
+                            <img
+                                src="/features/showcase/version-history.png"
+                                alt="Version History Interface in Textpad"
+                                className="w-full h-auto rounded-2xl"
+                            />
                         </div>
                     </section>
 
