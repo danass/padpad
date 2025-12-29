@@ -229,6 +229,59 @@ export default function HomeClient({ featuredArticles = [] }) {
                 </div>
               </div>
 
+              {/* Who is Textpad for? */}
+              <div className="max-w-6xl mx-auto px-4">
+                <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-16 tracking-tight">
+                  Who is Textpad for?
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+                  {[
+                    { icon: <History className="w-6 h-6" />, title: 'Legacy Builders', desc: 'Create a digital time capsule. Preserve memories, stories, and wisdom for your children or grandchildren to discover.' },
+                    { icon: <HardDrive className="w-6 h-6" />, title: 'Web3 Architects', desc: 'Save critical research and thoughts directly to the decentralized web using the permanent IPFS gateway.' },
+                    { icon: <Layout className="w-6 h-6" />, title: 'Digital Nomads', desc: 'Organize your entire writing life in a clean, folder-based drive with browser-like tabs that persist across all devices.' },
+                    { icon: <PenTool className="w-6 h-6" />, title: 'Creative Minds', desc: 'Fuse technical writing with hand-drawn sketches and rich media to build documents that are truly multi-dimensional.' },
+                    { icon: <Sparkles className="w-6 h-6" />, title: 'Minimalists', desc: 'Quickly jot down inspirations in a friction-free environment that values your focus more than your credentials.' },
+                    { icon: <Users className="w-6 h-6" />, title: 'Public Thinkers', desc: 'Publish your inner work to a custom subdomain blog and build a public presence on your own terms.' },
+                  ].map((user, i) => (
+                    <div key={i} className="flex gap-4 p-4 rounded-2xl hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-gray-600 border border-gray-100 group-hover:bg-cyan-50">
+                        {user.icon}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{user.title}</h3>
+                        <p className="text-sm text-gray-500 leading-relaxed">{user.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* FAQ */}
+              <div className="max-w-4xl mx-auto px-4">
+                <h2 className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-16 tracking-tight">
+                  Questions & Answers
+                </h2>
+                <div className="divide-y divide-gray-100 border-t border-b border-gray-100">
+                  {[
+                    { q: 'What makes Textpad different?', a: 'Unlike standard notepads, Textpad combines a high-end visual editor with decentralized storage (IPFS) and professional publishing tools. It is built for permanence and creative freedom.' },
+                    { q: 'Is it really decentralized?', a: 'Yes. When you choose to save via IPFS, your document is cast to the permanent web. This ensures your content remains accessible even if central servers go down.' },
+                    { q: 'Can I use it as a blog?', a: 'Absolutely. By creating a free account, you can publish any document to your personal subdomain (e.g., yourname.textpad.cloud) instantly.' },
+                    { q: 'How does link-based privacy work?', a: 'Until you publish a document to your public blog, it is only accessible via its unique, obfuscated link. We do not index your private drafts or share them with third parties.' },
+                    { q: 'Is there a limit to what I can store?', a: 'Local storage and standard cloud saving are unlimited for text. For heavy media and permanence, our IPFS integration provides a robust way to manage larger creative works.' },
+                  ].map((faq, i) => (
+                    <details key={i} className="group py-6">
+                      <summary className="flex justify-between items-center cursor-pointer list-none">
+                        <span className="text-lg font-medium text-gray-900">{faq.q}</span>
+                        <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                      </summary>
+                      <div className="mt-4 text-gray-500 leading-relaxed text-base prose prose-sm max-w-none">
+                        {faq.a}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </div>
+
               {/* Effortless note-taking */}
               <div className="max-w-6xl mx-auto px-4">
                 <div className="bg-white rounded-3xl p-8 md:p-16 text-center border border-gray-100 shadow-sm relative overflow-hidden">
