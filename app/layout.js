@@ -14,12 +14,12 @@ const GA_MEASUREMENT_ID = 'G-S6HWH3G1B4'
 // SEO translations
 const seoTranslations = {
   en: {
-    title: 'Textpad – Blocnote Online & Free Professional Text Editor',
-    description: 'Write, edit and share text instantly with Textpad, the professional blocnote online. Create a public blog, save with version history, and use our online text editor with pictures. No account needed.',
+    title: 'Textpad – The Permanent Notepad for the Creative Web',
+    description: 'A decentralized text editor built on IPFS. Save your documents, sketches, and blog posts to the permanent web. Features include private sharing, digital legacy, and folder organization. No account needed.',
   },
   fr: {
-    title: 'Textpad – Blocnote en Ligne & Éditeur de Texte Gratuit',
-    description: 'Écrivez et partagez votre texte avec Textpad, le blocnote en ligne gratuit. Créez un blog public, sauvegardez avec historique, et profitez d\'un bloc-notes en ligne avec images. Sans inscription.',
+    title: 'Textpad – Le Bloc-notes Permanent pour le Web Créatif',
+    description: 'Éditeur de texte décentralisé sur IPFS. Sauvegardez vos documents, dessins et blogs sur le web permanent. Partage privé, testament numérique et organisation par dossiers. Sans inscription.',
   },
 }
 
