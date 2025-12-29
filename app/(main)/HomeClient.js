@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { HardDrive, Sparkles, Layout, PenTool, History, Palette, Shield, ChevronDown } from 'lucide-react'
+import { HardDrive, Sparkles, Layout, PenTool, History, Palette, Shield, ChevronDown, Users, Users2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import NextLink from 'next/link'
@@ -187,6 +187,11 @@ export default function HomeClient({ featuredArticles = [] }) {
             <div className="mt-20 md:mt-32 space-y-24 md:space-y-40 pb-32 font-['DM_Sans',sans-serif]">
               {/* Hero tagline */}
               <div className="text-center max-w-4xl mx-auto px-4">
+                <div className="mb-8 flex justify-center">
+                  <div className="w-24 h-24 rounded-3xl overflow-hidden bg-white p-2">
+                    <img src="/padpad.png" alt="Textpad Logo" className="w-full h-full object-cover" />
+                  </div>
+                </div>
                 <h2 className="text-4xl md:text-6xl font-medium tracking-tight text-gray-900 mb-6 leading-[1.1]">
                   The Permanent Notepad for the <span className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-600 bg-clip-text text-transparent">Creative Web</span>
                 </h2>

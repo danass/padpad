@@ -54,6 +54,17 @@ const getFeedData = cache(async (page = 1, limit = 10, keyword = null) => {
             [...queryParams, limit, offset]
         )
 
+        const articles = result.rows.map(row => {
+            let content = row.content_json
+            if (content && typeof content === 'string') {
+                try { content = JSON.parse(content) } catch (e) { }
+            }
+            return {
+                ...row,
+                content_json: content
+            }
+        })
+
         // Get all available keywords
         const allKeywordsResult = await sql.query(
             `SELECT DISTINCT unnest(keywords) as keyword 
@@ -64,7 +75,7 @@ const getFeedData = cache(async (page = 1, limit = 10, keyword = null) => {
         const allKeywords = allKeywordsResult.rows.map(r => r.keyword).filter(Boolean).sort()
 
         return {
-            articles: result.rows,
+            articles,
             allKeywords,
             pagination: {
                 page,

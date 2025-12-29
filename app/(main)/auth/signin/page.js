@@ -30,11 +30,11 @@ function SignInContent() {
         <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10">
           {/* Logo and Header */}
           <div className="text-center mb-8">
-            <div className="w-20 h-20 rounded-2xl mx-auto mb-6 flex items-center justify-center overflow-hidden bg-white shadow-lg border border-gray-100">
+            <div className="w-24 h-24 rounded-2xl mx-auto mb-6 flex items-center justify-center overflow-hidden bg-white">
               <img
-                src="/padpad.svg"
+                src="/padpad.png"
                 alt="textpad logo"
-                className="w-12 h-12 object-contain"
+                className="w-16 h-16 object-contain"
               />
             </div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">

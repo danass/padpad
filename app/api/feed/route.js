@@ -57,8 +57,19 @@ export async function GET(request) {
         )
         const allKeywords = allKeywordsResult.rows.map(r => r.keyword).filter(Boolean).sort()
 
+        const articles = result.rows.map(row => {
+            let content = row.content_json
+            if (content && typeof content === 'string') {
+                try { content = JSON.parse(content) } catch (e) { }
+            }
+            return {
+                ...row,
+                content_json: content
+            }
+        })
+
         return NextResponse.json({
-            articles: result.rows,
+            articles,
             allKeywords,
             pagination: {
                 page,

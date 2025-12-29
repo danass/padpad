@@ -142,6 +142,9 @@ export default function UniversalHeader() {
                 <div className="max-w-full mx-auto">
                     <div className="flex items-center justify-between px-6 h-12 md:h-16">
                         <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                <img src="/padpad.png" alt="textpad logo" className="w-full h-full object-cover" />
+                            </div>
                             <span className="text-sm font-semibold text-gray-900 uppercase tracking-widest">textpad</span>
                         </div>
                     </div>
@@ -159,7 +162,7 @@ export default function UniversalHeader() {
                         <div className="flex items-center gap-3">
                             <a href="https://www.textpad.cloud" className="flex items-center gap-2" title="Textpad">
                                 <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
-                                    <img src="/padpad.svg" alt="textpad logo" className="w-full h-full object-cover" />
+                                    <img src="/padpad.png" alt="textpad logo" className="w-full h-full object-cover" />
                                 </div>
                                 <span className="text-sm font-medium text-gray-900">textpad</span>
                             </a>
@@ -186,7 +189,10 @@ export default function UniversalHeader() {
                 <div className="flex items-center justify-between px-6 h-12 md:h-16">
                     {/* Left side */}
                     <div className="flex items-center gap-8">
-                        <Link href="/" className="flex items-center gap-2" title={t?.appName || 'TextPad'}>
+                        <Link href="/" className="flex items-center gap-3" title={t?.appName || 'TextPad'}>
+                            <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                <img src="/padpad.png" alt="textpad logo" className="w-full h-full object-cover" />
+                            </div>
                             <span className="text-sm font-semibold text-gray-900 uppercase tracking-widest">textpad</span>
                         </Link>
 
