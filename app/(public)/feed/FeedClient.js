@@ -137,6 +137,16 @@ function ArticleRenderer({ id, content, title, author, date, keywords }) {
             <div className="prose max-w-none">
                 {mounted && <EditorContent editor={editor} />}
             </div>
+            {content?.is_truncated && (
+                <div className="mt-4">
+                    <NextLink
+                        href={`/public/doc/${id}`}
+                        className="text-cyan-600 font-medium hover:underline text-sm inline-flex items-center gap-1"
+                    >
+                        Read more <ChevronRight className="w-4 h-4" />
+                    </NextLink>
+                </div>
+            )}
         </article>
     )
 }

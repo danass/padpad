@@ -1,7 +1,76 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@vercel/postgres'
 
-// GET: Fetch paginated public articles
+/**
+ * Truncate Tiptap JSON content structurally and internally
+ * @param {Object} json - The Tiptap JSON document
+ * @param {number} maxTopLevelNodes - Max number of top-level blocks to show
+ * @param {number} maxInternalNodes - Max number of internal nodes for complex types (chat, lists)
+ */
+function truncateTiptapJSON(json, maxTopLevelNodes = 10, maxInternalNodes = 4, maxCharsPerNode = 180) {
+    if (!json || !json.content || !Array.isArray(json.content)) return json
+
+    let is_truncated = false
+
+    // 1. Limit top-level blocks
+    let processedContent = json.content
+    if (processedContent.length > maxTopLevelNodes) {
+        processedContent = processedContent.slice(0, maxTopLevelNodes)
+        is_truncated = true
+    }
+
+    // 2. Perform deep truncation on containers and text-heavy nodes
+    const containerTypes = ['chatConversation', 'bulletList', 'orderedList', 'taskList', 'detailsContent']
+
+    processedContent = processedContent.map(node => {
+        // Handle containers
+        if (containerTypes.includes(node.type) && Array.isArray(node.content)) {
+            if (node.content.length > maxInternalNodes) {
+                is_truncated = true
+                return {
+                    ...node,
+                    content: node.content.slice(0, maxInternalNodes)
+                }
+            }
+        }
+
+        // Handle text truncation in paragraphs and other text containers
+        if (['paragraph', 'heading'].includes(node.type) && Array.isArray(node.content)) {
+            let totalChars = 0
+            const truncatedSubContent = []
+            let nodeTruncated = false
+
+            for (const subNode of node.content) {
+                if (subNode.type === 'text' && subNode.text) {
+                    if (totalChars + subNode.text.length > maxCharsPerNode) {
+                        truncatedSubContent.push({
+                            ...subNode,
+                            text: subNode.text.substring(0, maxCharsPerNode - totalChars) + '...'
+                        })
+                        nodeTruncated = true
+                        is_truncated = true
+                        break
+                    }
+                    totalChars += subNode.text.length
+                }
+                truncatedSubContent.push(subNode)
+            }
+
+            if (nodeTruncated) {
+                return { ...node, content: truncatedSubContent }
+            }
+        }
+
+        return node
+    })
+
+    return {
+        ...json,
+        content: processedContent,
+        is_truncated: is_truncated
+    }
+}
+
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url)
@@ -64,7 +133,7 @@ export async function GET(request) {
             }
             return {
                 ...row,
-                content_json: content
+                content_json: truncateTiptapJSON(content)
             }
         })
 
