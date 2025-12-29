@@ -19,6 +19,7 @@ import { TaskList, TaskItem } from '@/lib/editor/task-list-extension'
 import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-extension'
 import { LinkPreview } from '@/lib/editor/link-preview-extension'
 import Emoji from '@tiptap/extension-emoji'
+import { ChatConversation } from '@/lib/editor/chat-extension'
 
 export default function FeaturedArticleRenderer({ content }) {
     const editor = useEditor({
@@ -36,6 +37,7 @@ export default function FeaturedArticleRenderer({ content }) {
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
             Typography, FontFamily, FontSize, LineHeight, Drawing, LinkPreview,
             Emoji.configure({ enableEmoticons: true }),
+            ChatConversation,
         ],
         content: content,
     })

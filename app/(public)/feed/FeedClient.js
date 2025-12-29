@@ -27,6 +27,8 @@ import { Details, DetailsSummary, DetailsContent } from '@/lib/editor/details-ex
 import { LinkPreview } from '@/lib/editor/link-preview-extension'
 import { Video } from '@/lib/editor/video-extension'
 import { Audio } from '@/lib/editor/audio-extension'
+import Emoji from '@tiptap/extension-emoji'
+import { ChatConversation } from '@/lib/editor/chat-extension'
 
 function ArticleRenderer({ id, content, title, author, date, keywords }) {
     const [mounted, setMounted] = useState(false)
@@ -70,6 +72,10 @@ function ArticleRenderer({ id, content, title, author, date, keywords }) {
             LinkPreview,
             Video,
             Audio,
+            Emoji.configure({
+                enableEmoticons: true,
+            }),
+            ChatConversation,
         ],
     })
 
