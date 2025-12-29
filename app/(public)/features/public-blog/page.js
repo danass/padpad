@@ -48,12 +48,8 @@ export default function PublicBlogPage() {
                     </section>
 
                     <section className="grid md:grid-cols-2 gap-12 items-center">
-                        <div className="order-2 md:order-1 bg-gray-50 p-2 rounded-3xl border border-gray-100 flex items-center justify-center overflow-hidden shadow-2xl">
-                            <img
-                                src="/features/showcase/public-blog.png"
-                                alt="Public Blog Presence Example"
-                                className="w-full h-auto rounded-2xl"
-                            />
+                        <div className="order-2 md:order-1 bg-gray-50 aspect-video rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
+                            Blog Layout Preview...
                         </div>
                         <div className="order-1 md:order-2">
                             <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight underline decoration-emerald-400 decoration-4 underline-offset-4">Minimalist Reading</h2>

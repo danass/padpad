@@ -41,12 +41,8 @@ export default function TabsAndDrivePage() {
                                 No more searching through history or reopening files. Your workspace stays exactly how you like it.
                             </p>
                         </div>
-                        <div className="bg-gray-50 p-2 rounded-3xl border border-gray-100 flex items-center justify-center overflow-hidden shadow-2xl">
-                            <img
-                                src="/features/showcase/tabs-and-drive.png"
-                                alt="Textpad Drive and Tabbed Navigation"
-                                className="w-full h-auto rounded-2xl"
-                            />
+                        <div className="bg-gray-50 aspect-video rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
+                            Tabs System Preview...
                         </div>
                     </section>
 

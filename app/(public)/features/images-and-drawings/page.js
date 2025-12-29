@@ -41,12 +41,8 @@ export default function ImagesAndDrawingsPage() {
                                 No external tools needed. Your drawings are saved as native elements, fully responsive and crisp on any device.
                             </p>
                         </div>
-                        <div className="bg-gray-50 p-2 rounded-3xl border border-gray-100 flex items-center justify-center overflow-hidden shadow-lg">
-                            <img
-                                src="/features/showcase/images-and-drawings.png"
-                                alt="Drawing canvas in Textpad"
-                                className="w-full h-auto rounded-2xl"
-                            />
+                        <div className="bg-gray-50 aspect-video rounded-3xl border border-gray-100 flex items-center justify-center italic text-gray-400">
+                            Drawing Canvas Preview...
                         </div>
                     </section>
 

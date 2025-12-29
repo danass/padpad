@@ -24,15 +24,6 @@ export default function RichMediaPage() {
                     </p>
                 </div>
 
-                {/* Showcase Image */}
-                <div className="mb-20 rounded-[3rem] overflow-hidden border border-gray-100 shadow-2xl bg-gray-50 p-2">
-                    <img
-                        src="/features/showcase/rich-media.png"
-                        alt="Rich Media Integration in Textpad"
-                        className="w-full h-auto rounded-[2.5rem]"
-                    />
-                </div>
-
                 {/* Grid of media types */}
                 <div className="grid md:grid-cols-2 gap-12 mb-20">
                     <div className="p-8 bg-gray-50 rounded-3xl border border-gray-100">
