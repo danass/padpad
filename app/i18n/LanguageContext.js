@@ -65,8 +65,8 @@ export function LanguageProvider({ children, initialLocale }) {
       setT(translations[newLocale])
       localStorage.setItem('locale', newLocale)
       document.documentElement.setAttribute('lang', newLocale)
-      // Set cookie for potential server-side usage
-      document.cookie = `locale=${newLocale}; path=/; max-age=31536000; samesite=lax`
+      // Set cookie for potential server-side usage - ensure consistent name
+      document.cookie = `textpad_locale=${newLocale}; path=/; max-age=31536000; samesite=lax`
     }
   }
 

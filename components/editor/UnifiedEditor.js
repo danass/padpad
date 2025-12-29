@@ -140,6 +140,19 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
         setMounted(true)
     }, [])
 
+    // Update placeholder when placeholderText changes
+    useEffect(() => {
+        if (editor && !editor.isDestroyed) {
+            editor.setOptions({
+                extensions: createEditorExtensions({
+                    placeholderText,
+                    onFileDrop: features?.onFileDrop, // Pass other options if needed
+                    onFilePaste: features?.onFilePaste,
+                })
+            })
+        }
+    }, [editor, placeholderText, features?.onFileDrop, features?.onFilePaste])
+
     // Set initial content when editor is ready
     useEffect(() => {
         if (editor && initialContent && !contentSetRef.current) {

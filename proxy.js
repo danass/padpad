@@ -1,7 +1,30 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
 
+const BLOCKED_PATHS = [
+    '/wp-admin',
+    '/wp-login',
+    '/wordpress',
+    '/wp-content',
+    '/wp-includes',
+    '/xmlrpc.php',
+    '/.env',
+    '/.git',
+    '/.well-known',
+    '/phpmyadmin',
+    '/admin/setup-config.php',
+    '/setup-config.php',
+    '/wp-admin/setup-config.php'
+]
+
 export async function proxy(request) {
+    const { pathname, hostname } = request.nextUrl
+
+    // 1. Bot Defense - Block common attack vectors immediately
+    if (BLOCKED_PATHS.some(path => pathname.toLowerCase().startsWith(path))) {
+        return new NextResponse(null, { status: 404 })
+    }
+
     const origin = request.headers.get('origin')
     const allowedOrigins = [
         'https://textpad.cloud',
@@ -53,10 +76,8 @@ export async function proxy(request) {
         })
     }
 
-    const { pathname, hostname } = request.nextUrl
+    // Handle subdomain (e.g., username.textpad.cloud)
     const isLocalhost = hostname === 'localhost' || hostname.includes('127.0.0.1')
-
-    // Check for subdomain (e.g., username.textpad.cloud)
     const textpadMatch = hostname.match(/^([a-z0-9_-]+)\.textpad\.cloud$/i)
     if (!isLocalhost && textpadMatch) {
         const subdomain = textpadMatch[1].toLowerCase()
