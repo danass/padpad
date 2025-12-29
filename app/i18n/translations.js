@@ -203,6 +203,7 @@ export const translations = {
     documentNotFoundDesc: 'The document you are looking for does not exist or has been deleted.',
     accessDenied: 'Access Denied',
     documentPrivate: 'This document is private and cannot be accessed publicly.',
+    documentNotAvailable: 'This document is not available.',
     goHome: 'Go to Home',
     failedToLoad: 'Failed to load',
     failedToUpdate: 'Failed to update',
@@ -470,7 +471,7 @@ export const translations = {
     featureImagesDrawingsDesc: 'Add images, resize them, draw directly in your docs.',
 
     // Disposable/Temp Pad
-    tempPadExpirationBanner: 'This pad will expire in 48 hours.',
+    tempPadExpirationBanner: 'This pad will expire in {time}.',
     makePermanent: 'Save Permanently',
     claimingPad: 'Saving permanently...',
     padClaimed: 'Pad saved successfully!',
@@ -658,6 +659,7 @@ export const translations = {
     documentNotFoundDesc: 'Le document que vous recherchez n\'existe pas ou a été supprimé.',
     accessDenied: 'Accès refusé',
     documentPrivate: 'Ce document est privé et ne peut pas être consulté publiquement.',
+    documentNotAvailable: 'Ce document n\'est pas disponible.',
     goHome: 'Retour à l\'accueil',
     failedToLoad: 'Échec du chargement',
     failedToUpdate: 'Échec de la mise à jour',
@@ -924,7 +926,7 @@ export const translations = {
     featureImagesDrawingsDesc: 'Ajoutez des images, redimensionnez-les, dessinez directement dans vos docs.',
 
     // Disposable/Temp Pad
-    tempPadExpirationBanner: 'Ce pad expirera dans 48 heures.',
+    tempPadExpirationBanner: 'Ce pad expirera dans {time}.',
     makePermanent: 'Rendre permanent',
     claimingPad: 'Sauvegarde permanente...',
     padClaimed: 'Pad sauvegardé avec succès !',
@@ -1106,6 +1108,7 @@ export const translations = {
     documentNotFoundDesc: 'El documento que buscas no existe o ha sido eliminado.',
     accessDenied: 'Acceso denegado',
     documentPrivate: 'Este documento es privado y no puede ser consultado públicamente.',
+    documentNotAvailable: 'Este documento no está disponible.',
     goHome: 'Ir al inicio',
     failedToLoad: 'Error al cargar',
     failedToUpdate: 'Error al actualizar',
@@ -1366,7 +1369,7 @@ export const translations = {
     featureImagesDrawingsDesc: 'Añade imágenes, cámbiales el tamaño, dibuja directamente en tus documentos.',
 
     // Disposable/Temp Pad
-    tempPadExpirationBanner: 'Este pad expirará en 48 horas.',
+    tempPadExpirationBanner: 'Este pad expirará en {time}.',
     makePermanent: 'Guardar permanentemente',
     claimingPad: 'Guardando permanentemente...',
     padClaimed: '¡Pad guardado con éxito!',
@@ -1548,6 +1551,7 @@ export const translations = {
     documentNotFoundDesc: '您查找的文档不存在或已被删除。',
     accessDenied: '访问被拒绝',
     documentPrivate: '此文档为私密文档，无法公开访问。',
+    documentNotAvailable: '此文档不可用。',
     goHome: '返回首页',
     failedToLoad: '加载失败',
     failedToUpdate: '更新失败',
@@ -1808,7 +1812,7 @@ export const translations = {
     featureImagesDrawingsDesc: '添加图像，调整其大小，直接在文档中绘图。',
 
     // Disposable/Temp Pad
-    tempPadExpirationBanner: '此便笺将在 48 小时后过期。',
+    tempPadExpirationBanner: '此便笺将在 {time} 后过期。',
     makePermanent: '永久保存',
     claimingPad: '正在永久保存...',
     padClaimed: '便笺已成功保存！',
@@ -1990,6 +1994,7 @@ export const translations = {
     documentNotFoundDesc: 'Документ, который вы ищете, не существует или был удалён.',
     accessDenied: 'Доступ запрещён',
     documentPrivate: 'Этот документ приватный и недоступен публично.',
+    documentNotAvailable: 'Этот документ недоступен.',
     goHome: 'На главную',
     failedToLoad: 'Ошибка загрузки',
     failedToUpdate: 'Ошибка обновления',
@@ -2250,7 +2255,7 @@ export const translations = {
     featureImagesDrawingsDesc: 'Добавляйте изображения, меняйте их размер, рисуйте прямо в документах.',
 
     // Disposable/Temp Pad
-    tempPadExpirationBanner: 'Этот блокнот удалится через 48 часов.',
+    tempPadExpirationBanner: 'Этот блокнот удалится через {time}.',
     makePermanent: 'Сохранить навсегда',
     claimingPad: 'Сохранение навсегда...',
     padClaimed: 'Блокнот успешно сохранен!',

@@ -146,8 +146,8 @@ export default function TempPadClient({ serverData }) {
                     </h1>
                     <p className="text-gray-600 mb-6">
                         {error === 'Document has expired'
-                            ? t?.tempPadExpirationBanner.replace('48 heures', '0h').replace('48 hours', '0h')
-                            : 'This document is not available.'}
+                            ? t?.tempPadExpirationBanner?.replace('{time}', '0h')
+                            : (t?.documentNotAvailable || 'This document is not available.')}
                     </p>
                     <a href="/" className="inline-block px-4 py-2 bg-black text-white rounded-md">
                         {t?.goHome || 'Go Home'}
@@ -167,7 +167,7 @@ export default function TempPadClient({ serverData }) {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span>
-                            {t?.language === 'fr' ? 'Ce pad expirera dans' : 'This pad will expire in'} <span className="font-bold">{timeLeft || '...'}</span>
+                            {t?.tempPadExpirationBanner?.replace('{time}', timeLeft || '...') || `This pad will expire in ${timeLeft || '...'}`}
                         </span>
                     </div>
                     <button
