@@ -148,8 +148,16 @@ export async function proxy(request) {
         return applyCors(NextResponse.next())
     }
 
-    // Require authentication for all other pages
-    if (!session) {
+    // List of paths that REQUIRE authentication
+    const protectedPaths = [
+        '/drive', '/settings', '/admin', '/documents',
+        '/api/documents', '/api/folders', '/api/users', '/api/admin'
+    ]
+
+    const requiresAuth = protectedPaths.some(path => pathname === path || pathname.startsWith(path + '/'))
+
+    // Require authentication ONLY for protected paths
+    if (requiresAuth && !session) {
         // Return 401 for API routes instead of redirecting
         if (pathname.startsWith('/api/')) {
             return applyCors(new NextResponse(
@@ -163,6 +171,7 @@ export async function proxy(request) {
         return applyCors(NextResponse.redirect(signInUrl))
     }
 
+    // For everything else (including junk URLs), let Next.js handle it (showing 404 if non-existent)
     return applyCors(NextResponse.next())
 }
 

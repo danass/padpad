@@ -34,6 +34,7 @@ import {
 import Tooltip from '@/components/ui/Tooltip'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 import ImportConversationButton from '@/components/toolbar/ImportConversationButton'
+import { getAdminStatus } from '@/lib/auth/adminCache'
 
 const FONT_FAMILIES = [
   'Arial',
@@ -105,18 +106,11 @@ export default function GoogleDocsToolbar({
   useEffect(() => {
     const checkAdmin = async () => {
       if (!session?.user?.email) return
-      try {
-        const res = await fetch('/api/admin/check')
-        if (res.ok) {
-          const data = await res.json()
-          setIsAdmin(data.isAdmin)
-        }
-      } catch (err) {
-        console.error('Error checking admin status:', err)
-      }
+      const adminStatus = await getAdminStatus(session.user.email)
+      setIsAdmin(adminStatus)
     }
     checkAdmin()
-  }, [session])
+  }, [session?.user?.email])
 
   const [lineHeightPosition, setLineHeightPosition] = useState({ top: 0, left: 0 })
   const fontFamilyRef = useRef(null)

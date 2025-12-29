@@ -7,11 +7,10 @@ import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect, useRef } from 'react'
 import Tabs from '@/components/layout/Tabs'
 import { useLanguage } from '@/app/i18n/LanguageContext'
+import { getAdminStatus } from '@/lib/auth/adminCache'
 
-// Cache for admin status and avatar to reduce DB calls
+// Cache for avatar to reduce DB calls
 const headerCache = {
-    adminStatus: null,
-    adminCheckedAt: 0,
     avatar: null,
     avatarLoadedAt: 0,
     userEmail: null,
@@ -55,29 +54,19 @@ export default function UniversalHeader() {
 
     useEffect(() => {
         if (session?.user?.email) {
-            // Reset cache if user changed
+            // reset Ref if user changed
             if (headerCache.userEmail !== session.user.email) {
-                headerCache.adminStatus = null
-                headerCache.adminCheckedAt = 0
                 headerCache.avatar = null
                 headerCache.avatarLoadedAt = 0
                 headerCache.userEmail = session.user.email
                 hasLoadedRef.current = false
             }
 
-            // Only load once per session mount
+            // Load logic
             if (!hasLoadedRef.current) {
                 hasLoadedRef.current = true
                 checkAdminStatus()
                 loadAvatar()
-            } else {
-                // Use cached values if available
-                if (headerCache.adminStatus !== null) {
-                    setIsAdmin(headerCache.adminStatus)
-                }
-                if (headerCache.avatar !== null) {
-                    setCustomAvatar(headerCache.avatar)
-                }
             }
         }
     }, [session?.user?.email])
@@ -101,25 +90,8 @@ export default function UniversalHeader() {
     }
 
     const checkAdminStatus = async () => {
-        const now = Date.now()
-        if (headerCache.adminStatus !== null && (now - headerCache.adminCheckedAt) < headerCache.CACHE_DURATION) {
-            setIsAdmin(headerCache.adminStatus)
-            return
-        }
-
-        try {
-            const response = await fetch('/api/admin/check')
-            if (response.ok) {
-                const data = await response.json()
-                headerCache.adminStatus = data.isAdmin
-                headerCache.adminCheckedAt = now
-                setIsAdmin(data.isAdmin)
-            }
-        } catch (error) {
-            headerCache.adminStatus = false
-            headerCache.adminCheckedAt = now
-            setIsAdmin(false)
-        }
+        const adminStatus = await getAdminStatus(session?.user?.email)
+        setIsAdmin(adminStatus)
     }
 
     // Close menu when clicking outside
