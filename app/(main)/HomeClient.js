@@ -268,6 +268,7 @@ export default function HomeClient({ featuredArticles = [] }) {
                     { q: 'Can I use it as a blog?', a: 'Absolutely. By creating a free account, you can publish any document to your personal subdomain (e.g., yourname.textpad.cloud) instantly.' },
                     { q: 'How does link-based privacy work?', a: 'Until you publish a document to your public blog, it is only accessible via its unique, obfuscated link. We do not index your private drafts or share them with third parties.' },
                     { q: 'Is there a limit to what I can store?', a: 'Local storage and standard cloud saving are unlimited for text. For heavy media and permanence, our IPFS integration provides a robust way to manage larger creative works.' },
+                    { q: 'What can I use Textpad for?', a: 'Textpad is designed to be a versatile online text editor for everything from quick jotting to professional writing. Users find us when searching for a free online notepad, a "bloc-notes en ligne", or a robust online text editor with pictures. Whether you need a simple éditeur de texte en ligne or a platform for permanent text sharing, Textpad is built to scale with your ideas.' },
                   ].map((faq, i) => (
                     <details key={i} className="group py-6">
                       <summary className="flex justify-between items-center cursor-pointer list-none">
@@ -288,9 +289,9 @@ export default function HomeClient({ featuredArticles = [] }) {
                   <div className="absolute top-0 right-0 p-8 opacity-10">
                     <Sparkles className="w-24 h-24 text-cyan-600" />
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-6 underline decoration-cyan-400 decoration-4 underline-offset-8">A legacy for the future</h2>
+                  <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-6 underline decoration-cyan-400 decoration-4 underline-offset-8">The Ultimate Online Notepad</h2>
                   <p className="text-gray-500 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-                    Textpad isn't just a notepad. It's a digital vault. Whether you're drafting the next great novel, sketching out a startup idea, or leaving a digital testament for your loved ones, we ensure your data lives as long as the internet itself.
+                    Textpad is more than just a <strong>free online notepad</strong>. It's a professional <strong>online text editor</strong> tailored for the creative web. Whether you're using it as a <strong>bloc-notes en ligne</strong>, a platform for <strong>text sharing</strong>, or a digital vault for your legacy, we ensure your work is permanent, private, and always yours.
                   </p>
                   <button
                     onClick={() => {
