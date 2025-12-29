@@ -42,7 +42,7 @@ export async function POST(request, { params }) {
        SET user_id = $1, 
            is_disposable = false, 
            expires_at = NULL, 
-           is_public = true,
+           is_public = false,
            updated_at = NOW()
        WHERE id = $2`,
             [userId, id]

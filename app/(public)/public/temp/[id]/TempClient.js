@@ -104,6 +104,38 @@ export default function TempPadClient({ serverData }) {
     }
 
 
+    const [timeLeft, setTimeLeft] = useState('')
+
+    useEffect(() => {
+        if (!document?.expires_at) return
+
+        const timer = setInterval(() => {
+            const now = new Date().getTime()
+            const expires = new Date(document.expires_at).getTime()
+            const distance = expires - now
+
+            if (distance < 0) {
+                clearInterval(timer)
+                setTimeLeft('Expired')
+                window.location.reload() // Or handle expiration UI
+                return
+            }
+
+            const hours = Math.floor(distance / (1000 * 60 * 60))
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
+
+            if (hours > 0) {
+                setTimeLeft(`${hours}h ${minutes}m`)
+            } else {
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000)
+                setTimeLeft(`${minutes}m ${seconds}s`)
+            }
+        }, 1000)
+
+        return () => clearInterval(timer)
+    }, [document?.expires_at])
+
+
     if (error) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -114,7 +146,7 @@ export default function TempPadClient({ serverData }) {
                     </h1>
                     <p className="text-gray-600 mb-6">
                         {error === 'Document has expired'
-                            ? t?.tempPadExpirationBanner.replace('48 hours', '0 hours')
+                            ? t?.tempPadExpirationBanner.replace('48 heures', '0h').replace('48 hours', '0h')
                             : 'This document is not available.'}
                     </p>
                     <a href="/" className="inline-block px-4 py-2 bg-black text-white rounded-md">
@@ -134,7 +166,9 @@ export default function TempPadClient({ serverData }) {
                         <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        {t?.tempPadExpirationBanner || 'This pad will expire in 48 hours.'}
+                        <span>
+                            {t?.language === 'fr' ? 'Ce pad expirera dans' : 'This pad will expire in'} <span className="font-bold">{timeLeft || '...'}</span>
+                        </span>
                     </div>
                     <button
                         onClick={handleClaim}

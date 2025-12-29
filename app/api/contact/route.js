@@ -22,6 +22,15 @@ export async function POST(request) {
             )
         }
 
+        // Check if SMTP is configured
+        if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+            console.error('SMTP credentials not configured. SMTP_USER or SMTP_PASS missing.')
+            return NextResponse.json(
+                { error: 'Email service is not configured. Please contact support directly at daniel@textpad.cloud' },
+                { status: 503 }
+            )
+        }
+
         // Create transporter
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -32,6 +41,17 @@ export async function POST(request) {
                 pass: process.env.SMTP_PASS,
             },
         })
+
+        // Verify transporter configuration
+        try {
+            await transporter.verify()
+        } catch (verifyError) {
+            console.error('SMTP verification failed:', verifyError)
+            return NextResponse.json(
+                { error: 'Email service configuration error. Please contact support directly at daniel@textpad.cloud' },
+                { status: 503 }
+            )
+        }
 
         // Send email
         await transporter.sendMail({
@@ -97,8 +117,13 @@ Sent from TextPad Contact Form
         return NextResponse.json({ success: true })
     } catch (error) {
         console.error('Contact form error:', error)
+        console.error('Error details:', {
+            message: error.message,
+            code: error.code,
+            command: error.command
+        })
         return NextResponse.json(
-            { error: 'Failed to send message. Please try again later.' },
+            { error: 'Failed to send message. Please try again later or contact support directly at daniel@textpad.cloud' },
             { status: 500 }
         )
     }

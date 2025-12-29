@@ -1,21 +1,14 @@
 import { sql } from '@vercel/postgres'
 import { auth } from '@/auth'
+import { isAdmin } from '@/lib/auth/isAdmin'
 
 export async function GET(request) {
     try {
         const session = await auth()
 
         // Check if user is admin
-        if (!session?.user?.email) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 })
-        }
-
-        const userResult = await sql.query(
-            'SELECT isAdmin FROM users WHERE email = $1',
-            [session.user.email]
-        )
-
-        if (userResult.rows.length === 0 || !userResult.rows[0].isadmin) {
+        const admin = await isAdmin()
+        if (!admin) {
             return Response.json({ error: 'Forbidden' }, { status: 403 })
         }
 

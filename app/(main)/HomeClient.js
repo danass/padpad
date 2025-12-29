@@ -175,7 +175,7 @@ export default function HomeClient({ featuredArticles = [] }) {
                 showFloatingMenu: true,
                 showContextMenu: true,
                 showIpfsBrowser: true,
-                showSaveButton: !session,
+                showSaveButton: true,
                 saveButtonIconOnly: true
               }}
               className="font-['DM_Sans',sans-serif] min-h-[70vh] md:min-h-[500px] pb-24 md:pb-8"
