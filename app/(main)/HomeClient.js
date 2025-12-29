@@ -200,7 +200,7 @@ export default function HomeClient({ featuredArticles = [] }) {
                 </p>
               </div>
 
-              {/* Why use Textpad */}
+              {/* Why use Textpad (The Textpad Edge) */}
               <div className="max-w-6xl mx-auto px-4">
                 <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-16 tracking-tight">
                   The Textpad Edge
@@ -226,6 +226,28 @@ export default function HomeClient({ featuredArticles = [] }) {
                       </div>
                     </NextLink>
                   ))}
+                </div>
+              </div>
+
+              {/* Legacy Mid-Break */}
+              <div className="max-w-6xl mx-auto px-4">
+                <div className="bg-white rounded-3xl p-8 md:p-16 text-center border border-gray-100 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-8 opacity-10">
+                    <Sparkles className="w-24 h-24 text-cyan-600" />
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-6 underline decoration-cyan-400 decoration-4 underline-offset-8">A legacy for the future</h2>
+                  <p className="text-gray-500 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+                    Textpad is built for permanence. Whether you're drafting a quick thought to IPFS or building a lifelong digital testament to be discovered by future generations, our tools ensure your words survive the test of time.
+                  </p>
+                  <button
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                      editorRef.current?.focus()
+                    }}
+                    className="px-8 py-4 bg-gray-900 text-white rounded-xl font-medium hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+                  >
+                    Create Your First Note
+                  </button>
                 </div>
               </div>
 
@@ -283,31 +305,21 @@ export default function HomeClient({ featuredArticles = [] }) {
                 </div>
               </div>
 
-              {/* Effortless note-taking */}
-              <div className="max-w-6xl mx-auto px-4">
-                <div className="bg-white rounded-3xl p-8 md:p-16 text-center border border-gray-100 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-8 opacity-10">
-                    <Sparkles className="w-24 h-24 text-cyan-600" />
-                  </div>
-                  <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-6 underline decoration-cyan-400 decoration-4 underline-offset-8">The Ultimate Online Notepad</h2>
-                  <p className="text-gray-500 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-                    Textpad is more than just a <strong>free online notepad</strong>. It's a professional <strong>online text editor</strong> tailored for the creative web. Whether you're using it as a <strong>bloc-notes en ligne</strong>, a platform for <strong>text sharing</strong>, or a digital vault for your legacy, we ensure your work is permanent, private, and always yours.
-                  </p>
-                  <button
-                    onClick={() => {
-                      if (initialContent) {
-                        // If already has content, just scroll up
-                        window.scrollTo({ top: 0, behavior: 'smooth' })
-                      } else {
-                        // Otherwise focus editor (it will be at the top)
-                        editorRef.current?.focus()
-                      }
-                    }}
-                    className="px-8 py-4 bg-gray-900 text-white rounded-xl font-medium hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
-                  >
-                    Create Your First Note
-                  </button>
-                </div>
+              {/* Final CTA */}
+              <div className="text-center py-20 bg-gradient-to-br from-gray-50 to-cyan-50/30 rounded-[4rem] border border-gray-100 max-w-6xl mx-auto px-4">
+                <h2 className="text-4xl md:text-5xl font-medium text-gray-900 mb-6 tracking-tight">
+                  Ready to write for the permanent web?
+                </h2>
+                <p className="text-gray-500 text-lg mb-10 font-normal">Start your creative journey on Textpad today.</p>
+                <button
+                  onClick={() => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                    editorRef.current?.focus()
+                  }}
+                  className="px-12 py-5 bg-gray-900 text-white font-medium rounded-2xl hover:bg-gray-800 active:scale-95 transition-all text-xl shadow-xl hover:shadow-cyan-100"
+                >
+                  Create Your First Note
+                </button>
               </div>
             </div>
           )}
