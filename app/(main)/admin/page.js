@@ -15,6 +15,7 @@ export default function AdminPage() {
   const [stats, setStats] = useState(null)
   const [documents, setDocuments] = useState([])
   const [users, setUsers] = useState([])
+  const [tempDocs, setTempDocs] = useState([])
   const [activeTab, setActiveTab] = useState('stats')
   const [documentsPage, setDocumentsPage] = useState(1)
   const [documentsTotalPages, setDocumentsTotalPages] = useState(1)
@@ -36,6 +37,12 @@ export default function AdminPage() {
       loadDocuments()
     }
   }, [isAdmin, activeTab, documentsPage])
+
+  useEffect(() => {
+    if (isAdmin && activeTab === 'temp') {
+      loadTempDocs()
+    }
+  }, [isAdmin, activeTab])
 
   const checkAdminStatus = async () => {
     if (!session?.user?.email) {
@@ -98,6 +105,18 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error('Error loading users:', error)
+    }
+  }
+
+  const loadTempDocs = async () => {
+    try {
+      const response = await fetch('/api/admin/temp-docs')
+      if (response.ok) {
+        const data = await response.json()
+        setTempDocs(data.documents)
+      }
+    } catch (error) {
+      console.error('Error loading temp documents:', error)
     }
   }
 
@@ -173,6 +192,15 @@ export default function AdminPage() {
                 }`}
             >
               {t?.usersAndAdmins || 'Users & Admins'}
+            </button>
+            <button
+              onClick={() => setActiveTab('temp')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'temp'
+                ? 'border-gray-900 text-gray-900'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+            >
+              Temp Pads
             </button>
           </nav>
         </div>
@@ -359,6 +387,82 @@ export default function AdminPage() {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Temp Pads Tab */}
+        {activeTab === 'temp' && (
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Temporary Documents</h2>
+              <p className="text-sm text-gray-500 mt-1">Disposable documents that expire after 48 hours</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time Left</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {tempDocs.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-8 text-center text-sm text-gray-500">
+                        No temporary documents found
+                      </td>
+                    </tr>
+                  ) : (
+                    tempDocs.map((doc) => {
+                      const expiresAt = new Date(doc.expires_at)
+                      const now = new Date()
+                      const timeLeft = Math.max(0, expiresAt - now)
+                      const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60))
+                      const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60))
+
+                      return (
+                        <tr key={doc.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-xs font-mono text-gray-600">{doc.id.substring(0, 8)}...</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-900 max-w-xs truncate">{doc.title || 'Untitled'}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">
+                              {new Date(doc.created_at).toLocaleString()}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">
+                              {expiresAt.toLocaleString()}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className={`text-sm font-medium ${hoursLeft < 6 ? 'text-red-600' : 'text-gray-900'}`}>
+                              {hoursLeft}h {minutesLeft}m
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <Link
+                              href={`/public/temp/${doc.id}`}
+                              className="text-sm text-blue-600 hover:text-blue-800"
+                              target="_blank"
+                            >
+                              View
+                            </Link>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
