@@ -823,6 +823,7 @@ export default function GoogleDocsToolbar({
                   top: `${fontFamilyPosition.top}px`,
                   left: `${fontFamilyPosition.left}px`
                 }}
+                onMouseDown={(e) => e.stopPropagation()}
                 onKeyDown={(e) => {
                   if (e.key === 'ArrowDown') {
                     e.preventDefault()
@@ -850,7 +851,6 @@ export default function GoogleDocsToolbar({
                     key={font}
                     onClick={() => {
                       handleFontFamilyChange(font)
-                      setShowFontFamily(false)
                       setSelectedFontIndex(-1)
                     }}
                     className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between ${index === selectedFontIndex ? 'bg-blue-50' : ''
