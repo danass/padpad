@@ -6,8 +6,6 @@ import UnifiedEditor from '@/components/editor/UnifiedEditor'
 import HistoryPanel from '@/components/editor/HistoryPanel'
 import { useEditorStore } from '@/store/editorStore'
 import { useToast } from '@/components/ui/toast'
-import { replayHistory } from '@/lib/editor/history-replay'
-import { calculateDiff } from '@/lib/editor/prosemirror-diff'
 
 export default function DocumentPage() {
   const params = useParams()
@@ -95,28 +93,21 @@ export default function DocumentPage() {
 
       setSaving(true)
       try {
-        const version = useEditorStore.getState().currentVersion
-        const diff = calculateDiff(null, contentToSave)
-
-        const eventResponse = await fetch(`/api/documents/${documentId}/events`, {
+        const snapshotResponse = await fetch(`/api/documents/${documentId}/snapshot`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: diff.type || 'meta',
-            payload: diff.payload || { content: contentToSave },
-            version
-          })
+          body: JSON.stringify({ content_json: contentToSave })
         })
 
-        if (eventResponse.ok) {
+        if (snapshotResponse.ok) {
           lastSavedContentRef.current = contentToSaveStr
           markSaved()
           setHasChanges(false)
           hasChangesRef.current = false
         } else {
-          console.error('Autosave failed:', eventResponse.status)
+          console.error('Autosave failed:', snapshotResponse.status)
           // If auth error, redirect
-          if (eventResponse.status === 401 || eventResponse.status === 403) {
+          if (snapshotResponse.status === 401 || snapshotResponse.status === 403) {
             router.push('/login')
           }
         }
@@ -483,7 +474,7 @@ export default function DocumentPage() {
         }
 
         const data = await response.json()
-        const { document, snapshot, events, isOwner: ownerFlag, isAdmin: adminFlag, isCurator: curatorFlag } = data
+        const { document, snapshot, isOwner: ownerFlag, isAdmin: adminFlag, isCurator: curatorFlag } = data
 
         setCurrentDocument(document)
         setTitle(document.title)
@@ -495,8 +486,16 @@ export default function DocumentPage() {
         setIsCurator(curatorFlag || adminFlag || false)
         setKeywords(document.keywords || [])
 
-        // Reconstruct content using replayHistory
-        let content = replayHistory(snapshot, events)
+        // Get content from snapshot
+        let content = snapshot?.content_json || { type: 'doc', content: [] }
+        if (typeof content === 'string') {
+          try {
+            content = JSON.parse(content)
+          } catch (e) {
+            console.error('Error parsing snapshot content:', e)
+            content = { type: 'doc', content: [] }
+          }
+        }
 
         // Helper to check if content is essentially empty
         const isEssentiallyEmpty = (c) => {
@@ -606,8 +605,8 @@ export default function DocumentPage() {
         setKeywords(document.keywords || [])
 
         // Initialize state for editor
-        const maxVersion = events.reduce((max, e) => Math.max(max, e.version || 0), snapshot?.version || 0)
-        setCurrentDocument(document, content, maxVersion)
+        const version = snapshot?.version || 0
+        setCurrentDocument(document, content, version)
 
         const contentStr = JSON.stringify(content)
         lastSavedContentRef.current = contentStr

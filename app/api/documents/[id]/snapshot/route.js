@@ -206,19 +206,7 @@ export async function POST(request, { params }) {
       [snapshotId, content_text, word_count, char_count, id]
     )
 
-    // Prune events: once a snapshot is created, we don't need the prior events 
-    // to reconstruct current state, as the snapshot is the new base.
-    // This significantly reduces database bloat.
-    const pruneResult = await sql.query(
-      'DELETE FROM document_events WHERE document_id = $1 AND created_at <= $2',
-      [id, snapshotResult.rows[0].created_at]
-    )
-
-    if (pruneResult.rowCount > 0) {
-      console.log(`[SNAPSHOT] Pruned ${pruneResult.rowCount} events for document ${id}`)
-    }
-
-    return Response.json({ snapshot: snapshotResult.rows[0], prunedEvents: pruneResult.rowCount }, { status: 201 })
+    return Response.json({ snapshot: snapshotResult.rows[0] }, { status: 201 })
   } catch (error) {
     console.error('Error creating snapshot:', error)
     return Response.json({ error: error.message }, { status: 500 })

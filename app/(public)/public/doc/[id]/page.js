@@ -1,5 +1,4 @@
 import { sql } from '@vercel/postgres'
-import { replayHistory } from '@/lib/editor/history-replay'
 import { auth } from '@/auth'
 import { cache } from 'react'
 import PublicDocumentClient from './client'
@@ -65,30 +64,16 @@ const getDocumentData = cache(async (documentId) => {
       }
     }
 
-    // Get events after snapshot (or all events if no snapshot)
-    let events = []
-    if (snapshot) {
-      const eventsResult = await sql.query(
-        'SELECT * FROM document_events WHERE document_id = $1 AND created_at > $2 ORDER BY version ASC, created_at ASC',
-        [documentId, snapshot.created_at]
-      )
-      events = eventsResult.rows.map(event => ({
-        ...event,
-        payload: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload
-      }))
-    } else {
-      const eventsResult = await sql.query(
-        'SELECT * FROM document_events WHERE document_id = $1 ORDER BY version ASC, created_at ASC',
-        [documentId]
-      )
-      events = eventsResult.rows.map(event => ({
-        ...event,
-        payload: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload
-      }))
+    // Get content from snapshot
+    let content = snapshot?.content_json || { type: 'doc', content: [] }
+    if (typeof content === 'string') {
+      try {
+        content = JSON.parse(content)
+      } catch (e) {
+        console.error('Error parsing snapshot content:', e)
+        content = { type: 'doc', content: [] }
+      }
     }
-
-    // Reconstruct content
-    const content = replayHistory(snapshot, events)
 
     // Get navigation (prev/next public docs from same user)
     let navigation = { prev: null, next: null }

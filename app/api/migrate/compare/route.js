@@ -11,7 +11,7 @@ export async function GET() {
       functions: {},
       triggers: {}
     }
-    
+
     // Check UUID extension
     try {
       const extResult = await sql.query(
@@ -23,9 +23,9 @@ export async function GET() {
     } catch (error) {
       console.error('Error checking extension:', error)
     }
-    
+
     // Check tables
-    const tablesToCheck = ['folders', 'documents', 'document_snapshots', 'document_events', 'users']
+    const tablesToCheck = ['folders', 'documents', 'document_snapshots', 'users']
     for (const table of tablesToCheck) {
       try {
         const result = await sql.query(
@@ -37,7 +37,7 @@ export async function GET() {
           [table]
         )
         checks.tables[table] = result.rows[0].exists
-        
+
         // If table exists, check columns
         if (result.rows[0].exists) {
           const columnsResult = await sql.query(
@@ -57,12 +57,11 @@ export async function GET() {
         checks.tables[table] = false
       }
     }
-    
+
     // Check indexes
     const indexesToCheck = [
       'idx_documents_folder_id',
       'idx_documents_updated_at',
-      'idx_document_events_document_version',
       'idx_document_snapshots_document_created',
       'idx_folders_parent_id',
       'idx_documents_content_text_search',
@@ -86,7 +85,7 @@ export async function GET() {
         checks.indexes[index] = false
       }
     }
-    
+
     // Check constraint fk_current_snapshot
     try {
       const result = await sql.query(
@@ -99,7 +98,7 @@ export async function GET() {
     } catch (error) {
       checks.constraints.fk_current_snapshot = false
     }
-    
+
     // Check function update_updated_at_column
     try {
       const result = await sql.query(
@@ -112,7 +111,7 @@ export async function GET() {
     } catch (error) {
       checks.functions.update_updated_at_column = false
     }
-    
+
     // Check triggers
     const triggersToCheck = [
       'update_documents_updated_at',
@@ -132,21 +131,20 @@ export async function GET() {
         checks.triggers[trigger] = false
       }
     }
-    
+
     // Determine if migration is needed
     const allTablesExist = tablesToCheck.every(t => checks.tables[t] === true)
     const allIndexesExist = indexesToCheck.every(i => checks.indexes[i] === true)
     const allTriggersExist = triggersToCheck.every(t => checks.triggers[t] === true)
-    
+
     // Check required columns
     const requiredColumns = {
       documents: ['id', 'title', 'folder_id', 'created_at', 'updated_at', 'current_snapshot_id', 'content_text', 'user_id', 'auto_public_date', 'is_public', 'is_full_width'],
       folders: ['id', 'name', 'parent_id', 'created_at', 'updated_at', 'user_id'],
       document_snapshots: ['id', 'document_id', 'content_json', 'content_text', 'created_at'],
-      document_events: ['id', 'document_id', 'type', 'payload', 'version', 'created_at'],
       users: ['id', 'birth_date', 'testament_slug', 'testament_username', 'avatar_url', 'created_at', 'updated_at']
     }
-    
+
     let allColumnsExist = true
     for (const [table, columns] of Object.entries(requiredColumns)) {
       if (!checks.columns[table]) {
@@ -162,7 +160,7 @@ export async function GET() {
       }
       if (!allColumnsExist) break
     }
-    
+
     const needsMigration = !(
       checks.extension &&
       allTablesExist &&
@@ -172,7 +170,7 @@ export async function GET() {
       checks.functions.update_updated_at_column &&
       allColumnsExist
     )
-    
+
     return Response.json({
       needsMigration,
       checks,
@@ -188,9 +186,9 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Error comparing schema:', error)
-    return Response.json({ 
+    return Response.json({
       needsMigration: true,
-      error: error.message 
+      error: error.message
     })
   }
 }

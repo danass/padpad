@@ -3,9 +3,9 @@ import { sql } from '@vercel/postgres'
 export async function GET() {
   try {
     // Check if main tables exist
-    const tablesToCheck = ['documents', 'folders', 'document_snapshots', 'document_events']
+    const tablesToCheck = ['documents', 'folders', 'document_snapshots']
     const existingTables = []
-    
+
     for (const table of tablesToCheck) {
       try {
         const result = await sql.query(
@@ -24,11 +24,11 @@ export async function GET() {
         console.error(`Error checking table ${table}:`, error)
       }
     }
-    
+
     // If all main tables exist, database is already set up
     const isSetup = existingTables.length === tablesToCheck.length
-    
-    return Response.json({ 
+
+    return Response.json({
       isSetup,
       existingTables,
       needsMigration: !isSetup
@@ -36,7 +36,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error checking database setup:', error)
     // If we can't check, assume it needs migration
-    return Response.json({ 
+    return Response.json({
       isSetup: false,
       existingTables: [],
       needsMigration: true

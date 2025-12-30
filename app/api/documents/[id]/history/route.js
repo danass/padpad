@@ -38,10 +38,8 @@ export async function GET(request, { params }) {
     const { searchParams } = new URL(request.url)
     const before = searchParams.get('before') // ISO timestamp
 
-    let query = `
-      SELECT * FROM document_events
-      WHERE document_id = $1
-    `
+    // Get snapshots - newest first
+    let query = `SELECT * FROM document_snapshots WHERE document_id = $1`
     const params_array = [id]
 
     if (before) {
@@ -49,17 +47,9 @@ export async function GET(request, { params }) {
       params_array.push(before)
     }
 
-    query += ' ORDER BY version ASC'
+    query += ' ORDER BY created_at DESC'
 
-    const result = await sql.query(query, params_array)
-
-    // Also get snapshots - newest first
-    const snapshotsResult = await sql.query(
-      `SELECT * FROM document_snapshots
-       WHERE document_id = $1
-       ORDER BY created_at DESC`,
-      [id]
-    )
+    const snapshotsResult = await sql.query(query, params_array)
 
     // Parse content_json for snapshots if it's a string
     const snapshots = snapshotsResult.rows.map(snapshot => {
@@ -74,7 +64,6 @@ export async function GET(request, { params }) {
     })
 
     return Response.json({
-      events: result.rows,
       snapshots: snapshots
     })
   } catch (error) {
@@ -95,7 +84,7 @@ export async function DELETE(request, { params }) {
 
     // Verify document exists and check ownership
     let docCheck = await sql.query(
-      'SELECT id, user_id FROM documents WHERE id = $1',
+      'SELECT id, user_id, current_snapshot_id FROM documents WHERE id = $1',
       [id]
     )
 
@@ -108,19 +97,21 @@ export async function DELETE(request, { params }) {
       return Response.json({ error: 'Document not found' }, { status: 404 })
     }
 
-    // Delete all events for this document
+    // Delete all snapshots EXCEPT the current one
     const result = await sql.query(
-      'DELETE FROM document_events WHERE document_id = $1',
-      [id]
+      `DELETE FROM document_snapshots 
+       WHERE document_id = $1 
+       AND id != $2`,
+      [id, doc.current_snapshot_id]
     )
 
     return Response.json({
       success: true,
       count: result.rowCount,
-      message: `Successfully cleared ${result.rowCount} events`
+      message: `Successfully cleared ${result.rowCount} old snapshots`
     })
   } catch (error) {
-    console.error('Error clearing history events:', error)
+    console.error('Error clearing history snapshots:', error)
     return Response.json({ error: error.message }, { status: 500 })
   }
 }

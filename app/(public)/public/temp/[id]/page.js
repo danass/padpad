@@ -1,5 +1,4 @@
 import { sql } from '@vercel/postgres'
-import { replayHistory } from '@/lib/editor/history-replay'
 import { cache } from 'react'
 import TempPadClient from './TempClient'
 
@@ -49,16 +48,11 @@ const getTempDocumentData = cache(async (documentId) => {
                     try { snapshot.content_json = JSON.parse(snapshot.content_json) } catch (e) { }
                 }
 
-                const eventsResult = await sql.query(
-                    'SELECT * FROM document_events WHERE document_id = $1 AND created_at > $2 ORDER BY created_at ASC',
-                    [documentId, snapshot.created_at]
-                )
-                const events = eventsResult.rows.map(event => ({
-                    ...event,
-                    payload: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload
-                }))
-
-                content = replayHistory(snapshot, events)
+                if (snapshot.content_json) {
+                    content = snapshot.content_json
+                } else {
+                    content = { type: 'doc', content: [] }
+                }
             }
         }
 

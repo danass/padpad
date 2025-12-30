@@ -8,13 +8,13 @@ export async function GET() {
     if (!admin) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
-    
+
     // Get total documents count
     const docsResult = await sql.query(
       'SELECT COUNT(*) as count FROM documents'
     )
     const totalDocuments = parseInt(docsResult.rows[0].count)
-    
+
     // Get documents by user
     const docsByUserResult = await sql.query(
       `SELECT 
@@ -24,7 +24,7 @@ export async function GET() {
        GROUP BY user_id
        ORDER BY count DESC`
     )
-    
+
     // Get total unique users
     const usersResult = await sql.query(
       `SELECT COUNT(DISTINCT user_id) as count 
@@ -32,19 +32,14 @@ export async function GET() {
        WHERE user_id IS NOT NULL`
     )
     const totalUsers = parseInt(usersResult.rows[0].count)
-    
+
     // Get total snapshots
     const snapshotsResult = await sql.query(
       'SELECT COUNT(*) as count FROM document_snapshots'
     )
     const totalSnapshots = parseInt(snapshotsResult.rows[0].count)
-    
-    // Get total events
-    const eventsResult = await sql.query(
-      'SELECT COUNT(*) as count FROM document_events'
-    )
-    const totalEvents = parseInt(eventsResult.rows[0].count)
-    
+
+
     // Get recent documents (last 7 days)
     const recentDocsResult = await sql.query(
       `SELECT COUNT(*) as count 
@@ -52,12 +47,11 @@ export async function GET() {
        WHERE created_at > NOW() - INTERVAL '7 days'`
     )
     const recentDocuments = parseInt(recentDocsResult.rows[0].count)
-    
+
     return Response.json({
       totalDocuments,
       totalUsers,
       totalSnapshots,
-      totalEvents,
       recentDocuments,
       documentsByUser: docsByUserResult.rows
     })

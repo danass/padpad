@@ -85,39 +85,9 @@ export async function GET(request, { params }) {
       }
     }
 
-
-    // Get events after snapshot (or all events if no snapshot)
-    let events = []
-    if (snapshot) {
-      const eventsResult = await sql.query(
-        `SELECT * FROM document_events 
-         WHERE document_id = $1 AND created_at > $2
-         ORDER BY version ASC`,
-        [id, snapshot.created_at]
-      )
-      // Parse payload if it's a string
-      events = eventsResult.rows.map(event => ({
-        ...event,
-        payload: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload
-      }))
-    } else {
-      const eventsResult = await sql.query(
-        `SELECT * FROM document_events 
-         WHERE document_id = $1
-         ORDER BY version ASC`,
-        [id]
-      )
-      // Parse payload if it's a string
-      events = eventsResult.rows.map(event => ({
-        ...event,
-        payload: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload
-      }))
-    }
-
     return Response.json({
       document,
       snapshot,
-      events,
       isOwner: document.user_id === userId,
       isAdmin: admin,
       isCurator: curator
