@@ -12,7 +12,7 @@ export async function GET() {
     // Get all unique users with their document counts and roles
     const result = await sql.query(
       `SELECT 
-         COALESCE(d.user_id, u.id, 'No user') as email,
+         u.id as email,
          u.role,
          COUNT(DISTINCT d.id) as document_count,
          MAX(d.updated_at) as last_activity,
