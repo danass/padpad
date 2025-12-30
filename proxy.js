@@ -154,7 +154,7 @@ export async function proxy(request) {
         '/api/public', '/online-text-editor', '/features',
         '/featured', '/robots.txt', '/sitemap.xml', '/privacy', '/terms', '/credits',
         '/fr', '/en', '/feed', '/api/feed', '/api/documents', '/api/ipfs', '/api/unfurl', '/api/contact',
-        '/api/debug/doc'
+        '/api/debug/doc', '/api/cron'
     ]
 
     if (publicPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
