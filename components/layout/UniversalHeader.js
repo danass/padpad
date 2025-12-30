@@ -177,8 +177,8 @@ export default function UniversalHeader() {
                         </Link>
 
                         <nav className="hidden md:flex items-center gap-6">
-                            <Link href="/feed" prefetch={false} className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/feed' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeed || 'Feed'}</Link>
-                            <Link href="/featured" prefetch={false} className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/featured' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeatured || 'Featured'}</Link>
+                            <Link href="/feed" prefetch={false} title={t?.navFeed || 'Feed'} className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/feed' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeed || 'Feed'}</Link>
+                            <Link href="/featured" prefetch={false} title={t?.navFeatured || 'Featured'} className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/featured' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeatured || 'Featured'}</Link>
                         </nav>
                     </div>
 
@@ -239,8 +239,8 @@ export default function UniversalHeader() {
 
                                     {showUserMenu && (
                                         <div className="absolute right-0 mt-2 w-48 md:w-56 bg-white border border-gray-200 rounded-md shadow-lg z-20 py-1">
-                                            <Link href="/settings" onClick={() => setShowUserMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</Link>
-                                            {isAdmin && <Link href="/admin" onClick={() => setShowUserMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Admin</Link>}
+                                            <Link href="/settings" title="Settings" onClick={() => setShowUserMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</Link>
+                                            {isAdmin && <Link href="/admin" title="Admin Dashboard" onClick={() => setShowUserMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Admin</Link>}
                                             <div className="border-t border-gray-200 my-1" />
                                             <button onClick={() => { setShowUserMenu(false); localStorage.removeItem('openTabs'); signOut({ callbackUrl: '/' }); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</button>
                                         </div>
@@ -248,7 +248,7 @@ export default function UniversalHeader() {
                                 </div>
                             </>
                         ) : pathname !== '/auth/signin' && (
-                            <Link href="/auth/signin" className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium">Sign in</Link>
+                            <Link href="/auth/signin" title="Sign in" className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium">Sign in</Link>
                         )}
                     </div>
                 </div>

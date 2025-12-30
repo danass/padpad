@@ -157,7 +157,7 @@ export default function HomeClient({ featuredArticles = [] }) {
     <>
       <SEOKeywords keywords={keywords} />
       <main className="min-h-screen bg-white">
-        <h1 className="absolute opacity-0 pointer-events-none">Blocnote Online - Textpad Online Text Editor with Pictures</h1>
+        <h1 className="absolute opacity-0 pointer-events-none">Textpad – The Permanent Notepad for the Creative Web</h1>
         <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-8">
 
           {mounted && (
@@ -216,7 +216,7 @@ export default function HomeClient({ featuredArticles = [] }) {
                     { icon: <History className="w-5 h-5" />, title: 'Infinite History', desc: 'Travel back in time with automatic backups and a deep event logs of every character change.', href: '/features/version-history' },
                     { icon: <Shield className="w-5 h-5" />, title: 'Link-Based Privacy', desc: 'Your work is private by default, shared only via unique links or your public digital archive.', href: '/features/shareable-links' },
                   ].map((feature, i) => (
-                    <NextLink key={i} href={feature.href} className="group flex flex-col gap-4 p-4 -m-4 rounded-2xl hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all">
+                    <NextLink key={i} href={feature.href} title={feature.title} className="group flex flex-col gap-4 p-4 -m-4 rounded-2xl hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all">
                       <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-gray-600 border border-gray-100 group-hover:bg-cyan-50 group-hover:text-cyan-600 transition-colors">
                         {feature.icon}
                       </div>
