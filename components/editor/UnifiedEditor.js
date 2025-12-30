@@ -40,6 +40,7 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
     hasChanges = false,
     features = {},
     placeholderText = 'Tell your story...',
+    placeholderTitle = 'Title',
     className = '',
     onEditorReady,
 }, ref) {
@@ -51,6 +52,8 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
         showIpfsBrowser = false,
         showSaveButton = true,
         saveButtonIconOnly = false,
+        onFileDrop,
+        onFilePaste,
     } = features
 
     const [mounted, setMounted] = useState(false)
@@ -69,7 +72,12 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
     const editor = useEditor({
         immediatelyRender: false,
         autofocus: 'end',
-        extensions: createEditorExtensions({ placeholderText }),
+        extensions: createEditorExtensions({
+            placeholderText,
+            placeholderTitle,
+            onFileDrop: features?.onFileDrop,
+            onFilePaste: features?.onFilePaste,
+        }),
         content: null,
         editable,
         editorProps: {
@@ -140,18 +148,28 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
         setMounted(true)
     }, [])
 
-    // Update placeholder when placeholderText changes
+    // Update placeholder when placeholderText or placeholderTitle changes
     useEffect(() => {
         if (editor && !editor.isDestroyed) {
+            // Update the placeholder extension options specifically
             editor.setOptions({
-                extensions: createEditorExtensions({
-                    placeholderText,
-                    onFileDrop: features?.onFileDrop, // Pass other options if needed
-                    onFilePaste: features?.onFilePaste,
-                })
+                placeholder: {
+                    placeholder: ({ node }) => {
+                        if (node.type.name === 'heading') {
+                            return placeholderTitle
+                        }
+                        return placeholderText
+                    }
+                }
             })
+
+            // Force a view update to refresh the placeholder decorations
+            // We use a small hack to trigger Prosemirror's decoration recalculation
+            const { state } = editor
+            const { tr } = state
+            editor.view.dispatch(tr.setMeta('addToHistory', false))
         }
-    }, [editor, placeholderText, features?.onFileDrop, features?.onFilePaste])
+    }, [editor, placeholderText, placeholderTitle])
 
     // Set initial content when editor is ready
     useEffect(() => {
@@ -342,7 +360,10 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
                     }
                 }}
             >
-                <EditorContent editor={editor} />
+                <EditorContent
+                    key={`${placeholderText}-${placeholderTitle}-${onFileDrop ? 'drop' : 'no-drop'}`}
+                    editor={editor}
+                />
 
                 {/* Bubble Menu - Disabled for now
                 {showBubbleMenu && editor && (

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { HardDrive, Sparkles, Layout, PenTool, History, Palette, Shield, ChevronDown, Users, Users2 } from 'lucide-react'
+import { HardDrive, Sparkles, Layout, PenTool, History, Palette, Shield, ChevronDown, Users, Users2, UserMinus } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import NextLink from 'next/link'
@@ -157,11 +157,12 @@ export default function HomeClient({ featuredArticles = [] }) {
     <>
       <SEOKeywords keywords={keywords} />
       <main className="min-h-screen bg-white">
-        <h1 className="absolute opacity-0 pointer-events-none">Textpad – The Permanent Notepad for the Creative Web</h1>
+        <h1 className="absolute opacity-0 pointer-events-none">{t?.homeTitle || 'Textpad – The Permanent Notepad for the Creative Web'}</h1>
         <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-8">
 
           {mounted && (
             <UnifiedEditor
+              key={`${t?.editorPlaceholder}-${t?.editorPlaceholderTitle}`}
               ref={editorRef}
               initialContent={initialContent}
               onUpdate={handleUpdate}
@@ -169,6 +170,7 @@ export default function HomeClient({ featuredArticles = [] }) {
               saving={saving}
               hasChanges={hasContent}
               placeholderText={t?.editorPlaceholder || 'Tell your story...'}
+              placeholderTitle={t?.editorPlaceholderTitle || 'Title'}
               features={{
                 showToolbar: true,
                 showBubbleMenu: true,
@@ -193,28 +195,29 @@ export default function HomeClient({ featuredArticles = [] }) {
                   </div>
                 </div>
                 <h2 className="text-4xl md:text-6xl font-medium tracking-tight text-gray-900 mb-6 leading-[1.1]">
-                  The Permanent Notepad for the <span className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-600 bg-clip-text text-transparent">Creative Web</span>
+                  {t?.heroTitlePart1 || 'The Permanent Notepad for the '} <span className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-600 bg-clip-text text-transparent">{t?.heroTitlePart2 || 'Creative Web'}</span>
                 </h2>
                 <p className="text-lg md:text-xl text-gray-500 font-normal max-w-2xl mx-auto">
-                  A decentralized text editor built on IPFS. Your thoughts, sketches, and documents — saved to the permanent web without a required account.
+                  {t?.heroSubtitle || 'A decentralized text editor built on IPFS. Your thoughts, sketches, and documents — saved to the permanent web without a required account.'}
                 </p>
               </div>
 
               {/* Why use Textpad (The Textpad Edge) */}
               <div className="max-w-6xl mx-auto px-4">
                 <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-16 tracking-tight">
-                  The Textpad Edge
+                  {t?.homeEdgeTitle || 'The Textpad Edge'}
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
                   {[
-                    { icon: <HardDrive className="w-5 h-5" />, title: 'IPFS Persistence', desc: 'Save your work directly to the permanent web. Censorship-resistant and decentralized storage.', href: '/features/decentralized-storage' },
-                    { icon: <Sparkles className="w-5 h-5" />, title: 'Digital Legacy', desc: 'Write now, publish on your 99th birthday. Preserve your words for future generations automatically.', href: '/features/digital-testament' },
-                    { icon: <Layout className="w-5 h-5" />, title: 'Smart Drive & Tabs', desc: 'Organize work in folders and switch between multiple documents with browser-like tabs.', href: '/features/tabs-and-drive' },
-                    { icon: <PenTool className="w-5 h-5" />, title: 'Visual Sketching', desc: 'Break free from text. Sketch and draw directly inside your document flow with integrated tools.', href: '/features/images-and-drawings' },
-                    { icon: <Layout className="w-5 h-5" />, title: 'Instant Publishing', desc: 'Transform any note into a professional blog post on your own custom subdomain in one click.', href: '/features/public-blog' },
-                    { icon: <Palette className="w-5 h-5" />, title: 'Rich Media First', desc: 'Native support for drive videos, YouTube, audio, and high-fidelity drawings.', href: '/features/rich-media' },
-                    { icon: <History className="w-5 h-5" />, title: 'Infinite History', desc: 'Travel back in time with automatic backups and a deep event logs of every character change.', href: '/features/version-history' },
-                    { icon: <Shield className="w-5 h-5" />, title: 'Link-Based Privacy', desc: 'Your work is private by default, shared only via unique links or your public digital archive.', href: '/features/shareable-links' },
+                    { icon: <HardDrive className="w-5 h-5" />, title: t?.featureIPFSTitle || 'IPFS Persistence', desc: t?.featureIPFSDesc || 'Save your work directly to the permanent web. Censorship-resistant and decentralized storage.', href: '/features/decentralized-storage' },
+                    { icon: <Sparkles className="w-5 h-5" />, title: t?.featureLegacyTitle || 'Digital Legacy', desc: t?.featureLegacyDesc || 'Write now, publish on your 99th birthday. Preserve your words for future generations automatically.', href: '/features/digital-testament' },
+                    { icon: <Layout className="w-5 h-5" />, title: t?.featureDriveTitle || 'Smart Drive & Tabs', desc: t?.featureDriveDesc || 'Organize work in folders and switch between multiple documents with browser-like tabs.', href: '/features/tabs-and-drive' },
+                    { icon: <PenTool className="w-5 h-5" />, title: t?.featureSketchTitle || 'Visual Sketching', desc: t?.featureSketchDesc || 'Break free from text. Sketch and draw directly inside your document flow with integrated tools.', href: '/features/images-and-drawings' },
+                    { icon: <Layout className="w-5 h-5" />, title: t?.featurePublishTitle || 'Instant Publishing', desc: t?.featurePublishDesc || 'Transform any note into a professional blog post on your own custom subdomain in one click.', href: '/features/public-blog' },
+                    { icon: <Palette className="w-5 h-5" />, title: t?.featureMediaTitle || 'Rich Media First', desc: t?.featureMediaDesc || 'Native support for drive videos, YouTube, audio, and high-fidelity drawings.', href: '/features/rich-media' },
+                    { icon: <History className="w-5 h-5" />, title: t?.featureHistoryTitle || 'Infinite History', desc: t?.featureHistoryDesc || 'Travel back in time with automatic backups and a deep event logs of every character change.', href: '/features/version-history' },
+                    { icon: <Shield className="w-5 h-5" />, title: t?.featurePrivacyTitle || 'Link-Based Privacy', desc: t?.featurePrivacyDesc || 'Your work is private by default, shared only via unique links or your public digital archive.', href: '/features/shareable-links' },
+                    { icon: <UserMinus className="w-5 h-5" />, title: t?.featureAccountFreeTitle || 'Account-Free Usage', desc: t?.featureAccountFreeDesc || 'Start writing and save to the permanent web immediately without being required to create an account.', href: '/features/anonymous-usage' },
                   ].map((feature, i) => (
                     <NextLink key={i} href={feature.href} title={feature.title} className="group flex flex-col gap-4 p-4 -m-4 rounded-2xl hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all">
                       <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-gray-600 border border-gray-100 group-hover:bg-cyan-50 group-hover:text-cyan-600 transition-colors">
@@ -235,9 +238,9 @@ export default function HomeClient({ featuredArticles = [] }) {
                   <div className="absolute top-0 right-0 p-8 opacity-10">
                     <Sparkles className="w-24 h-24 text-cyan-600" />
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-6 underline decoration-cyan-400 decoration-4 underline-offset-8">A legacy for the future</h2>
+                  <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-6 underline decoration-cyan-400 decoration-4 underline-offset-8">{t?.homeLegacyTitle || 'A legacy for the future'}</h2>
                   <p className="text-gray-500 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-                    Textpad is built for permanence. Whether you're drafting a quick thought to IPFS or building a lifelong digital testament to be discovered by future generations, our tools ensure your words survive the test of time.
+                    {t?.homeLegacySubtitle || 'Textpad is built for permanence. Whether you\'re drafting a quick thought to IPFS or building a lifelong digital testament to be discovered by future generations, our tools ensure your words survive the test of time.'}
                   </p>
                   <button
                     onClick={() => {
@@ -246,7 +249,7 @@ export default function HomeClient({ featuredArticles = [] }) {
                     }}
                     className="px-8 py-4 bg-gray-900 text-white rounded-xl font-medium hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
                   >
-                    Create Your First Note
+                    {t?.homeCreateNote || 'Create Your First Note'}
                   </button>
                 </div>
               </div>
@@ -254,16 +257,16 @@ export default function HomeClient({ featuredArticles = [] }) {
               {/* Who is Textpad for? */}
               <div className="max-w-6xl mx-auto px-4">
                 <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-16 tracking-tight">
-                  Who is Textpad for?
+                  {t?.homeForWhoTitle || 'Who is Textpad for?'}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                   {[
-                    { icon: <History className="w-6 h-6" />, title: 'Legacy Builders', desc: 'Create a digital time capsule. Preserve memories, stories, and wisdom for your children or grandchildren to discover.' },
-                    { icon: <HardDrive className="w-6 h-6" />, title: 'Web3 Architects', desc: 'Save critical research and thoughts directly to the decentralized web using the permanent IPFS gateway.' },
-                    { icon: <Layout className="w-6 h-6" />, title: 'Digital Nomads', desc: 'Organize your entire writing life in a clean, folder-based drive with browser-like tabs that persist across all devices.' },
-                    { icon: <PenTool className="w-6 h-6" />, title: 'Creative Minds', desc: 'Fuse technical writing with hand-drawn sketches and rich media to build documents that are truly multi-dimensional.' },
-                    { icon: <Sparkles className="w-6 h-6" />, title: 'Minimalists', desc: 'Quickly jot down inspirations in a friction-free environment that values your focus more than your credentials.' },
-                    { icon: <Users className="w-6 h-6" />, title: 'Public Thinkers', desc: 'Publish your inner work to a custom subdomain blog and build a public presence on your own terms.' },
+                    { icon: <History className="w-6 h-6" />, title: t?.userLegacyTitle || 'Legacy Builders', desc: t?.userLegacyDesc || 'Create a digital time capsule. Preserve memories, stories, and wisdom for your children or grandchildren to discover.' },
+                    { icon: <HardDrive className="w-6 h-6" />, title: t?.userWeb3Title || 'Web3 Architects', desc: t?.userWeb3Desc || 'Save critical research and thoughts directly to the decentralized web using the permanent IPFS gateway.' },
+                    { icon: <Layout className="w-6 h-6" />, title: t?.userNomadTitle || 'Digital Nomads', desc: t?.userNomadDesc || 'Organize your entire writing life in a clean, folder-based drive with browser-like tabs that persist across all devices.' },
+                    { icon: <PenTool className="w-6 h-6" />, title: t?.userCreativeTitle || 'Creative Minds', desc: t?.userCreativeDesc || 'Fuse technical writing with hand-drawn sketches and rich media to build documents that are truly multi-dimensional.' },
+                    { icon: <Sparkles className="w-6 h-6" />, title: t?.userMinimalistTitle || 'Minimalists', desc: t?.userMinimalistDesc || 'Quickly jot down inspirations in a friction-free environment that values your focus more than your credentials.' },
+                    { icon: <Users className="w-6 h-6" />, title: t?.userPublicTitle || 'Public Thinkers', desc: t?.userPublicDesc || 'Publish your inner work to a custom subdomain blog and build a public presence on your own terms.' },
                   ].map((user, i) => (
                     <div key={i} className="flex gap-4 p-4 rounded-2xl hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all">
                       <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-gray-600 border border-gray-100 group-hover:bg-cyan-50">
@@ -281,16 +284,16 @@ export default function HomeClient({ featuredArticles = [] }) {
               {/* FAQ */}
               <div className="max-w-4xl mx-auto px-4">
                 <h2 className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-16 tracking-tight">
-                  Questions & Answers
+                  {t?.homeFaqTitle || 'Questions & Answers'}
                 </h2>
                 <div className="divide-y divide-gray-100 border-t border-b border-gray-100">
                   {[
-                    { q: 'What makes Textpad different?', a: 'Unlike standard notepads, Textpad combines a high-end visual editor with decentralized storage (IPFS) and professional publishing tools. It is built for permanence and creative freedom.' },
-                    { q: 'Is it really decentralized?', a: 'Yes. When you choose to save via IPFS, your document is cast to the permanent web. This ensures your content remains accessible even if central servers go down.' },
-                    { q: 'Can I use it as a blog?', a: 'Absolutely. By creating a free account, you can publish any document to your personal subdomain (e.g., yourname.textpad.cloud) instantly.' },
-                    { q: 'How does link-based privacy work?', a: 'Until you publish a document to your public blog, it is only accessible via its unique, obfuscated link. We do not index your private drafts or share them with third parties.' },
-                    { q: 'Is there a limit to what I can store?', a: 'Local storage and standard cloud saving are unlimited for text. For heavy media and permanence, our IPFS integration provides a robust way to manage larger creative works.' },
-                    { q: 'What can I use Textpad for?', a: 'Textpad is designed to be a versatile online text editor for everything from quick jotting to professional writing. Users find us when searching for a free online notepad, a "bloc-notes en ligne", or a robust online text editor with pictures. Whether you need a simple éditeur de texte en ligne or a platform for permanent text sharing, Textpad is built to scale with your ideas.' },
+                    { q: t?.faqQ1 || 'What makes Textpad different?', a: t?.faqA1 || 'Unlike standard notepads, Textpad combines a high-end visual editor with decentralized storage (IPFS) and professional publishing tools. It is built for permanence and creative freedom.' },
+                    { q: t?.faqQ2 || 'Is it really decentralized?', a: t?.faqA2 || 'Yes. When you choose to save via IPFS, your document is cast to the permanent web. This ensures your content remains accessible even if central servers go down.' },
+                    { q: t?.faqQ3 || 'Can I use it as a blog?', a: t?.faqA3 || 'Absolutely. You can turn any note into a professional blog post on a custom subdomain (e.g., yourname.textpad.cloud) with one click.' },
+                    { q: t?.faqQ4 || 'How does link-based privacy work?', a: t?.faqA4 || 'Until you choose to publish, documents are private by default and only accessible via unique, obfuscated links. We do not index your private drafts.' },
+                    { q: t?.faqQ5 || 'Is there a limit to what I can store?', a: t?.faqA5 || 'Local storage and standard cloud saving are unlimited for text. For heavy media and permanence, our IPFS integration provides a robust way to manage larger creative works.' },
+                    { q: t?.faqQ6 || 'Why use Textpad?', a: t?.faqA6 || 'Textpad is designed to be a versatile online text editor for everything from quick jotting to professional writing. Whether you need a simple online notepad or a permanent digital archive, Textpad scales with your ideas.' },
                   ].map((faq, i) => (
                     <details key={i} className="group py-6">
                       <summary className="flex justify-between items-center cursor-pointer list-none">
@@ -308,9 +311,9 @@ export default function HomeClient({ featuredArticles = [] }) {
               {/* Final CTA */}
               <div className="text-center py-20 bg-gradient-to-br from-gray-50 to-cyan-50/30 rounded-[4rem] border border-gray-100 max-w-6xl mx-auto px-4">
                 <h2 className="text-4xl md:text-5xl font-medium text-gray-900 mb-6 tracking-tight">
-                  Ready to write for the permanent web?
+                  {t?.homeReadyTitle || 'Ready to write for the permanent web?'}
                 </h2>
-                <p className="text-gray-500 text-lg mb-10 font-normal">Start your creative journey on Textpad today.</p>
+                <p className="text-gray-500 text-lg mb-10 font-normal">{t?.homeReadySubtitle || 'Start your creative journey on Textpad today.'}</p>
                 <button
                   onClick={() => {
                     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -318,7 +321,7 @@ export default function HomeClient({ featuredArticles = [] }) {
                   }}
                   className="px-12 py-5 bg-gray-900 text-white font-medium rounded-2xl hover:bg-gray-800 active:scale-95 transition-all text-xl shadow-xl hover:shadow-cyan-100"
                 >
-                  Create Your First Note
+                  {t?.homeCreateNote || 'Create Your First Note'}
                 </button>
               </div>
             </div>

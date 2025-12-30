@@ -146,8 +146,8 @@ export default function Header() {
             </Link>
 
             <nav className="hidden md:flex items-center gap-6">
-              <Link href="/feed" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/feed' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Feed</Link>
-              <Link href="/featured" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/featured' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Featured</Link>
+              <Link href="/feed" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/feed' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeed || 'Feed'}</Link>
+              <Link href="/featured" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/featured' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeatured || 'Featured'}</Link>
             </nav>
           </div>
 
@@ -155,7 +155,7 @@ export default function Header() {
           {(pathname === '/feed' || pathname === '/featured') && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-900 pointer-events-auto">
-                {pathname.substring(1)}
+                {pathname === '/feed' ? (t?.navFeed || 'Feed') : (t?.navFeatured || 'Featured')}
               </h1>
             </div>
           )}
@@ -248,9 +248,9 @@ export default function Header() {
                               ? 'bg-gray-100 text-gray-900 font-medium'
                               : 'text-gray-700 hover:bg-gray-100'
                               }`}
-                            title="Admin Panel"
+                            title={t?.adminPanel || 'Admin Panel'}
                           >
-                            Admin
+                            {t?.admin || 'Admin'}
                           </Link>
                         )}
                         <div className="border-t border-gray-200 my-1"></div>

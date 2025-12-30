@@ -6,11 +6,13 @@ import UnifiedEditor from '@/components/editor/UnifiedEditor'
 import HistoryPanel from '@/components/editor/HistoryPanel'
 import { useEditorStore } from '@/store/editorStore'
 import { useToast } from '@/components/ui/toast'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 export default function DocumentPage() {
   const params = useParams()
   const router = useRouter()
   const documentId = params.id
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -28,6 +30,10 @@ export default function DocumentPage() {
   const [isFeatured, setIsFeatured] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [isCurator, setIsCurator] = useState(false)
+  const [isIpfsEnabled, setIsIpfsEnabled] = useState(false)
+  const [ipfsCid, setIpfsCid] = useState(null)
+  const [hasFilebaseConfig, setHasFilebaseConfig] = useState(false)
+  const [documentFolder, setDocumentFolder] = useState(null)
   const [keywords, setKeywords] = useState([]) // Document keywords
   const [keywordInput, setKeywordInput] = useState('') // Input for adding keywords
   const [mounted, setMounted] = useState(false)
@@ -484,6 +490,9 @@ export default function DocumentPage() {
         setIsFeatured(document.is_featured || false)
         setIsAdmin(adminFlag || false)
         setIsCurator(curatorFlag || adminFlag || false)
+        setIsIpfsEnabled(document.ipfs_enabled || false)
+        setIpfsCid(document.ipfs_cid || null)
+        setDocumentFolder(document.folder_id)
         setKeywords(document.keywords || [])
 
         // Get content from snapshot
@@ -621,6 +630,23 @@ export default function DocumentPage() {
     }
 
     loadDocument()
+
+    // Fetch IPFS config to see if user has Filebase
+    async function fetchIpfsConfig() {
+      try {
+        const response = await fetch('/api/ipfs/config')
+        if (response.ok) {
+          const data = await response.json()
+          // Show button if user has any IPFS provider (filebase or storacha)
+          const hasAnyProvider = data.providers?.length > 0
+          setHasFilebaseConfig(hasAnyProvider)
+          console.log('IPFS providers:', data.providers, 'hasAnyProvider:', hasAnyProvider)
+        }
+      } catch (err) {
+        console.error('Error fetching IPFS config:', err)
+      }
+    }
+    fetchIpfsConfig()
   }, [documentId, router, setCurrentDocument, setCurrentContent])
 
   // Listen for document deletion to stop autosave
@@ -775,7 +801,7 @@ export default function DocumentPage() {
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading document...</p>
+          <p className="mt-4 text-gray-600">{t?.loading || 'Loading document...'}</p>
         </div>
       </div>
     )
@@ -811,7 +837,7 @@ export default function DocumentPage() {
                 onChange={(e) => setTitle(e.target.value)}
                 onBlur={handleTitleSave}
                 className="text-2xl sm:text-4xl font-bold bg-transparent border-none outline-none focus:ring-0 px-0 py-2 text-gray-900 placeholder-gray-400 w-full"
-                placeholder="Untitled"
+                placeholder={t?.editorPlaceholderTitle || 'Title'}
               />
             </div>
 
@@ -822,7 +848,7 @@ export default function DocumentPage() {
                 <button
                   onClick={() => router.push('/drive')}
                   className="p-1.5 border border-gray-200 rounded-md hover:bg-gray-50 text-gray-700 transition-colors"
-                  title="Back to Drive"
+                  title={t?.backToDrive || 'Back to Drive'}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -1111,6 +1137,84 @@ export default function DocumentPage() {
                   )}
                 </div>
 
+                {/* IPFS Toggle - Show if owner and has IPFS config */}
+                {isOwner && hasFilebaseConfig && (
+                  <div className="relative group">
+                    <button
+                      onClick={async () => {
+                        const newStatus = !isIpfsEnabled
+                        try {
+                          const response = await fetch(`/api/documents/${documentId}/ipfs`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ enabled: newStatus })
+                          })
+                          if (response.ok) {
+                            setIsIpfsEnabled(newStatus)
+                            const data = await response.json()
+                            if (newStatus && data.cid) {
+                              setIpfsCid(data.cid)
+                            }
+                            showToast(newStatus ? 'IPFS Mode Activated' : 'IPFS Mode Deactivated', 'success')
+                          } else {
+                            const error = await response.json()
+                            showToast(error.error || 'Failed to update IPFS status', 'error')
+                          }
+                        } catch (error) {
+                          showToast('Failed to update IPFS status', 'error')
+                        }
+                      }}
+                      className={`p-1.5 border rounded-md transition-all flex items-center gap-1.5 ${isIpfsEnabled
+                        ? 'border-cyan-400 bg-cyan-50 text-cyan-600 shadow-sm'
+                        : 'border-gray-200 text-gray-400 hover:bg-gray-50'
+                        }`}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                      <span className="text-[10px] font-bold">IPFS</span>
+                    </button>
+                    {/* Hover Popover */}
+                    <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                      <div className="text-xs font-semibold text-gray-700 mb-2">
+                        {isIpfsEnabled ? '✓ IPFS Enabled' : 'IPFS Disabled'}
+                      </div>
+                      {isIpfsEnabled && ipfsCid ? (
+                        <>
+                          <div className="text-xs text-gray-500 mb-1">CID:</div>
+                          <div className="text-xs font-mono bg-gray-50 p-2 rounded mb-2 break-all">{ipfsCid}</div>
+                          <div className="text-xs text-gray-500 mb-1">Gateway URL:</div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              readOnly
+                              value={`https://ipfs.filebase.io/ipfs/${ipfsCid}`}
+                              className="flex-1 text-xs font-mono bg-gray-50 p-2 rounded border-0 outline-none"
+                            />
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                navigator.clipboard.writeText(`https://ipfs.filebase.io/ipfs/${ipfsCid}`)
+                                showToast('URL copied!', 'success')
+                              }}
+                              className="p-1.5 bg-cyan-50 text-cyan-600 rounded hover:bg-cyan-100 transition-colors"
+                              title="Copy URL"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </button>
+                          </div>
+                        </>
+                      ) : isIpfsEnabled ? (
+                        <div className="text-xs text-gray-500">Save the document to generate CID</div>
+                      ) : (
+                        <div className="text-xs text-gray-500">Click the button to enable IPFS storage</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Feature toggle - Admin and Curators only */}
                 {(isAdmin || isCurator) && (
                   <button
@@ -1164,12 +1268,15 @@ export default function DocumentPage() {
         {/* Editor */}
         {mounted && !loading && (
           <UnifiedEditor
+            key={`${t?.editorPlaceholderDoc || t?.editorPlaceholder}-${t?.editorPlaceholderTitle}`}
             onEditorReady={setEditor}
             onUpdate={handleEditorUpdate}
             onSave={() => { }} // Autosave handles it
             saving={saving}
             hasChanges={hasChanges}
             initialContent={currentContent}
+            placeholderText={t?.editorPlaceholderDoc || t?.editorPlaceholder || 'Tell your story...'}
+            placeholderTitle={t?.editorPlaceholderTitle || 'Title'}
             editable={isOwner || isAdmin}
             features={{
               showToolbar: true,

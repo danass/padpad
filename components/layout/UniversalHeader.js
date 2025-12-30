@@ -153,7 +153,7 @@ export default function UniversalHeader() {
                                 href="https://www.textpad.cloud"
                                 className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium transition-colors"
                             >
-                                Write on Textpad
+                                {t?.writeOnTextpad || 'Write on Textpad'}
                             </a>
                         </div>
                     </div>
@@ -239,16 +239,16 @@ export default function UniversalHeader() {
 
                                     {showUserMenu && (
                                         <div className="absolute right-0 mt-2 w-48 md:w-56 bg-white border border-gray-200 rounded-md shadow-lg z-20 py-1">
-                                            <Link href="/settings" title="Settings" onClick={() => setShowUserMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</Link>
-                                            {isAdmin && <Link href="/admin" title="Admin Dashboard" onClick={() => setShowUserMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Admin</Link>}
+                                            <Link href="/settings" title={t?.settings || 'Settings'} onClick={() => setShowUserMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{t?.settings || 'Settings'}</Link>
+                                            {isAdmin && <Link href="/admin" title={t?.adminPanel || 'Admin Dashboard'} onClick={() => setShowUserMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{t?.admin || 'Admin'}</Link>}
                                             <div className="border-t border-gray-200 my-1" />
-                                            <button onClick={() => { setShowUserMenu(false); localStorage.removeItem('openTabs'); signOut({ callbackUrl: '/' }); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</button>
+                                            <button onClick={() => { setShowUserMenu(false); localStorage.removeItem('openTabs'); signOut({ callbackUrl: '/' }); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{t?.signOut || 'Sign out'}</button>
                                         </div>
                                     )}
                                 </div>
                             </>
                         ) : pathname !== '/auth/signin' && (
-                            <Link href="/auth/signin" title="Sign in" className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium">Sign in</Link>
+                            <Link href="/auth/signin" title={t?.signIn || 'Sign in'} className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium">{t?.signIn || 'Sign in'}</Link>
                         )}
                     </div>
                 </div>

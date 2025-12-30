@@ -21,6 +21,10 @@ const seoTranslations = {
     title: 'Textpad – Le Bloc-notes Permanent pour le Web Créatif',
     description: 'Éditeur de texte décentralisé sur IPFS. Sauvegardez vos documents, dessins et blogs sur le web permanent. Partage privé, testament numérique et organisation par dossiers. Sans inscription.',
   },
+  sv: {
+    title: 'Textpad – Det permanenta anteckningsblocket för den kreativa webben',
+    description: 'En decentraliserad textediterare byggd på IPFS. Spara dina dokument, skisser och blogginlägg på den permanenta webben. Funktioner inkluderar privat delning, digitalt arv och mapporganisering. Inget konto behövs.',
+  },
 }
 
 // Detect locale from cookie or Accept-Language header
@@ -28,7 +32,7 @@ async function getLocale() {
   const cookieStore = await cookies()
   const localeCookie = cookieStore.get('textpad_locale')
 
-  if (localeCookie?.value && ['en', 'fr'].includes(localeCookie.value)) {
+  if (localeCookie?.value && ['en', 'fr', 'es', 'zh', 'ru', 'sv'].includes(localeCookie.value)) {
     return localeCookie.value
   }
 
@@ -38,6 +42,9 @@ async function getLocale() {
 
   if (acceptLang.toLowerCase().startsWith('fr')) {
     return 'fr'
+  }
+  if (acceptLang.toLowerCase().startsWith('sv')) {
+    return 'sv'
   }
 
   return 'en'
@@ -66,8 +73,8 @@ export async function generateMetadata() {
       type: 'website',
       url: '/',
       siteName: 'Textpad',
-      locale: locale === 'fr' ? 'fr_FR' : 'en_US',
-      alternateLocale: locale === 'fr' ? ['en_US'] : ['fr_FR'],
+      locale: locale === 'fr' ? 'fr_FR' : (locale === 'sv' ? 'sv_SE' : 'en_US'),
+      alternateLocale: locale === 'fr' ? ['en_US', 'sv_SE'] : (locale === 'sv' ? ['en_US', 'fr_FR'] : ['fr_FR', 'sv_SE']),
       images: [{ url: '/padpad.webp', width: 512, height: 512, alt: 'Textpad Logo' }],
     },
     other: {
@@ -83,6 +90,7 @@ export async function generateMetadata() {
       languages: {
         'en': 'https://www.textpad.cloud/',
         'fr': 'https://www.textpad.cloud/',
+        'sv': 'https://www.textpad.cloud/',
         'x-default': 'https://www.textpad.cloud/',
       },
     },

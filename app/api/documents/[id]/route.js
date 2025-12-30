@@ -76,6 +76,30 @@ export async function GET(request, { params }) {
       }
     }
 
+    // If IPFS is enabled, we try to fetch from IPFS for the content_json
+    if (document.ipfs_enabled && document.ipfs_cid) {
+      try {
+        const gatewayUrl = `https://ipfs.filebase.io/ipfs/${document.ipfs_cid}`
+        const ipfsResponse = await fetch(gatewayUrl)
+        if (ipfsResponse.ok) {
+          const ipfsContent = await ipfsResponse.json()
+          if (snapshot) {
+            snapshot.content_json = ipfsContent
+          } else {
+            snapshot = {
+              document_id: id,
+              content_json: ipfsContent,
+              content_text: '', // Text might be outdated but JSON is truth
+              created_at: new Date().toISOString()
+            }
+          }
+        }
+      } catch (ipfsError) {
+        console.error('Error fetching from IPFS:', ipfsError)
+        // Fallback to local snapshot if IPFS fails
+      }
+    }
+
     // Parse content_json if it's a string
     if (snapshot && snapshot.content_json && typeof snapshot.content_json === 'string') {
       try {

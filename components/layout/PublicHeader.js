@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 
 // Check if we're on a subdomain
 function checkIsSubdomain() {
@@ -15,6 +16,7 @@ function checkIsSubdomain() {
 
 // Header for public pages - shows different content based on domain
 export default function PublicHeader() {
+    const { t } = useLanguage()
     const { data: session, status } = useSession() || {}
     const pathname = usePathname()
     const [isSubdomain, setIsSubdomain] = useState(false)
@@ -64,7 +66,7 @@ export default function PublicHeader() {
                                 href="https://www.textpad.cloud"
                                 className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium transition-colors"
                             >
-                                Write on Textpad
+                                {t?.writeOnTextpad || 'Write on Textpad'}
                             </a>
                         </div>
                     </div>
@@ -79,13 +81,13 @@ export default function PublicHeader() {
             <div className="max-w-full mx-auto">
                 <div className="flex items-center justify-between px-6 h-16">
                     <div className="flex items-center gap-8">
-                        <Link href="/" className="flex items-center gap-2" title="Textpad">
+                        <Link href="/" className="flex items-center gap-2" title={t?.appName || 'Textpad'}>
                             <span className="text-sm font-semibold text-gray-900 uppercase tracking-widest">textpad</span>
                         </Link>
 
                         <nav className="hidden md:flex items-center gap-6">
-                            <Link href="/feed" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/feed' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Feed</Link>
-                            <Link href="/featured" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/featured' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>Featured</Link>
+                            <Link href="/feed" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/feed' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeed || 'Feed'}</Link>
+                            <Link href="/featured" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/featured' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeatured || 'Featured'}</Link>
                         </nav>
                     </div>
 
@@ -93,7 +95,7 @@ export default function PublicHeader() {
                     {(pathname === '/feed' || pathname === '/featured') && (
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-900">
-                                {pathname.substring(1)}
+                                {pathname === '/feed' ? (t?.navFeed || 'Feed') : (t?.navFeatured || 'Featured')}
                             </h1>
                         </div>
                     )}
@@ -114,14 +116,15 @@ export default function PublicHeader() {
                                         </span>
                                     </div>
                                 )}
-                                <span className="hidden md:inline">My Drive</span>
+                                <span className="hidden md:inline">{t?.myDrive || 'My Drive'}</span>
                             </Link>
                         ) : (
                             <Link
                                 href="/auth/signin"
                                 className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs md:text-sm font-medium transition-colors"
+                                title={t?.signIn || 'Sign in'}
                             >
-                                Sign in
+                                {t?.signIn || 'Sign in'}
                             </Link>
                         )}
                     </div>

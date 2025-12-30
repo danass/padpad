@@ -1,0 +1,9 @@
+User-Agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /migrate/
+Disallow: /_next/
+Disallow: /static/
+
+Sitemap: https://www.textpad.cloud/sitemap.xml

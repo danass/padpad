@@ -104,15 +104,15 @@ export default function DrivePage() {
 
       if (response.ok) {
         const data = await response.json()
-        showToast('Document created', 'success')
+        showToast(t?.documentCreated || 'Document created', 'success')
         // Open in same window - Tabs component will handle adding it to tabs
         router.push(`/doc/${data.document.id}`)
       } else {
-        showToast('Failed to create document', 'error')
+        showToast(t?.failedToCreateDocument || 'Failed to create document', 'error')
       }
     } catch (error) {
       console.error('Error creating document:', error)
-      showToast('Failed to create document', 'error')
+      showToast(t?.failedToCreateDocument || 'Failed to create document', 'error')
     } finally {
       setCreatingDoc(false)
     }
@@ -130,16 +130,16 @@ export default function DrivePage() {
       })
 
       if (response.ok) {
-        showToast('Folder created', 'success')
+        showToast(t?.folderCreated || 'Folder created', 'success')
         loadData()
         return true
       } else {
-        showToast('Failed to create folder', 'error')
+        showToast(t?.failedToCreateFolder || 'Failed to create folder', 'error')
         return false
       }
     } catch (error) {
       console.error('Error creating folder:', error)
-      showToast('Failed to create folder', 'error')
+      showToast(t?.failedToCreateFolder || 'Failed to create folder', 'error')
       return false
     } finally {
       setCreatingFolder(false)
@@ -157,14 +157,14 @@ export default function DrivePage() {
         window.dispatchEvent(new CustomEvent('documentDeleted', {
           detail: { documentId: id }
         }))
-        showToast('Document deleted', 'success')
+        showToast(t?.documentDeleted || 'Document deleted', 'success')
         loadData()
       } else {
-        showToast('Failed to delete document', 'error')
+        showToast(t?.failedToDeleteDocument || 'Failed to delete document', 'error')
       }
     } catch (error) {
       console.error('Error deleting document:', error)
-      showToast('Failed to delete document', 'error')
+      showToast(t?.failedToDeleteDocument || 'Failed to delete document', 'error')
     }
   }, [loadData, showToast])
 
@@ -198,14 +198,14 @@ export default function DrivePage() {
       })
 
       if (response.ok) {
-        showToast('Folder deleted', 'success')
+        showToast(t?.folderDeleted || 'Folder deleted', 'success')
         loadData()
       } else {
-        showToast('Failed to delete folder', 'error')
+        showToast(t?.failedToDeleteFolder || 'Failed to delete folder', 'error')
       }
     } catch (error) {
       console.error('Error deleting folder:', error)
-      showToast('Failed to delete folder', 'error')
+      showToast(t?.failedToDeleteFolder || 'Failed to delete folder', 'error')
     }
   }, [loadData, showToast])
 
@@ -221,16 +221,16 @@ export default function DrivePage() {
       })
 
       if (response.ok) {
-        showToast(`${itemType === 'folder' ? 'Folder' : 'Document'} moved`, 'success')
+        showToast(`${itemType === 'folder' ? (t?.folder || 'Folder') : (t?.document || 'Document')} ${t?.moved || 'moved'}`, 'success')
         loadData()
         return true
       } else {
-        showToast(`Failed to move ${itemType}`, 'error')
+        showToast(`${t?.failedToMove || 'Failed to move'} ${itemType === 'folder' ? (t?.folder || 'folder') : (t?.document || 'document')}`, 'error')
         return false
       }
     } catch (error) {
       console.error(`Error moving ${itemType}:`, error)
-      showToast(`Failed to move ${itemType}`, 'error')
+      showToast(`${t?.failedToMove || 'Failed to move'} ${itemType === 'folder' ? (t?.folder || 'folder') : (t?.document || 'document')}`, 'error')
       return false
     }
   }, [loadData, showToast])
@@ -248,7 +248,7 @@ export default function DrivePage() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8">
         <div className="mb-4 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1 md:mb-2">{t?.drive || 'Drive'}</h1>
-          <p className="text-xs md:text-sm text-gray-500">Manage your documents and folders</p>
+          <p className="text-xs md:text-sm text-gray-500">{t?.driveSubtitle || 'Manage your documents and folders'}</p>
         </div>
 
         <div className="mb-4 md:mb-6 max-w-2xl">
@@ -257,11 +257,11 @@ export default function DrivePage() {
 
         <div className="bg-white border border-gray-200 rounded-md p-3 md:p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0 mb-4">
-            <h2 className="text-lg md:text-xl font-semibold text-gray-900">Documents</h2>
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900">{t?.documents || 'Documents'}</h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={async () => {
-                  const name = prompt('Enter folder name:')
+                  const name = prompt(t?.enterFolderName || 'Enter folder name:')
                   if (name && name.trim()) {
                     await createFolder(name.trim(), null)
                   }

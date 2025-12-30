@@ -28,22 +28,22 @@ const formatStats = (stats) => {
   // Priority: show most relevant stats
   if (stats.characters > 0) {
     if (stats.words > 0) {
-      parts.push(`${stats.words} mot${stats.words > 1 ? 's' : ''}`)
+      parts.push(`${stats.words} ${stats.words > 1 ? (t?.words || 'mots') : (t?.word || 'mot')}`)
     }
-    parts.push(`${stats.characters} car.`)
+    parts.push(`${stats.characters} ${t?.charactersShort || 'car.'}`)
   }
 
   if (stats.images > 0) {
-    parts.push(`${stats.images} image${stats.images > 1 ? 's' : ''}`)
+    parts.push(`${stats.images} ${stats.images > 1 ? (t?.images || 'images') : (t?.image || 'image')}`)
   }
 
   if (stats.drawings > 0) {
-    parts.push(`${stats.drawings} dessin${stats.drawings > 1 ? 's' : ''}`)
+    parts.push(`${stats.drawings} ${stats.drawings > 1 ? (t?.drawings || 'dessins') : (t?.drawing || 'dessin')}`)
   }
 
   // If nothing, show "vide"
   if (parts.length === 0) {
-    return 'Vide'
+    return t?.empty || 'Vide'
   }
 
   return parts.join(' • ')
@@ -151,7 +151,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
   const handleDeleteSelected = () => {
     if (selectedItems.size === 0) return
     const confirmMsg = (t?.confirmDeleteMultiple || 'Are you sure you want to delete {count} item(s)?').replace('{count}', selectedItems.size)
-    if (confirm(confirmMsg)) {
+    if (window.confirm(confirmMsg)) {
       selectedItems.forEach(id => {
         onDelete(id)
       })
@@ -372,7 +372,8 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                if (confirm(t?.confirmDelete || `Are you sure you want to delete this ${item.type === 'folder' ? 'folder' : 'document'}?`)) {
+                const typeLabel = item.type === 'folder' ? (t?.folder || 'folder') : (t?.doc || 'document')
+                if (window.confirm((t?.confirmDelete || `Are you sure you want to delete this {type}?`).replace('{type}', typeLabel))) {
                   onDelete(item.id)
                 }
               }}
@@ -598,7 +599,8 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
-                    if (confirm(t?.deleteConfirm || 'Delete this folder?')) {
+                    const typeLabel = (t?.folder || 'folder')
+                    if (window.confirm((t?.confirmDelete || 'Delete this {type}?').replace('{type}', typeLabel))) {
                       onDelete(contextMenu.item.id)
                     }
                     setContextMenu(null)
@@ -681,7 +683,8 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
-                    if (confirm(t?.deleteConfirm || 'Delete this document?')) {
+                    const typeLabel = (t?.doc || 'document')
+                    if (window.confirm((t?.confirmDelete || 'Delete this {type}?').replace('{type}', typeLabel))) {
                       onDelete(contextMenu.item.id)
                     }
                     setContextMenu(null)

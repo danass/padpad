@@ -2,6 +2,7 @@ import { sql } from '@vercel/postgres'
 import { v4 as uuidv4 } from 'uuid'
 import { getUserId } from '@/lib/auth/getSession'
 import { isAdmin } from '@/lib/auth/isAdmin'
+import { createFilebaseClient } from '@/lib/ipfs/filebase-client'
 
 // Helper function to extract plain text from TipTap JSON
 function extractPlainText(contentJson) {
@@ -39,7 +40,7 @@ export async function POST(request, { params }) {
 
     // Verify document exists
     let docCheck = await sql.query(
-      'SELECT id, user_id, is_disposable, expires_at FROM documents WHERE id = $1',
+      'SELECT id, user_id, is_disposable, expires_at, ipfs_enabled FROM documents WHERE id = $1',
       [id]
     )
 
@@ -195,6 +196,38 @@ export async function POST(request, { params }) {
     )
 
     // Update document with snapshot reference, content_text and stats
+    let ipfsUpdate = ''
+    let ipfsValues = []
+    let valCount = 6
+
+    if (doc.ipfs_enabled) {
+      try {
+        // Get user's IPFS config
+        const userResult = await sql.query(
+          'SELECT ipfs_config FROM users WHERE id = $1',
+          [userId]
+        )
+        const ipfsConfig = userResult.rows[0]?.ipfs_config
+        const providers = Array.isArray(ipfsConfig) ? ipfsConfig : []
+        const filebaseProvider = providers.find(p => p.provider === 'filebase')
+
+        if (filebaseProvider) {
+          const client = createFilebaseClient(filebaseProvider)
+          const uploadResult = await client.uploadFile(
+            `documents/${id}.json`,
+            JSON.stringify(content_json),
+            'application/json'
+          )
+          if (uploadResult.cid) {
+            ipfsUpdate = `, ipfs_cid = $${valCount++}`
+            ipfsValues.push(uploadResult.cid)
+          }
+        }
+      } catch (ipfsError) {
+        console.error('Error uploading snapshot to IPFS:', ipfsError)
+      }
+    }
+
     await sql.query(
       `UPDATE documents 
        SET current_snapshot_id = $1, 
@@ -202,8 +235,9 @@ export async function POST(request, { params }) {
            word_count = $3,
            char_count = $4,
            updated_at = NOW()
+           ${ipfsUpdate}
        WHERE id = $5`,
-      [snapshotId, content_text, word_count, char_count, id]
+      [snapshotId, content_text, word_count, char_count, id, ...ipfsValues]
     )
 
     return Response.json({ snapshot: snapshotResult.rows[0] }, { status: 201 })

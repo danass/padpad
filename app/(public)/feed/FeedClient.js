@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import NextLink from 'next/link'
 import { FileText, ChevronLeft, ChevronRight, User, Calendar, Loader2, Tag, X } from 'lucide-react'
+import { useLanguage } from '@/app/i18n/LanguageContext'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
@@ -31,6 +32,7 @@ import Emoji from '@tiptap/extension-emoji'
 import { ChatConversation } from '@/lib/editor/chat-extension'
 
 function ArticleRenderer({ id, content, title, author, date, keywords }) {
+    const { t } = useLanguage()
     const [mounted, setMounted] = useState(false)
     const editor = useEditor({
         editable: false,
@@ -143,7 +145,7 @@ function ArticleRenderer({ id, content, title, author, date, keywords }) {
                         href={`/public/doc/${id}`}
                         className="text-cyan-600 font-medium hover:underline text-sm inline-flex items-center gap-1"
                     >
-                        Read more <ChevronRight className="w-4 h-4" />
+                        {t?.readMore || 'Read more'} <ChevronRight className="w-4 h-4" />
                     </NextLink>
                 </div>
             )}
@@ -152,6 +154,7 @@ function ArticleRenderer({ id, content, title, author, date, keywords }) {
 }
 
 export default function FeedClient({ initialData, initialKeyword }) {
+    const { t } = useLanguage()
     const router = useRouter()
     const searchParams = useSearchParams()
 
@@ -225,7 +228,7 @@ export default function FeedClient({ initialData, initialKeyword }) {
             {/* Content */}
             <main className="max-w-3xl mx-auto px-6 py-12">
                 <div className="flex items-center justify-between mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Feed</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">{t?.navFeed || 'Feed'}</h1>
                     {keyword && (
                         <div className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium flex items-center gap-2">
                             #{keyword}
@@ -241,7 +244,7 @@ export default function FeedClient({ initialData, initialKeyword }) {
                     <div className="mb-12">
                         <div className="flex items-center gap-2 mb-4 text-sm font-medium text-gray-500">
                             <Tag className="w-4 h-4" />
-                            <span>Filter by tag</span>
+                            <span>{t?.filterByTag || 'Filter by tag'}</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {allKeywords.map(kw => (
@@ -267,13 +270,18 @@ export default function FeedClient({ initialData, initialKeyword }) {
                 ) : articles.length === 0 ? (
                     <div className="text-center py-24 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
                         <FileText className="w-12 h-12 mx-auto text-gray-200 mb-4" />
-                        <p className="text-gray-400">No public articles found {keyword ? `for #${keyword}` : ''}.</p>
+                        <p className="text-gray-400">
+                            {keyword
+                                ? (t?.noResultsWithKeyword || 'No results found for #{keyword}').replace('{keyword}', keyword)
+                                : (t?.noResults || 'No results found')
+                            }
+                        </p>
                         {keyword && (
                             <button
                                 onClick={() => handleKeywordChange(null)}
                                 className="mt-4 text-sm text-blue-600 font-medium hover:underline"
                             >
-                                View all articles
+                                {t?.viewAllArticles || 'View all articles'}
                             </button>
                         )}
                     </div>
@@ -306,11 +314,11 @@ export default function FeedClient({ initialData, initialKeyword }) {
                                     className="flex items-center gap-2 text-sm font-medium disabled:opacity-30 group"
                                 >
                                     <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                                    Previous
+                                    {t?.previous || 'Previous'}
                                 </button>
 
                                 <div className="text-xs text-gray-400 font-mono">
-                                    {pagination.page} / {pagination.totalPages}
+                                    {(t?.pageOf || '{current} / {total}').replace('{current}', pagination.page).replace('{total}', pagination.totalPages)}
                                 </div>
 
                                 <button
@@ -318,7 +326,7 @@ export default function FeedClient({ initialData, initialKeyword }) {
                                     disabled={!pagination.hasNext}
                                     className="flex items-center gap-2 text-sm font-medium disabled:opacity-30 group"
                                 >
-                                    Next
+                                    {t?.next || 'Next'}
                                     <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                                 </button>
                             </div>
