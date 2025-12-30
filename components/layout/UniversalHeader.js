@@ -169,7 +169,7 @@ export default function UniversalHeader() {
                 <div className="flex items-center justify-between px-6 h-12 md:h-16">
                     {/* Left side */}
                     <div className="flex items-center gap-8">
-                        <Link href="/" className="flex items-center gap-3" title={t?.appName || 'TextPad'}>
+                        <Link href="/" prefetch={false} className="flex items-center gap-3" title={t?.appName || 'TextPad'}>
                             <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
                                 <img src="/padpad.png" alt="textpad logo" className="w-full h-full object-cover" />
                             </div>
@@ -212,6 +212,7 @@ export default function UniversalHeader() {
                                 ) : !isDoc && !isPublicDynamic && (
                                     <Link
                                         href="/drive"
+                                        prefetch={false}
                                         className="p-2 text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-100 transition-colors"
                                         title={t?.drive || 'Drive'}
                                     >

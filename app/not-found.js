@@ -24,6 +24,7 @@ export default function NotFound() {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Link
                         href="/"
+                        prefetch={false}
                         className="px-6 py-2.5 bg-gray-900 text-white rounded-md hover:bg-gray-800 text-sm font-medium transition-colors"
                     >
                         Start Writing

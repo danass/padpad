@@ -15,10 +15,10 @@ export default function Footer() {
         {/* Show Feed and Featured links when not logged in */}
         {!session && (
           <div className="flex items-center gap-4">
-            <Link href="/feed" className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
+            <Link href="/feed" prefetch={false} className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
               {t?.navFeed || 'Feed'}
             </Link>
-            <Link href="/featured" className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
+            <Link href="/featured" prefetch={false} className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
               {t?.navFeatured || 'Featured'}
             </Link>
           </div>
