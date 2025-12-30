@@ -802,7 +802,7 @@ export default function DocumentPage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 sm:py-8">
         {/* Header with title and action buttons */}
-        <div className="mb-4 relative z-[60]">
+        <div className="mb-4 relative z-[100]">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             {/* Title */}
             <div className="flex-1">
@@ -1082,7 +1082,7 @@ export default function DocumentPage() {
                         className="fixed inset-0 z-[500]"
                         onClick={() => setShowExportMenu(false)}
                       />
-                      <div className="fixed mt-2 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-[501]" style={{ top: '120px', right: '24px' }}>
+                      <div className="fixed mt-2 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-[9999]" style={{ top: '120px', right: '24px' }}>
                         <button
                           onClick={() => { handleExport('md'); setShowExportMenu(false) }}
                           className="block w-full text-left px-3 py-1.5 hover:bg-gray-50 rounded-t-md text-sm"

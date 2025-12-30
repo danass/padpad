@@ -63,22 +63,23 @@ export default function UniversalHeader() {
             }
 
             // Load logic - Lazy check
-            // Only load immediately IF on a page that likely needs it (admin or drive)
-            const needsImmediateLoad = pathname?.startsWith('/admin') || pathname?.startsWith('/drive') || pathname?.startsWith('/settings')
+            // Admin is now in session
+            if (session.user.isAdmin !== undefined) {
+                setIsAdmin(!!session.user.isAdmin)
+            }
 
-            if (needsImmediateLoad && !hasLoadedRef.current) {
+            // Only load avatar once per session mount
+            if (!hasLoadedRef.current) {
                 hasLoadedRef.current = true
-                checkAdminStatus()
                 loadAvatar()
             }
         }
-    }, [session?.user?.email, pathname])
+    }, [session?.user?.email, session?.user?.isAdmin, pathname])
 
     // Load on menu hover/interaction if not already loaded
     const onUserInteraction = () => {
         if (session?.user?.email && !hasLoadedRef.current) {
             hasLoadedRef.current = true
-            checkAdminStatus()
             loadAvatar()
         }
     }
@@ -99,11 +100,6 @@ export default function UniversalHeader() {
                 setCustomAvatar(data.avatar_url)
             }
         } catch (error) { }
-    }
-
-    const checkAdminStatus = async () => {
-        const adminStatus = await getAdminStatus(session?.user?.email)
-        setIsAdmin(adminStatus)
     }
 
     // Close menu when clicking outside

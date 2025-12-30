@@ -104,13 +104,12 @@ export default function GoogleDocsToolbar({
   const { data: session } = useSession() || {}
 
   useEffect(() => {
-    const checkAdmin = async () => {
-      if (!session?.user?.email) return
-      const adminStatus = await getAdminStatus(session.user.email)
-      setIsAdmin(adminStatus)
+    if (session?.user) {
+      setIsAdmin(session.user.isAdmin === true || session.user.role === 'admin')
+    } else {
+      setIsAdmin(false)
     }
-    checkAdmin()
-  }, [session?.user?.email])
+  }, [session])
 
   const [lineHeightPosition, setLineHeightPosition] = useState({ top: 0, left: 0 })
   const fontFamilyRef = useRef(null)

@@ -56,12 +56,28 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        // Use email as stable user ID (more reliable than token.sub)
         session.user.id = session.user.email || token.sub
+        session.user.role = token.role || 'user'
+        session.user.isAdmin = token.role === 'admin'
       }
       return session
     },
-    async jwt({ token, account, profile }) {
+    async jwt({ token, user, account, profile }) {
+      if (user) {
+        // Initial sign in - fetch role from DB
+        try {
+          const userId = user.email || user.id
+          const res = await sql`SELECT role FROM users WHERE id = ${userId}`
+          if (res.rowCount > 0) {
+            token.role = res.rows[0].role
+          } else {
+            token.role = 'user'
+          }
+        } catch (error) {
+          console.error('Error fetching user role for JWT:', error)
+          token.role = 'user'
+        }
+      }
       if (account) {
         token.accessToken = account.access_token
       }
