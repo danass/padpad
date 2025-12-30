@@ -8,7 +8,7 @@
  * 2. Add translations object with the same keys as English
  */
 
-export const locales = ['en', 'fr', 'es', 'zh', 'ru']
+export const locales = ['en', 'fr', 'es', 'zh', 'ru', 'sv']
 
 export const defaultLocale = 'en'
 
@@ -17,7 +17,8 @@ export const localeNames = {
   fr: 'Français',
   es: 'Español',
   zh: '中文',
-  ru: 'Русский'
+  ru: 'Русский',
+  sv: 'Svenska'
 }
 
 export const translations = {
@@ -2259,6 +2260,462 @@ export const translations = {
     makePermanent: 'Сохранить навсегда',
     claimingPad: 'Сохранение навсегда...',
     padClaimed: 'Блокнот успешно сохранен!',
+  },
+
+  sv: {
+    // App
+    appName: 'textpad',
+    tagline: 'En enkel, vacker skrivplats',
+
+    // Header
+    newDocument: 'Nytt dokument',
+    drive: 'Drive',
+    settings: 'Inställningar',
+    signIn: 'Logga in',
+    signOut: 'Logga ut',
+
+    // Navigation
+    navFeed: 'Flöde',
+    navFeatured: 'Utvalt',
+    navFeatures: 'Funktioner',
+    navCredits: 'Credits',
+
+    // Home page
+    startWriting: 'Börja skriva...',
+    saveDocument: 'Spara dokument',
+    saving: 'Sparar...',
+    savedLocally: 'Ditt dokument är sparat lokalt. Klicka på "Spara dokument" för att spara det permanent.',
+    clickToSave: 'Klicka på "Spara" för att logga in och spara ditt dokument permanent.',
+
+    // Drive
+    myDocuments: 'Mina dokument',
+    createFolder: 'Skapa mapp',
+    newFolder: 'Ny mapp',
+    noDocuments: 'Inga dokument än',
+    createFirst: 'Skapa ett nytt dokument för att komma igång',
+    searchDocuments: 'Sök dokument...',
+
+    // Document list
+    name: 'Namn',
+    type: 'Typ',
+    date: 'Datum',
+    visibility: 'Synlighet',
+    folder: 'Mapp',
+    document: 'Dokument',
+    untitled: 'Namnlös',
+
+    // Context menu
+    open: 'Öppna',
+    viewPublic: 'Visa offentligt',
+    delete: 'Ta bort',
+    deleteConfirm: 'Är du säker på att du vill ta bort detta',
+    words: 'ord',
+    word: 'ord',
+    characters: 'tecken',
+    character: 'tecken',
+    images: 'bilder',
+    image: 'bild',
+    drawings: 'teckningar',
+    drawing: 'teckning',
+    emptyDocument: 'Tomt dokument',
+
+    // Editor
+    back: 'Tillbaka',
+    backToDrive: 'Tillbaka till Drive',
+    export: 'Exportera',
+    history: 'Historik',
+    copyUrl: 'Kopiera URL',
+    urlCopied: 'URL kopierad',
+    private: 'Privat',
+    public: 'Offentlig',
+    makePrivate: 'Gör privat',
+    makePublic: 'Gör offentlig',
+    nowPrivate: 'Nu privat',
+    nowPublic: 'Nu offentlig',
+    fullWidth: 'Full bredd',
+    normalWidth: 'Normal bredd',
+    preview: 'Förhandsgranska',
+
+    // Save status
+    unsavedChanges: 'Sparade ändringar saknas',
+    saved: 'Sparad',
+
+    // Toolbar
+    bold: 'Fet',
+    italic: 'Kursiv',
+    underline: 'Understruken',
+    strikethrough: 'Genomstruken',
+    clearFormatting: 'Rensa formatering',
+    textColor: 'Textfärg',
+    highlighter: 'Överstrykning',
+    presetColors: 'Förinställda färger',
+    customColor: 'Anpassad färg',
+    bulletList: 'Punktlista',
+    numberedList: 'Numrerad lista',
+    insertImage: 'Infoga bild',
+    drawingArea: 'Rityta',
+    insertLink: 'Infoga länk',
+    undo: 'Ångra',
+    redo: 'Gör om',
+    prevFont: 'Föregående typsnitt',
+    nextFont: 'Nästa typsnitt',
+    brushMode: 'Penselläge',
+    alignment: 'Justering',
+    left: 'Vänster',
+    center: 'Mitten',
+    right: 'Höger',
+    justified: 'Justifierad',
+
+    // Alignment
+    alignLeft: 'Vänsterjustera',
+    alignCenter: 'Centrera',
+    alignRight: 'Högerjustera',
+    alignJustify: 'Justifiera',
+
+    // Context menu (editor)
+    convertTo: 'Konvertera till',
+    blocks: 'Block',
+    blocksHint: '(hela stycket)',
+    paragraph: 'Paragraf',
+    heading1: 'Rubrik 1',
+    heading2: 'Rubrik 2',
+    heading3: 'Rubrik 3',
+    heading4: 'Rubrik 4',
+    codeAndQuote: 'Kod & Citat',
+    codeBlock: 'Kodblock',
+    inlineCode: 'Inline-kod',
+    quote: 'Citat',
+    lists: 'Listor',
+    taskList: 'Uppgiftslista',
+    formatting: 'Formatering',
+    formattingHint: '(markering)',
+    subscript: 'Nedsänkt',
+    superscript: 'Upphöjd',
+    highlighted: 'Markerad',
+    other: 'Annat',
+    horizontalRule: 'Horisontell linje',
+    link: 'Länk',
+    linkUrl: 'Länk-URL:',
+
+    // History
+    documentHistory: 'Dokumenthistorik',
+    noHistory: 'Ingen historik tillgänglig',
+    restore: 'Återställ',
+    restoreVersion: 'Återställ denna version?',
+
+    // Settings
+    accountSettings: 'Kontoinställningar',
+    profilePicture: 'Profilbild',
+    changeAvatar: 'Byt avatar',
+    useGoogleAvatar: 'Använd Google-avatar',
+    removeAvatar: 'Ta bort avatar',
+
+    // Digital Legacy
+    digitalLegacy: 'Digitalt arv',
+    digitalLegacySettings: 'Inställningar för digitalt arv',
+    digitalLegacyDescription: 'Hantera hur ditt digitala arv ska bevaras och delas.',
+    digitalLegacyWarning: 'Dina texter blir automatiskt offentliga på din 99-årsdag och skapar ditt digitala arv.',
+    dateOfBirth: 'Födelsedatum',
+    birthday99: 'Din 99-årsdag är den',
+    noBirthDate: 'Inget födelsedatum angivet — dina dokument förblir privata för alltid.',
+    customUrlUsername: 'Anpassat användarnamn för URL',
+    usernameHint: 'Endast gemener, siffror, bindestreck och understreck.',
+    previewLegacy: 'Förhandsgranska digitalt arv',
+    previewLegacyDescription: 'Se hur din offentliga sida kommer att se ut.',
+
+    // Public view
+    allArticles: 'Alla artiklar',
+    previous: 'Föregående',
+    next: 'Nästa',
+    noTitle: 'Namnlös',
+    publicDocuments: 'offentliga dokument',
+    publicDocument: 'offentligt dokument',
+    noPublicDocuments: 'Inga offentliga dokument',
+    userNoPublicDocs: 'Denna användare har inga offentliga dokument än.',
+
+    // Footer
+    credits: 'Credits',
+    madeBy: 'Skapat med omsorg av',
+    brotherApp: 'Systerapp till',
+
+    // Errors
+    error: 'Fel',
+    documentNotFound: 'Dokument hittades inte',
+    documentNotFoundDesc: 'Dokumentet du letar efter finns inte eller har tagits bort.',
+    accessDenied: 'Åtkomst nekad',
+    documentPrivate: 'Detta dokument är privat och kan inte nås offentligt.',
+    documentNotAvailable: 'Detta dokument är inte tillgängligt.',
+    goHome: 'Gå till Hem',
+    failedToLoad: 'Kunde inte ladda',
+    failedToUpdate: 'Kunde inte uppdatera',
+
+    // Image
+    size: 'Storlek',
+    align: 'Justering',
+    duplicate: 'Duplicera',
+    full: 'Full',
+    noImageSource: 'Ingen bildkälla',
+
+    // History Panel
+    history: 'Historik',
+    snapshot: 'Ögonblicksbild',
+    empty: 'Tom',
+    restoring: 'Återställer...',
+    restoreThisVersion: 'Återställ denna version',
+    noSnapshotsYet: 'Inga ögonblicksbilder än',
+    deleteSnapshot: 'Ta bort ögonblicksbild',
+    deleteEmptySnapshots: 'Ta bort tomma ögonblicksbilder',
+    confirmDeleteSnapshot: 'Är du säker på att du vill ta bort denna ögonblicksbild?',
+    confirmDeleteEmptySnapshots: 'Är du säker på att du vill ta bort {count} tom(ma) ögonblicksbild(er)?',
+    failedToDelete: 'Kunde inte ta bort',
+    completeSave: 'Fullständig sparning. Klicka för att återställa.',
+    clearEvents: 'Rensa händelsehistorik',
+    clearingEvents: 'Rensar händelser...',
+    eventsCleared: 'Händelser rensade',
+    confirmClearEvents: 'Rensa alla inkrementella ändringar? Huvudögonblicksbilder kommer att sparas.',
+
+    // Drawing Component
+    undoLastStroke: 'Ångra senaste streck',
+    exportAsPng: 'Exportera som PNG',
+    makeAbsolute: 'Gör absolut',
+    returnToFlow: 'Återgå till textflöde',
+
+    // Link Editor
+    noLink: 'Ingen länk',
+    modify: 'Ändra',
+    removeLink: 'Ta bort länk',
+    enterUrl: 'Ange URL',
+    cancel: 'Avbryt',
+
+    // Block Menu
+    moveUp: 'Flytta upp',
+    moveDown: 'Flytta ner',
+
+    // Color Picker
+    backgroundColor: 'Bakgrundsfärg',
+
+    // Drag Handle
+    clickForOptions: 'Klicka för alternativ',
+    holdForDrag: 'Håll för att dra',
+    addContent: 'Lägg till innehåll',
+    options: 'Alternativ',
+
+    // Image Component
+    alignment: 'Justering',
+    widthLabel: 'Bredd',
+    oneThirdWidth: '1/3 av bredd',
+    twoThirdsWidth: '2/3 av bredd',
+    fullWidthLabel: 'Full bredd',
+
+    // Search & Drive
+    searchDocuments: 'Sök dokument...',
+    documents: 'Dokument',
+    folders: 'Mappar',
+    noResultsFound: 'Inga resultat hittades',
+    confirmDelete: 'Är du säker på att du vill ta bort detta objekt?',
+    confirmDeleteMultiple: 'Är du säker på att du vill ta bort {count} objekt?',
+    words: 'ord',
+    word: 'ord',
+    characters: 'tecken',
+    character: 'tecken',
+    images: 'bilder',
+    image: 'bild',
+    drawings: 'teckningar',
+    drawing: 'teckning',
+    emptyDocument: 'Tomt dokument',
+    viewPublic: 'Visa offentligt',
+    publicLabel: 'Offentlig',
+    privateLabel: 'Privat',
+    folder: 'Mapp',
+    doc: 'Dok',
+    publicClickPrivate: 'Offentlig - Klicka för att göra privat',
+    privateClickPublic: 'Privat - Klicka för att göra offentlig',
+    makePublic: 'Gör valda dokument offentliga',
+    makePrivate: 'Gör valda dokument privata',
+    gridView: 'Kompakt rutnätsvy',
+    listView: 'Listvy',
+    cannotMoveFolder: 'Kan inte flytta mapp till sin egen undermapp',
+    view: 'Vy',
+
+    // File Import
+    fileImported: 'Fil importerad',
+    failedToImport: 'Kunde inte importera fil',
+    importing: 'Importerar...',
+    dropFilesHere: 'Släpp .txt eller .md-filer här',
+    or: 'eller',
+    selectFiles: 'Välj filer',
+
+    // Settings Page
+    yourLegacyUrl: 'Din Arvs-URL',
+    copyUrl: 'Kopiera URL',
+    accessibleOn: 'Denna sida blir tillgänglig den {date}.',
+    avatarSaved: 'Avatar sparad',
+    failedToSaveAvatar: 'Kunde inte spara avatar',
+    usernameSaved: 'Användarnamn sparat',
+    failedToSaveUsername: 'Kunde inte spara användarnamn',
+    pleaseEnterBirthDate: 'Vänligen ange ditt födelsedatum',
+    birthDateSaved: 'Födelsedatum sparat',
+    docsPublicOn: 'Dina dokument blir offentliga den {date} (din 99-årsdag)',
+    failedToSaveBirthDate: 'Kunde inte spara födelsedatum',
+    legacyDisabled: 'Digitalt arv inaktiverat - dina dokument förblir privata',
+    failedToRemoveBirthDate: 'Kunde inte ta bort födelsedatum',
+    useGoogleAvatar: 'Använd Google-avatar',
+    generateRandomAvatar: 'Generera slumpmässig avatar',
+
+    // General
+    loading: 'Laddar...',
+    cancel: 'Avbryt',
+    confirm: 'Bekräfta',
+    save: 'Spara',
+    close: 'Stäng',
+    yes: 'Ja',
+    no: 'Nej',
+    language: 'Språk',
+    edit: 'Redigera',
+
+    // Sign in
+    welcomeTo: 'Välkommen till',
+    signInToAccess: 'Logga in för att komma åt dina dokument',
+    signInWithGoogle: 'Logga in med Google',
+
+    // Placeholder
+    editorPlaceholder: 'Berätta din historia...',
+    editorPlaceholderTitle: 'Titel',
+    editorPlaceholderDoc: 'Berätta din historia... Skriv / för kommandon',
+
+    // Settings extras
+    yourLegacyUrl: 'Din Eracy URL',
+    legacyAccessDate: 'Sidan blir tillgänglig',
+    creatingFolder: 'Skapar...',
+
+    // Admin Page
+    adminPanel: 'Adminpanel',
+    manageDocsUsersAdmins: 'Hantera dokument, användare och administratörsåtkomst',
+    statistics: 'Statistik',
+    usersAndAdmins: 'Användare & Administratörer',
+    totalDocuments: 'Totalt antal dokument',
+    totalUsers: 'Totalt antal användare',
+    totalSnapshots: 'Totalt antal ögonblicksbilder',
+    recent7Days: 'Senaste 7 dagarna',
+    documentsByUser: 'Dokument per användare',
+    noUser: 'Ingen användare',
+    title: 'Titel',
+    user: 'Användare',
+    created: 'Skapad',
+    updated: 'Uppdaterad',
+    snapshots: 'Ögonblicksbilder',
+    events: 'Händelser',
+    actions: 'Åtgärder',
+    email: 'E-post',
+    firstCreated: 'Först skapad',
+    lastActivity: 'Senaste aktivitet',
+    admin: 'Admin',
+    removeAdmin: 'Ta bort admin',
+    makeAdmin: 'Gör till admin',
+    failedToUpdateAdminStatus: 'Kunde inte uppdatera adminstatus',
+    pageOf: 'Sida {page} av {total}',
+
+    // Testament Page
+    digitalTestament: 'Digitalt Testamente',
+    documentsBecamePublic: 'Dokument blev offentliga den',
+    documentsWillBecomePublic: 'Dokument blir offentliga den',
+    noDocumentsAvailable: 'Inga dokument tillgängliga än.',
+    testamentNotFound: 'Testamente hittades inte',
+
+    // Archive Page
+    archive: 'Arkiv',
+    noPublicDocs: 'Inga offentliga dokument',
+    thisUserNoPublicDocs: 'Denna användare har inga offentliga dokument än.',
+    loadingText: 'Laddar...',
+    errorText: 'Fel',
+    anErrorOccurred: 'Ett fel uppstod',
+    failedToLoadDocuments: 'Kunde inte ladda dokument',
+
+    // Privacy Policy (English)
+    privacyTitle: 'Privacy Policy',
+    privacyLastUpdated: 'Last Updated',
+    privacyLastUpdatedDate: 'This Privacy Policy was last updated on',
+    privacyIntroduction: 'Introduction',
+    privacyIntroductionText: 'TextPad ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.',
+    privacyDataCollection: 'Information We Collect',
+    privacyDataCollectionText: 'We collect information that you provide directly to us, including:',
+    privacyDataEmail: 'Email address and authentication information',
+    privacyDataDocuments: 'Documents and content you create',
+    privacyDataProfile: 'Profile information (avatar, birth date for digital legacy)',
+    privacyDataSettings: 'Settings and preferences',
+    privacyDataUse: 'How We Use Your Information',
+    privacyDataUseText: 'We use the information we collect to:',
+    privacyUseService: 'Provide, maintain, and improve our service',
+    privacyUseSecurity: 'Ensure security and prevent fraud',
+    privacyUseSupport: 'Respond to your requests and provide support',
+    privacyUseLegacy: 'Enable digital legacy features as configured',
+    privacyDataSharing: 'Data Sharing',
+    privacyDataSharingText: 'We do not sell your personal information. We may share your information only:',
+    privacySharePublic: 'When you make documents public',
+    privacyShareLegacy: 'For digital legacy purposes as you configure',
+    privacyShareLegal: 'When required by law',
+    privacyDataSecurity: 'Data Security',
+    privacyDataSecurityText: 'We implement appropriate technical and organizational measures to protect your personal information. However, no method of transmission over the Internet is 100% secure.',
+    privacyYourRights: 'Your Rights',
+    privacyYourRightsText: 'You have the right to:',
+    privacyRightAccess: 'Access your personal data',
+    privacyRightDelete: 'Delete your account and data',
+    privacyRightExport: 'Export your documents',
+    privacyRightUpdate: 'Update your information',
+    privacyContact: 'Contact Us',
+    privacyContactText: 'If you have questions about this Privacy Policy, please contact us through the settings page.',
+
+    // Terms of Service (English)
+    termsTitle: 'Terms of Service',
+    termsLastUpdated: 'Last Updated',
+    termsLastUpdatedDate: 'These Terms of Service were last updated on',
+    termsAgreement: 'Agreement to Terms',
+    termsAgreementText: 'By accessing or using TextPad, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access the service.',
+    termsUse: 'Use License',
+    termsUseText: 'Permission is granted to use TextPad for personal and commercial purposes, subject to the following restrictions:',
+    termsRestrictCopy: 'You may not copy or modify the software',
+    termsRestrictReverse: 'You may not attempt to reverse engineer the service',
+    termsRestrictAbuse: 'You may not use the service for illegal purposes',
+    termsRestrictSpam: 'You may not spam or abuse other users',
+    termsContent: 'User Content',
+    termsContentText: 'You retain ownership of all content you create using TextPad. By using the service, you grant us a license to store and display your content as necessary to provide the service.',
+    termsProhibited: 'Prohibited Uses',
+    termsProhibitedText: 'You may not use TextPad:',
+    termsProhibitedIllegal: 'For any unlawful purpose',
+    termsProhibitedHarm: 'To harm or harass others',
+    termsProhibitedViolate: 'To violate any laws or regulations',
+    termsProhibitedInfringe: 'To infringe on intellectual property rights',
+    termsDisclaimer: 'Disclaimer',
+    termsDisclaimerText: 'TextPad is provided "as is" without warranties of any kind. We do not guarantee that the service will be uninterrupted, secure, or error-free.',
+    termsLimitation: 'Limitation of Liability',
+    termsLimitationText: 'In no event shall TextPad be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with your use of the service.',
+    termsChanges: 'Changes to Terms',
+    termsChangesText: 'We reserve the right to modify these terms at any time. Your continued use of the service after changes constitutes acceptance of the new terms.',
+    termsContact: 'Contact Us',
+    termsContactText: 'If you have questions about these Terms of Service, please contact us through the settings page.',
+
+    // Features Page
+    featuresTitle: 'Funktioner',
+    featuresSubtitle: 'Vad Textpad kan göra',
+    featuresIntro: 'Din privata anteckningsbok med offentliga alternativ. Skriv för dig själv. Dela när du är redo.',
+    featureDigitalLegacyTitle: 'Digitalt Arv',
+    featureDigitalLegacyDesc: 'Skriv nu, publicera på din 99-årsdag. Dina ord lever vidare.',
+    featurePublicBlogTitle: 'Offentlig blogg & Arkiv',
+    featurePublicBlogDesc: 'Få din egen underdomän. Dela ditt skrivande offentligt.',
+    featureShareableLinksTitle: 'Delbara länkar',
+    featureShareableLinksDesc: 'Dela valfritt dokument med en enkel länk.',
+    featureTabsDriveTitle: 'Flikar & Drive',
+    featureTabsDriveDesc: 'Organisera dokument i mappar. Arbeta med flera filer.',
+    featureVersionHistoryTitle: 'Versionshistorik',
+    featureVersionHistoryDesc: 'Varje sparning bevaras. Återställ valfri version.',
+    featureImagesDrawingsTitle: 'Bilder & Teckningar',
+    featureImagesDrawingsDesc: 'Lägg till bilder, ändra storlek, rita direkt i dina dokument.',
+
+    // Disposable/Temp Pad
+    tempPadExpirationBanner: 'Detta dokument upphör om {time}.',
+    makePermanent: 'Spara permanent',
+    claimingPad: 'Sparar permanent...',
+    padClaimed: 'Dokument sparat!',
   },
 }
 
