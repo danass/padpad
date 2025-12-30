@@ -16,7 +16,15 @@ export async function GET(request) {
     }
 
     if (!isAuthorized) {
-        return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        return Response.json({
+            error: 'Unauthorized',
+            debug: {
+                hasAuthHeader: !!authHeader,
+                hasCronSecret: !!process.env.CRON_SECRET,
+                isCronSecret,
+                nodeEnv: process.env.NODE_ENV
+            }
+        }, { status: 401 })
     }
 
     try {
