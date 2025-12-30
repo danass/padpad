@@ -24,13 +24,13 @@ export default function Footer() {
           </div>
         )}
         {/* Legal links - always visible */}
-        <Link href="/privacy" className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
+        <Link href="/privacy" prefetch={false} className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
           {t?.privacy || 'Privacy'}
         </Link>
-        <Link href="/terms" className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
+        <Link href="/terms" prefetch={false} className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
           {t?.terms || 'Terms'}
         </Link>
-        <Link href="/credits" className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
+        <Link href="/credits" prefetch={false} className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">
           {t?.credits || 'Credits'}
         </Link>
         <LanguageSelector compact />

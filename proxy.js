@@ -46,12 +46,10 @@ export async function proxy(request) {
     }
 
     const applyCors = (res) => {
-        // Add Vary header for compression audits
-        const existingVary = res.headers.get('Vary')
-        if (!existingVary) {
-            res.headers.set('Vary', 'Accept-Encoding')
-        } else if (!existingVary.includes('Accept-Encoding')) {
-            res.headers.set('Vary', `${existingVary}, Accept-Encoding`)
+        // Add Accept-Encoding to Vary header if not present
+        const vary = res.headers.get('Vary') || ''
+        if (!vary.includes('Accept-Encoding')) {
+            res.headers.set('Vary', vary ? `${vary}, Accept-Encoding` : 'Accept-Encoding')
         }
 
         if (isAllowedOrigin(origin)) {
@@ -127,28 +125,26 @@ export async function proxy(request) {
         }
     }
 
-    // Auth check for main domain and other cases
-    const session = await auth()
-
-    // Allow access to static files
-    const staticFileExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.ico', '.css', '.js', '.woff', '.woff2', '.ttf', '.eot']
-    if (staticFileExtensions.some(ext => pathname.toLowerCase().endsWith(ext))) {
+    // 1. Skip auth for static files
+    const staticFileExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.ico', '.css', '.js', '.woff', '.woff2', '.ttf', '.eot', '.json']
+    if (staticFileExtensions.some(ext => pathname.toLowerCase().endsWith(ext)) || pathname.includes('/_next/')) {
         return applyCors(NextResponse.next())
     }
 
-    // Allow access to public routes and root page
+    // 2. Skip auth for public routes and root page
     const publicPaths = [
         '/', '/auth', '/api/auth', '/api/migrate', '/public',
         '/api/public', '/online-text-editor', '/features',
         '/featured', '/robots.txt', '/sitemap.xml', '/privacy', '/terms', '/credits',
-        '/fr', '/en', '/feed', '/api/feed', '/api/documents', '/api/ipfs', '/api/unfurl', '/api/contact'
+        '/fr', '/en', '/feed', '/api/feed', '/api/documents', '/api/ipfs', '/api/unfurl', '/api/contact',
+        '/api/debug/doc'
     ]
 
     if (publicPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
         return applyCors(NextResponse.next())
     }
 
-    // List of paths that REQUIRE authentication
+    // 3. List of paths that REQUIRE authentication
     const protectedPaths = [
         '/drive', '/settings', '/admin', '/documents',
         '/api/documents', '/api/folders', '/api/users', '/api/admin'
@@ -156,22 +152,25 @@ export async function proxy(request) {
 
     const requiresAuth = protectedPaths.some(path => pathname === path || pathname.startsWith(path + '/'))
 
-    // Require authentication ONLY for protected paths
-    if (requiresAuth && !session) {
-        // Return 401 for API routes instead of redirecting
-        if (pathname.startsWith('/api/')) {
-            return applyCors(new NextResponse(
-                JSON.stringify({ error: 'Unauthorized' }),
-                { status: 401, headers: { 'Content-Type': 'application/json' } }
-            ))
-        }
+    // 4. Require authentication ONLY for protected paths
+    if (requiresAuth) {
+        const session = await auth()
+        if (!session) {
+            // Return 401 for API routes instead of redirecting
+            if (pathname.startsWith('/api/')) {
+                return applyCors(new NextResponse(
+                    JSON.stringify({ error: 'Unauthorized' }),
+                    { status: 401, headers: { 'Content-Type': 'application/json' } }
+                ))
+            }
 
-        const signInUrl = new URL('/auth/signin', request.url)
-        signInUrl.searchParams.set('callbackUrl', pathname)
-        return applyCors(NextResponse.redirect(signInUrl))
+            const signInUrl = new URL('/auth/signin', request.url)
+            signInUrl.searchParams.set('callbackUrl', pathname)
+            return applyCors(NextResponse.redirect(signInUrl))
+        }
     }
 
-    // For everything else (including junk URLs), let Next.js handle it (showing 404 if non-existent)
+    // For everything else (including junk URLs/404s), let Next.js handle it
     return applyCors(NextResponse.next())
 }
 

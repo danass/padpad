@@ -62,14 +62,26 @@ export default function UniversalHeader() {
                 hasLoadedRef.current = false
             }
 
-            // Load logic
-            if (!hasLoadedRef.current) {
+            // Load logic - Lazy check
+            // Only load immediately IF on a page that likely needs it (admin or drive)
+            const needsImmediateLoad = pathname?.startsWith('/admin') || pathname?.startsWith('/drive') || pathname?.startsWith('/settings')
+
+            if (needsImmediateLoad && !hasLoadedRef.current) {
                 hasLoadedRef.current = true
                 checkAdminStatus()
                 loadAvatar()
             }
         }
-    }, [session?.user?.email])
+    }, [session?.user?.email, pathname])
+
+    // Load on menu hover/interaction if not already loaded
+    const onUserInteraction = () => {
+        if (session?.user?.email && !hasLoadedRef.current) {
+            hasLoadedRef.current = true
+            checkAdminStatus()
+            loadAvatar()
+        }
+    }
 
     const loadAvatar = async () => {
         const now = Date.now()
@@ -169,8 +181,8 @@ export default function UniversalHeader() {
                         </Link>
 
                         <nav className="hidden md:flex items-center gap-6">
-                            <Link href="/feed" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/feed' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeed || 'Feed'}</Link>
-                            <Link href="/featured" className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/featured' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeatured || 'Featured'}</Link>
+                            <Link href="/feed" prefetch={false} className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/feed' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeed || 'Feed'}</Link>
+                            <Link href="/featured" prefetch={false} className={`text-xs font-semibold uppercase tracking-wider transition-colors ${pathname === '/featured' ? 'text-black' : 'text-gray-400 hover:text-black'}`}>{t?.navFeatured || 'Featured'}</Link>
                         </nav>
                     </div>
 
@@ -215,7 +227,8 @@ export default function UniversalHeader() {
 
                                 <div className="relative" ref={menuRef}>
                                     <button
-                                        onClick={() => setShowUserMenu(!showUserMenu)}
+                                        onClick={() => { setShowUserMenu(!showUserMenu); onUserInteraction(); }}
+                                        onMouseEnter={onUserInteraction}
                                         className="w-8 h-8 md:w-9 md:h-9 rounded-full overflow-hidden flex items-center justify-center bg-gray-200 hover:ring-2 hover:ring-gray-300 transition-all cursor-pointer"
                                     >
                                         {customAvatar ? (
