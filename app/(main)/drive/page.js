@@ -23,43 +23,32 @@ export default function DrivePage() {
   const isSearchingRef = useRef(false)
   const hasLoadedRef = useRef(false)
   const isLoadingRef = useRef(false)
-  
+
   const loadData = useCallback(async () => {
     // Prevent multiple simultaneous loads
     if (isLoadingRef.current) {
       return
     }
-    
+
     // Don't load data if we're currently showing search results
     if (isSearchingRef.current) {
       return
     }
-    
+
     isLoadingRef.current = true
     setLoading(true)
     try {
-      // First, assign any orphaned documents to current user (one-time migration)
-      // Only do this once
-      if (!hasLoadedRef.current) {
-        try {
-          await fetch('/api/migrate-assign-orphans', { method: 'POST' })
-        } catch (err) {
-          // Ignore errors, continue loading
-        }
-        hasLoadedRef.current = true
-      }
-      
       // Load all folders (not just root) to build complete tree
       const [docsRes, foldersRes] = await Promise.all([
         fetch('/api/documents?folder_id=null'),
         fetch('/api/folders') // Get all folders, not just root
       ])
-      
+
       if (docsRes.ok) {
         const docsData = await docsRes.json()
         setDocuments(docsData.documents || [])
       }
-      
+
       if (foldersRes.ok) {
         const foldersData = await foldersRes.json()
         // Build tree structure with all folders
@@ -72,12 +61,12 @@ export default function DrivePage() {
       isLoadingRef.current = false
     }
   }, [])
-  
+
   useEffect(() => {
     loadData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  
+
   const handleSearchResults = useCallback((results) => {
     if (results) {
       // We have search results
@@ -96,14 +85,14 @@ export default function DrivePage() {
       const wasSearching = isSearchingRef.current
       isSearchingRef.current = false
       setSearchResults(null)
-      
+
       if (wasSearching) {
         // Only reload if we were actually in search mode
         loadData()
       }
     }
   }, [loadData])
-  
+
   const createDocument = useCallback(async () => {
     setCreatingDoc(true)
     try {
@@ -112,7 +101,7 @@ export default function DrivePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: 'Untitled', folder_id: null })
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         showToast('Document created', 'success')
@@ -128,10 +117,10 @@ export default function DrivePage() {
       setCreatingDoc(false)
     }
   }, [router, showToast])
-  
+
   const createFolder = useCallback(async (name, parentId = null) => {
     if (!name || !name.trim()) return
-    
+
     setCreatingFolder(true)
     try {
       const response = await fetch('/api/folders', {
@@ -139,7 +128,7 @@ export default function DrivePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), parent_id: parentId })
       })
-      
+
       if (response.ok) {
         showToast('Folder created', 'success')
         loadData()
@@ -156,13 +145,13 @@ export default function DrivePage() {
       setCreatingFolder(false)
     }
   }, [loadData, showToast])
-  
+
   const deleteDocument = useCallback(async (id) => {
     try {
       const response = await fetch(`/api/documents/${id}`, {
         method: 'DELETE'
       })
-      
+
       if (response.ok) {
         // Dispatch event to close tab
         window.dispatchEvent(new CustomEvent('documentDeleted', {
@@ -178,7 +167,7 @@ export default function DrivePage() {
       showToast('Failed to delete document', 'error')
     }
   }, [loadData, showToast])
-  
+
   const togglePublic = useCallback(async (id, isPublic) => {
     try {
       const response = await fetch(`/api/documents/${id}/public`, {
@@ -186,10 +175,10 @@ export default function DrivePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_public: isPublic })
       })
-      
+
       if (response.ok) {
         // Update local state immediately
-        setDocuments(prev => prev.map(doc => 
+        setDocuments(prev => prev.map(doc =>
           doc.id === id ? { ...doc, is_public: isPublic } : doc
         ))
         showToast(isPublic ? (t?.nowPublic || 'Now public') : (t?.nowPrivate || 'Now private'), 'success')
@@ -201,13 +190,13 @@ export default function DrivePage() {
       showToast(t?.failedToUpdate || 'Failed to update', 'error')
     }
   }, [showToast])
-  
+
   const deleteFolder = useCallback(async (id) => {
     try {
       const response = await fetch(`/api/folders/${id}`, {
         method: 'DELETE'
       })
-      
+
       if (response.ok) {
         showToast('Folder deleted', 'success')
         loadData()
@@ -219,18 +208,18 @@ export default function DrivePage() {
       showToast('Failed to delete folder', 'error')
     }
   }, [loadData, showToast])
-  
+
   const moveItem = useCallback(async (itemId, itemType, targetFolderId) => {
     try {
       const endpoint = itemType === 'folder' ? `/api/folders/${itemId}` : `/api/documents/${itemId}`
       const field = itemType === 'folder' ? 'parent_id' : 'folder_id'
-      
+
       const response = await fetch(endpoint, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: targetFolderId })
       })
-      
+
       if (response.ok) {
         showToast(`${itemType === 'folder' ? 'Folder' : 'Document'} moved`, 'success')
         loadData()
@@ -245,7 +234,7 @@ export default function DrivePage() {
       return false
     }
   }, [loadData, showToast])
-  
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -253,7 +242,7 @@ export default function DrivePage() {
       </div>
     )
   }
-  
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8">
@@ -261,11 +250,11 @@ export default function DrivePage() {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1 md:mb-2">{t?.drive || 'Drive'}</h1>
           <p className="text-xs md:text-sm text-gray-500">Manage your documents and folders</p>
         </div>
-        
+
         <div className="mb-4 md:mb-6 max-w-2xl">
           <SearchBar onResults={handleSearchResults} />
         </div>
-        
+
         <div className="bg-white border border-gray-200 rounded-md p-3 md:p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0 mb-4">
             <h2 className="text-lg md:text-xl font-semibold text-gray-900">Documents</h2>
@@ -292,14 +281,14 @@ export default function DrivePage() {
               </button>
             </div>
           </div>
-          <DocumentList 
+          <DocumentList
             documents={searchResults ? [
               ...(searchResults.folders || []).map(f => ({ ...f, type: 'folder' })),
               ...(searchResults.documents || []).map(d => ({ ...d, type: 'document' }))
             ] : [
               ...folders.map(f => ({ ...f, type: 'folder' })),
               ...documents.map(d => ({ ...d, type: 'document' }))
-            ]} 
+            ]}
             allFolders={folders}
             onDelete={(id) => {
               const item = [...folders, ...documents].find(i => i.id === id)

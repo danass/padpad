@@ -242,7 +242,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
           }`}
       >
         {item.type === 'folder' ? (
-          <Link href={`/drive/folder/${item.id}`} className="block">
+          <Link href={`/drive/folder/${item.id}`} prefetch={false} className="block">
             {viewMode !== 'list-no-icons' && (
               <svg className="w-8 h-8 text-blue-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -252,7 +252,7 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
             <p className="text-xs text-gray-500 mt-1">{t?.folder || 'Folder'}</p>
           </Link>
         ) : (
-          <Link href={`/doc/${item.id}`} className="block">
+          <Link href={`/doc/${item.id}`} prefetch={false} className="block">
             {viewMode !== 'list-no-icons' && (
               <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -338,14 +338,14 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
             />
           </div>
           {item.type === 'folder' ? (
-            <Link href={`/drive/folder/${item.id}`} className="col-span-5 flex items-center gap-2">
+            <Link href={`/drive/folder/${item.id}`} prefetch={false} className="col-span-5 flex items-center gap-2">
               <svg className="w-4 h-4 md:w-5 md:h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
               </svg>
               <h3 className="font-medium text-sm md:text-base truncate">{item.name}</h3>
             </Link>
           ) : (
-            <Link href={`/doc/${item.id}`} className="col-span-5 flex flex-col gap-0.5">
+            <Link href={`/doc/${item.id}`} prefetch={false} className="col-span-5 flex flex-col gap-0.5">
               <div className="flex items-center gap-2">
                 <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -373,8 +373,8 @@ function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, on
                   onTogglePublic(item.id, !item.is_public)
                 }}
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${item.is_public
-                    ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                    : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                  ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                  : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                   }`}
                 title={item.is_public ? (t?.publicClickPrivate || 'Public - Click to make private') : (t?.privateClickPublic || 'Private - Click to make public')}
               >
