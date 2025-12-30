@@ -24,17 +24,12 @@ export default function MigratePage() {
       const featuredResponse = await fetch('/api/migrate-featured')
       const featuredData = await featuredResponse.json()
 
-      // Run admin migration
-      const adminMigResponse = await fetch('/api/migrate-admin', { method: 'POST' })
-      const adminMigData = await adminMigResponse.json()
-
       setResult({
-        success: mainData.success && (featuredData.success !== false) && (adminMigData.success !== false),
+        success: mainData.success && (featuredData.success !== false),
         message: 'All migrations completed successfully!',
         details: {
           main: mainData,
-          featured: featuredData,
-          admin: adminMigData
+          featured: featuredData
         }
       })
     } catch (error) {

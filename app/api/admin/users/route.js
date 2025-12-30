@@ -9,31 +9,23 @@ export async function GET() {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    // Get all unique users with their document counts
+    // Get all unique users with their document counts and roles
     const result = await sql.query(
       `SELECT 
-         COALESCE(d.user_id, 'No user') as email,
+         COALESCE(d.user_id, u.id, 'No user') as email,
          u.role,
          COUNT(DISTINCT d.id) as document_count,
          MAX(d.updated_at) as last_activity,
          MIN(d.created_at) as first_created
-        FROM documents d
-        LEFT JOIN users u ON d.user_id = u.id
-        WHERE d.user_id IS NOT NULL
-        GROUP BY d.user_id, u.role
+        FROM users u
+        LEFT JOIN documents d ON u.id = d.user_id
+        GROUP BY u.id, u.role
         ORDER BY document_count DESC`
     )
 
-    // Get all admins
-    const adminsResult = await sql.query(
-      'SELECT email FROM admins ORDER BY created_at DESC'
-    )
-    const adminEmails = new Set(adminsResult.rows.map(r => r.email))
-
-    // Merge admin status
     const users = result.rows.map(user => ({
       ...user,
-      isAdmin: adminEmails.has(user.email)
+      isAdmin: user.role === 'admin'
     }))
 
     return Response.json({ users })

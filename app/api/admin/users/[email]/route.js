@@ -18,23 +18,23 @@ export async function POST(request, { params }) {
     }
 
     if (setAdmin) {
-      // Add to admins table
+      // Update role to admin in users table
       await sql.query(
-        'INSERT INTO admins (email) VALUES ($1) ON CONFLICT (email) DO NOTHING',
+        "UPDATE users SET role = 'admin' WHERE id = $1",
         [email]
       )
     } else {
-      // Remove from admins table
+      // Update role to user in users table
       await sql.query(
-        'DELETE FROM admins WHERE email = $1',
+        "UPDATE users SET role = 'user' WHERE id = $1",
         [email]
       )
     }
 
-    // Update role in users table if provided
-    if (role !== undefined) {
+    // Explicitly update role if provided in body
+    if (role !== undefined && role !== 'admin' && !setAdmin) {
       await sql.query(
-        'UPDATE users SET role = $1 WHERE email = $2',
+        "UPDATE users SET role = $1 WHERE id = $2",
         [role, email]
       )
     }
