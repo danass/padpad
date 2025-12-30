@@ -23,7 +23,8 @@ export async function proxy(request) {
     const { pathname, hostname } = request.nextUrl
 
     // 1. Advanced Bot Defense & Rate Limiting with Arcjet
-    if (process.env.ARCJET_KEY) {
+    // Skip Bot Defense for Cron Jobs (authenticated by CRON_SECRET in the route)
+    if (process.env.ARCJET_KEY && !pathname.startsWith('/api/cron')) {
         const decision = await aj.protect(request)
         if (decision.isDenied()) {
             if (decision.reason.isBot()) {
