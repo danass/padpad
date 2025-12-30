@@ -146,6 +146,8 @@ export async function POST(request, { params }) {
 
     // Extract plain text
     const content_text = extractPlainText(content_json)
+    const word_count = content_text.trim().split(/\s+/).filter(w => w.length > 0).length
+    const char_count = content_text.length
 
     // Check if content is empty (only empty paragraphs)
     const isEmpty = (content) => {
@@ -192,14 +194,16 @@ export async function POST(request, { params }) {
       [snapshotId, id, JSON.stringify(content_json), content_text]
     )
 
-    // Update document with snapshot reference and content_text
+    // Update document with snapshot reference, content_text and stats
     await sql.query(
       `UPDATE documents 
        SET current_snapshot_id = $1, 
            content_text = $2,
+           word_count = $3,
+           char_count = $4,
            updated_at = NOW()
-       WHERE id = $3`,
-      [snapshotId, content_text, id]
+       WHERE id = $5`,
+      [snapshotId, content_text, word_count, char_count, id]
     )
 
     // Prune events: once a snapshot is created, we don't need the prior events 

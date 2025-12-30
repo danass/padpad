@@ -11,31 +11,12 @@ import { useLanguage } from '@/app/i18n/LanguageContext'
 const getDocumentStats = (item) => {
   if (item.type === 'folder') return null
 
-  const stats = {
-    characters: 0,
-    words: 0,
-    images: 0,
-    drawings: 0
+  return {
+    characters: item.char_count || 0,
+    words: item.word_count || 0,
+    images: item.image_count || 0,
+    drawings: item.drawing_count || 0
   }
-
-  // Get character and word count from content_text
-  if (item.content_text) {
-    stats.characters = item.content_text.length
-    const words = item.content_text.trim().split(/\s+/).filter(w => w.length > 0)
-    stats.words = words.length
-  }
-
-  // Count images and drawings from content if available
-  // This requires the content JSON which we'll need to fetch
-  // For now, we'll add this info to the API response
-  if (item.image_count !== undefined) {
-    stats.images = item.image_count
-  }
-  if (item.drawing_count !== undefined) {
-    stats.drawings = item.drawing_count
-  }
-
-  return stats
 }
 
 // Format stats for display - économique
@@ -70,12 +51,7 @@ const formatStats = (stats) => {
 
 // Get preview text (first ~50 characters)
 const getPreviewText = (item) => {
-  if (!item.content_text || item.content_text.trim().length === 0) {
-    return null
-  }
-  const text = item.content_text.trim()
-  if (text.length <= 60) return text
-  return text.substring(0, 57) + '...'
+  return item.preview_text || null
 }
 
 function DocumentList({ documents, allFolders = [], onDelete, onCreateFolder, onMove, onTogglePublic, currentFolderId = null, parentFolderId = null, onNavigateToParent }) {

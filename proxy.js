@@ -1,27 +1,44 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
+import arcjet, { detectBot, shield, fixedWindow } from "@arcjet/next"
 
-const BLOCKED_PATHS = [
-    '/wp-admin',
-    '/wp-login',
-    '/wordpress',
-    '/wp-content',
-    '/wp-includes',
-    '/xmlrpc.php',
-    '/.env',
-    '/.git',
-    '/.well-known',
-    '/phpmyadmin',
-    '/admin/setup-config.php',
-    '/setup-config.php',
-    '/wp-admin/setup-config.php'
-]
+const aj = arcjet({
+    key: process.env.ARCJET_KEY, // This should be added to .env.local
+    characteristics: ["ip.src"], // Track by IP
+    rules: [
+        shield({ mode: "LIVE" }), // Common attack protection
+        detectBot({
+            mode: "LIVE",
+            allow: ["CATEGORY:SEARCH_ENGINE"], // Allow Google, Bing, etc.
+        }),
+        fixedWindow({
+            mode: "LIVE",
+            window: "1m",
+            max: 60, // 60 requests per minute per IP
+        }),
+    ],
+})
 
 export async function proxy(request) {
     const { pathname, hostname } = request.nextUrl
 
-    // 1. Bot Defense - Block common attack vectors immediately
-    if (BLOCKED_PATHS.some(path => pathname.toLowerCase().startsWith(path))) {
+    // 1. Advanced Bot Defense & Rate Limiting with Arcjet
+    if (process.env.ARCJET_KEY) {
+        const decision = await aj.protect(request)
+        if (decision.isDenied()) {
+            if (decision.reason.isBot()) {
+                return new NextResponse(null, { status: 403, statusText: "Bot Access Denied" })
+            } else if (decision.reason.isRateLimit()) {
+                return new NextResponse(null, { status: 429, statusText: "Too Many Requests" })
+            } else {
+                return new NextResponse(null, { status: 403, statusText: "Forbidden" })
+            }
+        }
+    }
+
+    // Fallback for manual blocked paths if Arcjet key is missing or for specific legacy needs
+    const MANUAL_BLOCKED = ['/.env', '/wp-admin', '/.git']
+    if (MANUAL_BLOCKED.some(path => pathname.toLowerCase().startsWith(path))) {
         return new NextResponse(null, { status: 404 })
     }
 
