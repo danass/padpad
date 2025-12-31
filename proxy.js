@@ -1,6 +1,6 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
-import arcjet, { detectBot, shield, fixedWindow } from "@arcjet/next"
+import arcjet, { detectBot, shield } from "@arcjet/next"
 
 const aj = arcjet({
     key: process.env.ARCJET_KEY,
@@ -11,11 +11,7 @@ const aj = arcjet({
             mode: "LIVE",
             allow: ["CATEGORY:SEARCH_ENGINE"],
         }),
-        fixedWindow({
-            mode: "LIVE",
-            window: "1m",
-            max: 60,
-        }),
+        // No rate limiting - just block bots and attacks
     ],
 })
 
