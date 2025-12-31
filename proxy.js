@@ -1,6 +1,6 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
-import arcjet, { detectBot, shield, fixedWindow, filter } from "@arcjet/next"
+import arcjet, { detectBot, shield, fixedWindow } from "@arcjet/next"
 
 const aj = arcjet({
     key: process.env.ARCJET_KEY,
@@ -15,21 +15,6 @@ const aj = arcjet({
             mode: "LIVE",
             window: "1m",
             max: 60,
-        }),
-        // Block WordPress probes, env files, git, etc. at Arcjet level
-        filter({
-            mode: "LIVE",
-            deny: [
-                'http.request.uri.path wildcard "/wp-admin*"',
-                'http.request.uri.path wildcard "/wordpress*"',
-                'http.request.uri.path wildcard "/wp-includes*"',
-                'http.request.uri.path wildcard "/wp-content*"',
-                'http.request.uri.path wildcard "/wp-login*"',
-                'http.request.uri.path wildcard "/xmlrpc.php*"',
-                'http.request.uri.path wildcard "/.env*"',
-                'http.request.uri.path wildcard "/.git*"',
-                'http.request.uri.path wildcard "/phpmyadmin*"',
-            ],
         }),
     ],
 })
@@ -53,7 +38,11 @@ export async function proxy(request) {
         }
     }
 
-    // WordPress and probe paths are now blocked by Arcjet filter rule above
+    // Manual blocked paths - WordPress probes, env files, git, etc.
+    const MANUAL_BLOCKED = ['/.env', '/wp-admin', '/wordpress', '/wp-includes', '/wp-content', '/wp-login', '/.git', '/xmlrpc.php', '/phpmyadmin']
+    if (MANUAL_BLOCKED.some(path => pathname.toLowerCase().startsWith(path))) {
+        return new NextResponse(null, { status: 404 })
+    }
 
     const origin = request.headers.get('origin')
     const allowedOrigins = [
