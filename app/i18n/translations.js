@@ -25,7 +25,7 @@ export const translations = {
   en: {
     // App
     appName: 'textpad',
-    tagline: 'A simple, beautiful writing space',
+    tagline: 'The Uncensorable Blog',
 
     // Header
     newDocument: 'New Document',
@@ -54,22 +54,22 @@ export const translations = {
     home: 'Home',
 
     // Home page
-    homeTitle: 'Textpad – The Permanent Notepad for the Creative Web',
-    heroTitlePart1: 'The Permanent Notepad for the ',
-    heroTitlePart2: 'Creative Web',
-    heroSubtitle: 'A decentralized text editor built on IPFS. Your thoughts, sketches, and documents — saved to the permanent web without a required account.',
+    homeTitle: 'Textpad Cloud – The Uncensorable Blog',
+    heroTitlePart1: 'The Uncensorable ',
+    heroTitlePart2: 'Blog',
+    heroSubtitle: 'A notepad & blog that lives on your own decentralized storage. Write. Your words, forever. For artists and free thinkers.',
     homeEdgeTitle: 'The Textpad Edge',
-    homeLegacyTitle: 'A legacy for the future',
-    homeLegacySubtitle: 'Textpad is built for permanence. Whether you\'re drafting a quick thought to IPFS or building a lifelong digital testament to be discovered by future generations, our tools ensure your words survive the test of time.',
-    homeCreateNote: 'Create Your First Note',
+    homeLegacyTitle: 'Censorship-Resistant Writing',
+    homeLegacySubtitle: 'Your words live on your own IPFS storage, beyond anyone\'s reach. Whether you\'re an artist, activist, or free thinker — Textpad is your space for ideas that can\'t be silenced.',
+    homeCreateNote: 'Start Writing',
     homeForWhoTitle: 'Who is Textpad for?',
     homeFaqTitle: 'Questions & Answers',
-    homeReadyTitle: 'Ready to write for the permanent web?',
-    homeReadySubtitle: 'Start your creative journey on Textpad today.',
+    homeReadyTitle: 'Ready to write without borders?',
+    homeReadySubtitle: 'Join artists and free thinkers on the uncensorable web.',
 
     // Feature titles
-    featureIPFSTitle: 'IPFS Persistence',
-    featureIPFSDesc: 'Save your work directly to the permanent web. Censorship-resistant and decentralized storage.',
+    featureIPFSTitle: 'Decentralized Storage',
+    featureIPFSDesc: 'Your content lives on your own IPFS storage. Censorship-resistant, permanent, and beyond anyone\'s control.',
     featureLegacyTitle: 'Digital Legacy',
     featureLegacyDesc: 'Write now, publish on your 99th birthday. Preserve your words for future generations automatically.',
     featureDriveTitle: 'Smart Drive & Tabs',
@@ -623,22 +623,22 @@ export const translations = {
     home: 'Accueil',
 
     // Home page
-    homeTitle: 'Textpad – Le Bloc-notes Permanent pour le Web Créatif',
-    heroTitlePart1: 'Le Bloc-notes Permanent pour le ',
-    heroTitlePart2: 'Web Créatif',
-    heroSubtitle: 'Un éditeur de texte décentralisé construit sur IPFS. Vos pensées, croquis et documents — sauvegardés sur le web permanent sans compte requis.',
+    homeTitle: 'Textpad Cloud – Le Blog Incensurable',
+    heroTitlePart1: 'Le Blog ',
+    heroTitlePart2: 'Incensurable',
+    heroSubtitle: 'Un bloc-notes & blog qui vit sur votre propre stockage décentralisé. Écrivez. Vos mots, pour toujours. Pour artistes et esprits libres.',
     homeEdgeTitle: 'L\'Atout Textpad',
-    homeLegacyTitle: 'Un héritage pour l\'avenir',
-    homeLegacySubtitle: 'Textpad est conçu pour la permanence. Que vous rédigiez une pensée rapide sur IPFS ou que vous créiez un legs numérique pour les générations futures, nos outils garantissent que vos paroles traversent le temps.',
-    homeCreateNote: 'Créez votre première note',
+    homeLegacyTitle: 'Écriture Résistante à la Censure',
+    homeLegacySubtitle: 'Vos mots vivent sur votre propre stockage IPFS, hors de portée de quiconque. Que vous soyez artiste, activiste ou esprit libre — Textpad est votre espace pour des idées qu\'on ne peut faire taire.',
+    homeCreateNote: 'Commencer à Écrire',
     homeForWhoTitle: 'Pour qui est fait Textpad ?',
     homeFaqTitle: 'Questions & Réponses',
-    homeReadyTitle: 'Prêt à écrire pour le web permanent ?',
-    homeReadySubtitle: 'Commencez votre voyage créatif sur Textpad dès aujourd\'hui.',
+    homeReadyTitle: 'Prêt à écrire sans frontières ?',
+    homeReadySubtitle: 'Rejoignez artistes et esprits libres sur le web incensurable.',
 
     // Feature titles
-    featureIPFSTitle: 'Persistance IPFS',
-    featureIPFSDesc: 'Enregistrez votre travail directement sur le web permanent. Stockage décentralisé et résistant à la censure.',
+    featureIPFSTitle: 'Stockage Décentralisé',
+    featureIPFSDesc: 'Votre contenu vit sur votre propre stockage IPFS. Résistant à la censure, permanent, hors de contrôle de quiconque.',
     featureLegacyTitle: 'Héritage Numérique',
     featureLegacyDesc: 'Écrivez maintenant, publiez le jour de vos 99 ans. Préservez vos paroles pour les générations futures.',
     featureDriveTitle: 'Smart Drive & Onglets',

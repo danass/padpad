@@ -14,16 +14,16 @@ const GA_MEASUREMENT_ID = 'G-S6HWH3G1B4'
 // SEO translations
 const seoTranslations = {
   en: {
-    title: 'Textpad – The Permanent Notepad for the Creative Web',
-    description: 'A decentralized text editor built on IPFS. Save your documents, sketches, and blog posts to the permanent web. Features include private sharing, digital legacy, and folder organization. No account needed.',
+    title: 'Textpad Cloud – The Uncensorable Blog',
+    description: 'A notepad & blog that lives on your own decentralized storage. Write. Your words, forever. For artists and free thinkers. Censorship-resistant writing powered by IPFS.',
   },
   fr: {
-    title: 'Textpad – Le Bloc-notes Permanent pour le Web Créatif',
-    description: 'Éditeur de texte décentralisé sur IPFS. Sauvegardez vos documents, dessins et blogs sur le web permanent. Partage privé, testament numérique et organisation par dossiers. Sans inscription.',
+    title: 'Textpad Cloud – Le Blog Incensurable',
+    description: 'Un bloc-notes & blog qui vit sur votre propre stockage décentralisé. Écrivez. Vos mots, pour toujours. Pour artistes et esprits libres. Écriture résistante à la censure propulsée par IPFS.',
   },
   sv: {
-    title: 'Textpad – Det permanenta anteckningsblocket för den kreativa webben',
-    description: 'En decentraliserad textediterare byggd på IPFS. Spara dina dokument, skisser och blogginlägg på den permanenta webben. Funktioner inkluderar privat delning, digitalt arv och mapporganisering. Inget konto behövs.',
+    title: 'Textpad Cloud – Den Ocensurera Bloggen',
+    description: 'Ett anteckningsblock & blogg som lever på din egen decentraliserade lagring. Skriv. Dina ord, för alltid. För konstnärer och fritänkare. Censurresistent skrivande drivet av IPFS.',
   },
 }
 
@@ -106,9 +106,9 @@ export const viewport = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
-  name: 'Textpad',
+  name: 'Textpad Cloud',
   url: '/',
-  description: 'Free online text editor with personal blog, document sharing, version history and folder organization.',
+  description: 'A censorship-resistant notepad & blog powered by IPFS. For artists and free thinkers.',
   applicationCategory: 'Productivity',
   operatingSystem: 'Any',
   offers: {
@@ -117,12 +117,12 @@ const jsonLd = {
     priceCurrency: 'USD',
   },
   featureList: [
-    'Online text editing',
+    'Decentralized IPFS storage',
+    'Censorship-resistant publishing',
     'Personal blog with custom subdomain',
-    'Document sharing via link',
+    'Markdown editor',
     'Version history',
     'Folder organization',
-    'No account required to start',
   ],
 }
 
