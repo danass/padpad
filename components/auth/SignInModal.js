@@ -16,7 +16,7 @@ export default function SignInModal({ isOpen, onClose }) {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
             <div className="w-full max-w-md mx-4 bg-white rounded-2xl shadow-2xl p-8 md:p-10 animate-in fade-in zoom-in-95 duration-200">
