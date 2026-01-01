@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import DocumentList from '@/components/drive/DocumentList'
 import FolderTree from '@/components/drive/FolderTree'
 import SearchBar from '@/components/drive/SearchBar'
+import SearchModal from '@/components/drive/SearchModal'
 import { useToast } from '@/components/ui/toast'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 
@@ -20,6 +21,7 @@ export default function DrivePage() {
   const [newFolderName, setNewFolderName] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState(null)
+  const [showSearchModal, setShowSearchModal] = useState(false)
   const isSearchingRef = useRef(false)
   const hasLoadedRef = useRef(false)
   const isLoadingRef = useRef(false)
@@ -65,6 +67,18 @@ export default function DrivePage() {
   useEffect(() => {
     loadData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ⌘K / Ctrl+K to open search modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setShowSearchModal(true)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   const handleSearchResults = useCallback((results) => {
@@ -307,6 +321,12 @@ export default function DrivePage() {
           />
         </div>
       </div>
+
+      {/* Search Modal (⌘K) */}
+      <SearchModal
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+      />
     </div>
   )
 }

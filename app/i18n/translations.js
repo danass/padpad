@@ -626,7 +626,7 @@ export const translations = {
     homeTitle: 'Textpad Cloud – Le Blog Incensurable',
     heroTitlePart1: 'Le Blog ',
     heroTitlePart2: 'Incensurable',
-    heroSubtitle: 'Un bloc-notes & blog qui vit sur votre propre stockage décentralisé. Écrivez. Vos mots, pour toujours. Pour artistes et esprits libres.',
+    heroSubtitle: 'Un bloc-notes & blog qui vit sur votre propre stockage décentralisé. Écrivez. Vos mots, pour toujours. Fait pour les artistes et les esprits libres.',
     homeEdgeTitle: 'L\'Atout Textpad',
     homeLegacyTitle: 'Écriture Résistante à la Censure',
     homeLegacySubtitle: 'Vos mots vivent sur votre propre stockage IPFS, hors de portée de quiconque. Que vous soyez artiste, activiste ou esprit libre — Textpad est votre espace pour des idées qu\'on ne peut faire taire.',

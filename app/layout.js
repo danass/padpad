@@ -19,7 +19,7 @@ const seoTranslations = {
   },
   fr: {
     title: 'Textpad Cloud – Le Blog Incensurable',
-    description: 'Un bloc-notes & blog qui vit sur votre propre stockage décentralisé. Écrivez. Vos mots, pour toujours. Pour artistes et esprits libres. Écriture résistante à la censure propulsée par IPFS.',
+    description: 'Un bloc-notes & blog qui vit sur votre propre stockage décentralisé. Écrivez. Vos mots, pour toujours. Fait pour les artistes et les esprits libres. Écriture résistante à la censure propulsée par IPFS.',
   },
   sv: {
     title: 'Textpad Cloud – Den Ocensurera Bloggen',
