@@ -4,11 +4,15 @@ import { isAdmin } from '@/lib/auth/isAdmin'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request) {
-    // Basic security: Check for Vercel Cron Secret
+    // Check for Vercel Cron User-Agent (Vercel's official way)
+    const userAgent = request.headers.get('user-agent')
+    const isVercelCron = userAgent === 'vercel-cron/1.0'
+
+    // Check for Vercel Cron Secret header
     const authHeader = request.headers.get('authorization')
     const isCronSecret = process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`
 
-    let isAuthorized = isCronSecret
+    let isAuthorized = isVercelCron || isCronSecret
 
     // In non-production or if triggered manually by an admin
     if (!isAuthorized) {
@@ -19,6 +23,8 @@ export async function GET(request) {
         return Response.json({
             error: 'Unauthorized',
             debug: {
+                userAgent,
+                isVercelCron,
                 hasAuthHeader: !!authHeader,
                 hasCronSecret: !!process.env.CRON_SECRET,
                 isCronSecret,
