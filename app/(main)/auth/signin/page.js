@@ -3,9 +3,7 @@ import dynamic from 'next/dynamic'
 import { NO_INDEX_METADATA } from '@/lib/seo'
 
 // Dynamic import for client components
-const SignInClient = dynamic(() => import('./SignInClient'), {
-  ssr: false,
-})
+const SignInClient = dynamic(() => import('./SignInClient'))
 
 export const metadata = {
   ...NO_INDEX_METADATA,
