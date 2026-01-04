@@ -9,7 +9,14 @@ const aj = arcjet({
         shield({ mode: "LIVE" }),
         detectBot({
             mode: "LIVE",
-            allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:SOCIAL", "CATEGORY:PREVIEW"],
+            allow: [
+                "CATEGORY:SEARCH_ENGINE",
+                "CATEGORY:SOCIAL",
+                "CATEGORY:PREVIEW",
+                "CATEGORY:ADVERTISING",  // Marketing/SEO analyzers
+                "CATEGORY:MONITOR",   // Uptime monitors
+                "CATEGORY:OPTIMIZER", // Performance optimizers
+            ],
         }),
         // No rate limiting - just block bots and attacks
     ],
