@@ -1,12 +1,15 @@
 import { Suspense } from 'react'
-import SignInClient from './SignInClient'
+import dynamic from 'next/dynamic'
+import { NO_INDEX_METADATA } from '@/lib/seo'
+
+// Dynamic import for client components
+const SignInClient = dynamic(() => import('./SignInClient'), {
+  ssr: false,
+})
 
 export const metadata = {
+  ...NO_INDEX_METADATA,
   title: 'Sign In | Textpad',
-  robots: {
-    index: false,
-    follow: false,
-  },
 }
 
 export default function SignIn() {
