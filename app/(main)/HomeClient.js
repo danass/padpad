@@ -160,7 +160,7 @@ export default function HomeClient({ featuredArticles = [] }) {
         <h1 className="absolute opacity-0 pointer-events-none">{t?.homeTitle || 'Textpad – The Permanent Notepad for the Creative Web'}</h1>
         <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-8">
 
-          {mounted && (
+          {mounted ? (
             <UnifiedEditor
               key={`${t?.editorPlaceholder}-${t?.editorPlaceholderTitle}`}
               ref={editorRef}
@@ -182,6 +182,10 @@ export default function HomeClient({ featuredArticles = [] }) {
               }}
               className="font-['DM_Sans',sans-serif] min-h-[70vh] md:min-h-[500px] pb-24 md:pb-8"
             />
+          ) : (
+            <div className="bg-white border-2 border-dashed border-gray-100 rounded-3xl animate-pulse font-['DM_Sans',sans-serif] min-h-[70vh] md:min-h-[500px] flex items-center justify-center">
+              <div className="text-gray-300 text-lg">{t?.loadingText || 'Initializing editor...'}</div>
+            </div>
           )}
 
           {/* Landing Section - Only show when not logged in */}
