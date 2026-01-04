@@ -159,7 +159,7 @@ export async function generateMetadata({ params }) {
 
     const title = data.document.title && data.document.title !== 'Untitled'
       ? data.document.title
-      : 'Document'
+      : `Note ${documentId.slice(0, 8)}`
 
     let description = 'Read this article on Textpad'
     if (data.content) {

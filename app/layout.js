@@ -87,12 +87,6 @@ export async function generateMetadata() {
     },
     alternates: {
       canonical: '/',
-      languages: {
-        'en': 'https://www.textpad.cloud/',
-        'fr': 'https://www.textpad.cloud/',
-        'sv': 'https://www.textpad.cloud/',
-        'x-default': 'https://www.textpad.cloud/',
-      },
     },
   }
 }

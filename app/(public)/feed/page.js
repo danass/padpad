@@ -8,7 +8,7 @@ export const metadata = {
     title: 'Feed | TextPad',
     description: 'Discover latest public documents on TextPad.',
     alternates: {
-        canonical: '/feed',
+        canonical: 'https://www.textpad.cloud/feed',
     },
 }
 
