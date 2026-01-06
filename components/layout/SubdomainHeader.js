@@ -16,8 +16,11 @@ export default function SubdomainHeader() {
                         <a href="https://www.textpad.cloud" className="flex items-center gap-2" title="Textpad">
                             <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
                                 <img
-                                    src="/padpad.svg"
+                                    src="/logo.svg"
                                     alt="textpad logo"
+                                    width={24}
+                                    height={24}
+                                    fetchPriority="high"
                                     className="w-full h-full object-cover"
                                 />
                             </div>

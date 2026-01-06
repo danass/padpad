@@ -11,8 +11,10 @@ export default function NotFound() {
             <div className="text-center max-w-md">
                 <div className="mb-8">
                     <img
-                        src="/padpad.svg"
+                        src="/logo.svg"
                         alt="Textpad"
+                        width={96}
+                        height={96}
                         className="w-24 h-24 mx-auto opacity-20"
                     />
                 </div>

@@ -25,7 +25,7 @@ export default function FeaturesClient() {
                 {/* Header Section */}
                 <div className="text-center mb-24">
                     <Link href="/" className="inline-block mb-12 hover:scale-105 transition-transform">
-                        <img src="/padpad.svg" alt="Textpad" className="w-20 h-20 mx-auto" />
+                        <img src="/logo.svg" alt="Textpad" width={80} height={80} className="w-20 h-20 mx-auto" />
                     </Link>
                     <h1 className="text-4xl md:text-7xl font-medium text-gray-900 mb-8 tracking-tight leading-[1.1]">
                         Capabilities of the <br />

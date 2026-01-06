@@ -31,7 +31,7 @@ export default function HeaderWrapper() {
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
-                                    <img src="/padpad.svg" alt="textpad logo" className="w-full h-full object-cover" />
+                                    <img src="/logo.svg" alt="textpad logo" width={24} height={24} fetchPriority="high" className="w-full h-full object-cover" />
                                 </div>
                                 <span className="text-sm font-medium text-gray-900">textpad</span>
                             </div>
