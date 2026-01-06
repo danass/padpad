@@ -60,9 +60,6 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
 
     const [mounted, setMounted] = useState(false)
 
-    if (!mounted) {
-        return <EditorSkeleton placeholderTitle={placeholderTitle} placeholderText={placeholderText} className={className} />
-    }
     const [linkEditorPosition, setLinkEditorPosition] = useState(null)
     const [linkEditorMode, setLinkEditorMode] = useState(null)
     const [showIpfsBrowserModal, setShowIpfsBrowserModal] = useState(false)
@@ -316,6 +313,9 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
         }
     }, [editor])
 
+    if (!mounted) {
+        return <EditorSkeleton placeholderTitle={placeholderTitle} placeholderText={placeholderText} className={className} />
+    }
 
     return (
         <div ref={editorContainerRef} className="unified-editor">
