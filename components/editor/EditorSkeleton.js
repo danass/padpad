@@ -1,10 +1,15 @@
-export default function EditorSkeleton({ placeholderTitle = 'Title', placeholderText = 'Tell your story...', className = '' }) {
+export default function EditorSkeleton({ className = '' }) {
     return (
-        <div className={`prose max-w-none min-h-[300px] p-4 md:p-0 relative font-['DM_Sans',sans-serif] ${className}`}>
-            {/* Mocking TipTap structure for LCP */}
-            <div className="ProseMirror">
-                <h1 className="text-gray-300 pointer-events-none mb-4">{placeholderTitle}</h1>
-                <p className="text-gray-400 opacity-60 pointer-events-none">{placeholderText}</p>
+        <div className={`prose max-w-none min-h-[300px] p-4 md:p-0 relative ${className}`}>
+            <div className="ProseMirror animate-pulse">
+                {/* Mocking H1 */}
+                <div className="h-10 w-1/3 bg-gray-100 rounded-lg mb-8" />
+                {/* Mocking Paragraphs */}
+                <div className="space-y-4">
+                    <div className="h-4 w-full bg-gray-50 rounded" />
+                    <div className="h-4 w-full bg-gray-50 rounded" />
+                    <div className="h-4 w-2/3 bg-gray-50 rounded" />
+                </div>
             </div>
         </div>
     )
