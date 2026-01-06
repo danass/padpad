@@ -1,68 +1,85 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect } from 'react'
-import { translations, defaultLocale, locales, getBrowserLocale, localeNames } from './translations'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { defaultLocale, locales, getBrowserLocale, localeNames } from './translations'
 
 const LanguageContext = createContext()
 
+// Cache for loaded translations to avoid redundant fetches
+const translationsCache = {}
+
+const loadTranslations = async (locale) => {
+  if (translationsCache[locale]) return translationsCache[locale]
+
+  try {
+    const translations = await import(`./locales/${locale}.json`)
+    translationsCache[locale] = translations.default
+    return translations.default
+  } catch (error) {
+    console.error(`Failed to load translations for ${locale}:`, error)
+    // Fallback to English if loading fails
+    if (locale !== 'en') return loadTranslations('en')
+    return {}
+  }
+}
+
 export function LanguageProvider({ children, initialLocale }) {
-  // Initialize with server-provided locale or default
   const [locale, setLocale] = useState(initialLocale || defaultLocale)
-  const [t, setT] = useState(translations[initialLocale] || translations[defaultLocale])
+  const [t, setT] = useState({})
   const [isReady, setIsReady] = useState(false)
 
-  // Sync with localStorage/cookie on mount
-  useEffect(() => {
-    // Check for ?locale= URL param (from /fr and /en redirects)
-    const urlParams = new URLSearchParams(window.location.search)
-    const urlLocale = urlParams.get('locale')
-
-    if (urlLocale && locales.includes(urlLocale)) {
-      // Set the cookie and localStorage
-      document.cookie = `textpad_locale=${urlLocale}; path=/; max-age=31536000; samesite=lax`
-      localStorage.setItem('locale', urlLocale)
-      setLocale(urlLocale)
-      setT(translations[urlLocale])
-      document.documentElement.setAttribute('lang', urlLocale)
-
-      // Clean URL by removing the locale param
-      urlParams.delete('locale')
-      const newUrl = urlParams.toString()
-        ? `${window.location.pathname}?${urlParams.toString()}`
-        : window.location.pathname
-      window.history.replaceState({}, '', newUrl)
-      setIsReady(true)
-      return
-    }
-
-    // Check for textpad_locale cookie
-    const cookieMatch = document.cookie.match(/textpad_locale=([^;]+)/)
-    const cookieLocale = cookieMatch ? cookieMatch[1] : null
-
-    const savedLocale = localStorage.getItem('locale')
-    const browserLocale = getBrowserLocale()
-
-    // Priority: cookie > localStorage > browser > server-provided
-    const effectiveLocale = cookieLocale || savedLocale || initialLocale || browserLocale
-
-
-    if (locales.includes(effectiveLocale)) {
-      setLocale(effectiveLocale)
-      setT(translations[effectiveLocale])
-      document.documentElement.setAttribute('lang', effectiveLocale)
-      // Sync localStorage
-      localStorage.setItem('locale', effectiveLocale)
-    }
+  const applyLocale = useCallback(async (newLocale) => {
+    const translations = await loadTranslations(newLocale)
+    setT(translations)
+    setLocale(newLocale)
+    document.documentElement.setAttribute('lang', newLocale)
     setIsReady(true)
-  }, [initialLocale])
+  }, [])
 
-  const changeLocale = (newLocale) => {
+  // Initial load
+  useEffect(() => {
+    const init = async () => {
+      // Check for ?locale= URL param
+      const urlParams = new URLSearchParams(window.location.search)
+      const urlLocale = urlParams.get('locale')
+
+      if (urlLocale && locales.includes(urlLocale)) {
+        document.cookie = `textpad_locale=${urlLocale}; path=/; max-age=31536000; samesite=lax`
+        localStorage.setItem('locale', urlLocale)
+        await applyLocale(urlLocale)
+
+        // Clean URL
+        urlParams.delete('locale')
+        const newUrl = urlParams.toString()
+          ? `${window.location.pathname}?${urlParams.toString()}`
+          : window.location.pathname
+        window.history.replaceState({}, '', newUrl)
+        return
+      }
+
+      // Priority: cookie > localStorage > browser > initial (from server)
+      const cookieMatch = document.cookie.match(/textpad_locale=([^;]+)/)
+      const cookieLocale = cookieMatch ? cookieMatch[1] : null
+      const savedLocale = localStorage.getItem('locale')
+      const browserLocale = getBrowserLocale()
+
+      let effectiveLocale = cookieLocale || savedLocale || initialLocale || browserLocale
+      if (!locales.includes(effectiveLocale)) effectiveLocale = defaultLocale
+
+      await applyLocale(effectiveLocale)
+      if (effectiveLocale !== savedLocale) {
+        localStorage.setItem('locale', effectiveLocale)
+      }
+    }
+
+    init()
+  }, [initialLocale, applyLocale])
+
+  const changeLocale = async (newLocale) => {
     if (locales.includes(newLocale)) {
-      setLocale(newLocale)
-      setT(translations[newLocale])
+      setIsReady(false)
+      await applyLocale(newLocale)
       localStorage.setItem('locale', newLocale)
-      document.documentElement.setAttribute('lang', newLocale)
-      // Set cookie for potential server-side usage - ensure consistent name
       document.cookie = `textpad_locale=${newLocale}; path=/; max-age=31536000; samesite=lax`
     }
   }
