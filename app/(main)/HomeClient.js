@@ -195,7 +195,7 @@ export default function HomeClient({ featuredArticles = [] }) {
               <div className="text-center max-w-4xl mx-auto px-4">
                 <div className="mb-8 flex justify-center">
                   <div className="w-24 h-24 rounded-3xl overflow-hidden bg-white p-2">
-                    <img src="/padpad.png" alt="Textpad Logo" className="w-full h-full object-cover" />
+                    <img src="/padpad-white.svg" alt="Textpad Logo" width={96} height={96} fetchPriority="high" className="w-full h-full object-cover" />
                   </div>
                 </div>
                 <h2 className="text-4xl md:text-6xl font-medium tracking-tight text-gray-900 mb-6 leading-[1.1]">

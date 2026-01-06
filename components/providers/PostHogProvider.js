@@ -10,18 +10,27 @@ export function PostHogProvider({ children }) {
         const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://eu.i.posthog.com'
 
         if (typeof window !== 'undefined' && key) {
-            posthog.init(key, {
-                api_host: host,
-                person_profiles: 'identified_only',
-                capture_pageview: false,
-                capture_pageleave: true,
-                // Disable unused features to reduce bundle size
-                disable_surveys: true,
-                disable_web_experiments: true,
-                // autocapture enabled for heatmaps and session recordings
-                persistence: 'localStorage',
-                defaults: '2025-11-30',
-            })
+            const initPostHog = () => {
+                posthog.init(key, {
+                    api_host: host,
+                    person_profiles: 'identified_only',
+                    capture_pageview: false,
+                    capture_pageleave: true,
+                    // Disable unused features to reduce bundle size
+                    disable_surveys: true,
+                    disable_web_experiments: true,
+                    // autocapture enabled for heatmaps and session recordings
+                    persistence: 'localStorage',
+                    defaults: '2025-11-30',
+                })
+            }
+
+            if (document.readyState === 'complete') {
+                initPostHog()
+            } else {
+                window.addEventListener('load', initPostHog)
+                return () => window.removeEventListener('load', initPostHog)
+            }
         }
     }, [])
 

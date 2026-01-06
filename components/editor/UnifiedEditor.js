@@ -338,7 +338,7 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
 
             {/* Editor Content */}
             <div
-                className={`prose max-w-none min-h-[300px] p-4 md:p-0 transition-all relative cursor-text ${className}`}
+                className={`prose max-w-none min-h-[300px] p-4 md:p-0 relative cursor-text ${className}`}
                 onClick={(e) => {
                     // Focus editor when clicking on container
                     if (e.target === e.currentTarget && editor) {
