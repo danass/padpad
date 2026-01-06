@@ -87,7 +87,6 @@ function ArticleRenderer({ id, content, title, author, date, keywords }) {
 
     useEffect(() => {
         if (editor && content && mounted) {
-            console.log('ArticleRenderer setting content:', id, content);
             editor.commands.setContent(content)
         }
     }, [editor, content, mounted])
