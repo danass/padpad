@@ -151,14 +151,6 @@ export default function HomeClient({ featuredArticles = [] }) {
     }
   }
 
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    )
-  }
-
   const keywords = 'blocnote online, textpad online, online text editor with pictures, free online notepad, write text online, edit text online, blocnote en ligne, bloc-notes en ligne avec images, éditeur de texte en ligne, text sharing, simple text editor'
 
   return (
@@ -198,8 +190,8 @@ export default function HomeClient({ featuredArticles = [] }) {
               {/* Hero tagline */}
               <div className="text-center max-w-4xl mx-auto px-4">
                 <div className="mb-8 flex justify-center">
-                  <div className="w-24 h-24 rounded-3xl overflow-hidden bg-white p-2">
-                    <img src="/padpad-white.svg" alt="Textpad Logo" width={96} height={96} fetchPriority="high" className="w-full h-full object-cover" />
+                  <div className="w-24 h-24 rounded-3xl overflow-hidden bg-white p-4 border border-gray-100 shadow-sm">
+                    <img src="/logo.svg" alt="Textpad Logo" width={96} height={96} fetchPriority="high" className="w-full h-full object-contain" />
                   </div>
                 </div>
                 <h2 className="text-4xl md:text-6xl font-medium tracking-tight text-gray-900 mb-6 leading-[1.1]">

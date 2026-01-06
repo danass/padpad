@@ -167,7 +167,7 @@ export default function UniversalHeader() {
     // MAIN DOMAIN HEADER
     return (
         <>
-            <header className={`border-b border-gray-200 bg-white relative z-[100] ${session ? '' : 'hidden xs:block'}`}>
+            <header className="border-b border-gray-200 bg-white relative z-[100]">
                 <div className="max-w-full mx-auto">
                     <div className="flex items-center justify-between px-6 h-12 md:h-16">
                         {/* Left side */}
