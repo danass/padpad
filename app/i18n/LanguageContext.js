@@ -45,7 +45,6 @@ export function LanguageProvider({ children, initialLocale }) {
     // Priority: cookie > localStorage > browser > server-provided
     const effectiveLocale = cookieLocale || savedLocale || initialLocale || browserLocale
 
-    console.log('🌐 LanguageProvider init:', { urlLocale, cookieLocale, savedLocale, browserLocale, initialLocale, effectiveLocale })
 
     if (locales.includes(effectiveLocale)) {
       setLocale(effectiveLocale)
@@ -58,9 +57,7 @@ export function LanguageProvider({ children, initialLocale }) {
   }, [initialLocale])
 
   const changeLocale = (newLocale) => {
-    console.log('🌐 changeLocale called:', newLocale, '| valid:', locales.includes(newLocale))
     if (locales.includes(newLocale)) {
-      console.log('🌐 Setting locale to:', newLocale)
       setLocale(newLocale)
       setT(translations[newLocale])
       localStorage.setItem('locale', newLocale)
