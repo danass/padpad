@@ -9,6 +9,7 @@ import BubbleToolbar from '@/components/editor/BubbleToolbar'
 import FloatingToolbar from '@/components/editor/FloatingToolbar'
 import LinkEditor from '@/components/editor/LinkEditor'
 import IpfsBrowser from '@/components/ipfs/IpfsBrowser'
+import EditorSkeleton from './EditorSkeleton'
 
 /**
  * UnifiedEditor - A shared editor component for both home page and document page
@@ -28,6 +29,7 @@ import IpfsBrowser from '@/components/ipfs/IpfsBrowser'
  * @param {boolean} props.features.showIpfsBrowser - Show IPFS browser option
  * @param {boolean} props.features.showSaveButton - Show manual Save button in toolbar
  * @param {string} props.placeholderText - Custom placeholder text
+ * @param {string} props.placeholderTitle - Custom placeholder text for title
  * @param {string} props.className - Additional CSS classes for editor container
  * @param {Function} props.onEditorReady - Called with the editor instance when created
  */
@@ -57,6 +59,10 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
     } = features
 
     const [mounted, setMounted] = useState(false)
+
+    if (!mounted) {
+        return <EditorSkeleton placeholderTitle={placeholderTitle} placeholderText={placeholderText} className={className} />
+    }
     const [linkEditorPosition, setLinkEditorPosition] = useState(null)
     const [linkEditorMode, setLinkEditorMode] = useState(null)
     const [showIpfsBrowserModal, setShowIpfsBrowserModal] = useState(false)
@@ -310,14 +316,6 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
         }
     }, [editor])
 
-    if (!mounted) {
-        return (
-            <div className="animate-pulse">
-                <div className="h-12 bg-gray-100 rounded-lg mb-4" />
-                <div className="h-64 bg-gray-50 rounded-lg" />
-            </div>
-        )
-    }
 
     return (
         <div ref={editorContainerRef} className="unified-editor">

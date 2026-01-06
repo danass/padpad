@@ -9,14 +9,12 @@ import SEOKeywords from '@/components/SEOKeywords'
 import dynamic from 'next/dynamic'
 import { useLanguage } from '@/app/i18n/LanguageContext'
 
+import EditorSkeleton from '@/components/editor/EditorSkeleton'
+
 // Dynamically import the editor to reduce initial JS payload
 const UnifiedEditor = dynamic(() => import('@/components/editor/UnifiedEditor'), {
   ssr: false,
-  loading: () => (
-    <div className="bg-white border-2 border-dashed border-gray-100 rounded-3xl animate-pulse font-['DM_Sans',sans-serif] min-h-[70vh] md:min-h-[500px] flex items-center justify-center">
-      <div className="text-gray-300 text-lg">Initializing editor...</div>
-    </div>
-  )
+  loading: () => <EditorSkeleton />
 })
 
 const STORAGE_KEY = 'textpad_cloud_unsaved_pad'
