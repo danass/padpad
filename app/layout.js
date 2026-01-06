@@ -120,10 +120,23 @@ const jsonLd = {
   ],
 }
 
+import fs from 'fs/promises'
+import path from 'path'
+
 // Root layout - minimal, shared by all route groups
 export default async function RootLayout({ children }) {
   const locale = await getLocale()
   const session = await auth()
+
+  // Load translations on server to avoid LCP "flip"
+  let initialTranslations = {}
+  try {
+    const filePath = path.join(process.cwd(), 'app', 'i18n', 'locales', `${locale}.json`)
+    const fileContent = await fs.readFile(filePath, 'utf8')
+    initialTranslations = JSON.parse(fileContent)
+  } catch (error) {
+    console.error(`Failed to load translations for ${locale}:`, error)
+  }
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -152,7 +165,7 @@ export default async function RootLayout({ children }) {
       <body className="bg-white min-h-screen flex flex-col" suppressHydrationWarning>
         <PostHogProvider>
           <SessionProvider session={session}>
-            <LanguageProvider initialLocale={locale}>
+            <LanguageProvider initialLocale={locale} initialTranslations={initialTranslations}>
               <PostHogPageView />
               <UniversalHeader />
               {children}

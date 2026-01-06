@@ -13,11 +13,14 @@ export function PostHogProvider({ children }) {
         const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://eu.i.posthog.com'
 
         if (typeof window !== 'undefined' && key) {
-            const initPostHog = () => {
+            const initPostHog = async () => {
+                // Dynamic import to avoid blocking hydration
+                const { default: ph } = await import('posthog-js')
+
                 // Only enable session recording on critical app pages to save main thread on landing
                 const shouldRecord = pathname?.startsWith('/doc/') || pathname?.startsWith('/drive')
 
-                posthog.init(key, {
+                ph.init(key, {
                     api_host: host,
                     person_profiles: 'identified_only',
                     capture_pageview: false,
@@ -42,5 +45,7 @@ export function PostHogProvider({ children }) {
         }
     }, [pathname])
 
+    // PHProvider requires a client, but we init it inside useEffect
+    // We can use the static instance which will be hydrated by our init call
     return <PHProvider client={posthog}>{children}</PHProvider>
 }

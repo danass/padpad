@@ -23,10 +23,15 @@ const loadTranslations = async (locale) => {
   }
 }
 
-export function LanguageProvider({ children, initialLocale }) {
+export function LanguageProvider({ children, initialLocale, initialTranslations }) {
   const [locale, setLocale] = useState(initialLocale || defaultLocale)
-  const [t, setT] = useState({})
-  const [isReady, setIsReady] = useState(false)
+  const [t, setT] = useState(initialTranslations || {})
+  const [isReady, setIsReady] = useState(!!initialTranslations)
+
+  // Seed cache with initial translations if provided
+  if (initialLocale && initialTranslations && !translationsCache[initialLocale]) {
+    translationsCache[initialLocale] = initialTranslations
+  }
 
   const applyLocale = useCallback(async (newLocale) => {
     const translations = await loadTranslations(newLocale)
