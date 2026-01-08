@@ -288,24 +288,27 @@ export default function LinkPreviewComponent({ node, updateAttributes, deleteNod
                     </div>
                 </div>
 
-                {/* Unified Hover Toolbar - Disabled for now
+                {/* Unified Hover Toolbar */}
                 {editor.isEditable && showHoverMenu && (
                     <div className="absolute bottom-2 right-2 bg-white border border-gray-200 rounded-lg shadow-lg p-1 flex gap-1 z-20 animate-in fade-in slide-in-from-bottom-1 duration-200">
                         <button
                             onClick={(e) => { e.stopPropagation(); updateAttributes({ textAlign: 'left' }) }}
                             className={`p-2 rounded transition-colors ${textAlign === 'left' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+                            title="Align Left"
                         >
                             <AlignLeft className="w-4 h-4 text-gray-600" />
                         </button>
                         <button
                             onClick={(e) => { e.stopPropagation(); updateAttributes({ textAlign: 'center' }) }}
                             className={`p-2 rounded transition-colors ${textAlign === 'center' || !textAlign ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+                            title="Align Center"
                         >
                             <AlignCenter className="w-4 h-4 text-gray-600" />
                         </button>
                         <button
                             onClick={(e) => { e.stopPropagation(); updateAttributes({ textAlign: 'right' }) }}
                             className={`p-2 rounded transition-colors ${textAlign === 'right' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+                            title="Align Right"
                         >
                             <AlignRight className="w-4 h-4 text-gray-600" />
                         </button>
@@ -315,18 +318,32 @@ export default function LinkPreviewComponent({ node, updateAttributes, deleteNod
                         <button
                             onClick={(e) => { e.stopPropagation(); setSize('m') }}
                             className={`px-2 py-1 text-xs font-medium rounded transition-colors ${size === 'm' ? 'bg-gray-100 text-blue-600' : 'hover:bg-gray-50 text-gray-600'}`}
+                            title="Medium Size"
                         >
                             Small
                         </button>
                         <button
                             onClick={(e) => { e.stopPropagation(); setSize('full') }}
                             className={`px-2 py-1 text-xs font-medium rounded transition-colors ${size === 'full' ? 'bg-gray-100 text-blue-600' : 'hover:bg-gray-50 text-gray-600'}`}
+                            title="Full Size"
                         >
                             Full
                         </button>
+
+                        <div className="w-px h-6 bg-gray-200 mx-0.5" />
+
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                deleteNode()
+                            }}
+                            className="p-2 hover:bg-red-50 text-red-500 rounded transition-colors"
+                            title="Delete"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
                     </div>
                 )}
-                */}
             </div>
         </NodeViewWrapper>
     )

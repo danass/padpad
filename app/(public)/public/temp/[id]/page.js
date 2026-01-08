@@ -48,6 +48,21 @@ const getTempDocumentData = cache(async (documentId) => {
                     try { snapshot.content_json = JSON.parse(snapshot.content_json) } catch (e) { }
                 }
 
+                // Prioritize IPFS if enabled
+                if (document.ipfs_enabled && document.ipfs_cid) {
+                    try {
+                        const gatewayUrl = `https://ipfs.filebase.io/ipfs/${document.ipfs_cid}`
+                        const ipfsResponse = await fetch(gatewayUrl)
+                        if (ipfsResponse.ok) {
+                            const ipfsContent = await ipfsResponse.json()
+                            snapshot.content_json = ipfsContent
+                        }
+                    } catch (ipfsError) {
+                        console.error('Error fetching from IPFS for temp pad:', ipfsError)
+                        // Fallback to local snapshot if IPFS fails
+                    }
+                }
+
                 if (snapshot.content_json) {
                     content = snapshot.content_json
                 } else {

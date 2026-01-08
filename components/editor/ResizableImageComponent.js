@@ -325,7 +325,7 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
               </div>
             </>
           )}
-          {/* Hover menu - Disabled for now
+          {/* Hover menu */}
           {editor.isEditable && showHoverMenu && (
             <div className="absolute bottom-2 right-2 bg-white border border-gray-200 rounded-lg shadow-lg p-1 flex gap-1 z-20 animate-in fade-in slide-in-from-bottom-1 duration-200">
               <button
@@ -381,7 +381,6 @@ export default function ResizableImageComponent({ node, updateAttributes, delete
               </button>
             </div>
           )}
-          */}
         </div>
 
       </div>

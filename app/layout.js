@@ -8,6 +8,8 @@ import UniversalHeader from '@/components/layout/UniversalHeader'
 import Footer from '@/components/layout/Footer'
 import { PostHogProvider } from '@/components/providers/PostHogProvider'
 import { PostHogPageView } from '@/components/providers/PostHogPageView'
+import PostHogAuthTracker from '@/components/providers/PostHogAuthTracker'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const GA_MEASUREMENT_ID = 'G-S6HWH3G1B4'
 
@@ -167,12 +169,14 @@ export default async function RootLayout({ children }) {
           <SessionProvider session={session}>
             <LanguageProvider initialLocale={locale} initialTranslations={initialTranslations}>
               <PostHogPageView />
+              <PostHogAuthTracker />
               <UniversalHeader />
               {children}
               <Footer />
             </LanguageProvider>
           </SessionProvider>
         </PostHogProvider>
+        <SpeedInsights />
       </body>
     </html>
   )

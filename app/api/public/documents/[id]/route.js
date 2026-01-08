@@ -50,6 +50,20 @@ export async function GET(request, { params }) {
             console.error('Error parsing snapshot content_json:', e)
           }
         }
+
+        // Prioritize IPFS if enabled
+        if (document.ipfs_enabled && document.ipfs_cid) {
+          try {
+            const gatewayUrl = `https://ipfs.filebase.io/ipfs/${document.ipfs_cid}`
+            const ipfsResponse = await fetch(gatewayUrl)
+            if (ipfsResponse.ok) {
+              const ipfsContent = await ipfsResponse.json()
+              snapshot.content_json = ipfsContent
+            }
+          } catch (ipfsError) {
+            console.error('Error fetching from IPFS for public doc API:', ipfsError)
+          }
+        }
       }
     }
 

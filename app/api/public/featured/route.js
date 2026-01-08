@@ -47,6 +47,20 @@ export async function GET(request) {
                         snapshot.content_json = JSON.parse(snapshot.content_json)
                     } catch (e) { }
                 }
+
+                // Prioritize IPFS if enabled
+                if (doc.ipfs_enabled && doc.ipfs_cid) {
+                    try {
+                        const gatewayUrl = `https://ipfs.filebase.io/ipfs/${doc.ipfs_cid}`
+                        const ipfsResponse = await fetch(gatewayUrl)
+                        if (ipfsResponse.ok) {
+                            snapshot.content_json = await ipfsResponse.json()
+                        }
+                    } catch (ipfsError) {
+                        console.error(`Error fetching from IPFS for featured API doc ${doc.id}:`, ipfsError)
+                    }
+                }
+
                 content = snapshot.content_json || replayHistory(snapshot, [])
 
                 // Extract first image from content (including drawings)

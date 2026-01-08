@@ -663,43 +663,65 @@ export default function DrawingComponent({ node, updateAttributes, deleteNode, e
             </>
           )}
 
-          {/* Hover and Context Menus Disabled - Preserving code for reference
-        {false && editor.isEditable && (
-          <>
-            {showHoverMenu && (
-              <div className="absolute bottom-2 right-2 bg-white border border-gray-200 rounded-lg shadow-lg p-1 flex gap-1 z-20">
-                {!isAbsolute && (
-                  <>
-                    <button onClick={(e) => { e.stopPropagation(); handleAlign('left') }} className={`p-2 rounded transition-colors ${align === 'left' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}><AlignLeft className="w-4 h-4 text-gray-600" /></button>
-                    <button onClick={(e) => { e.stopPropagation(); handleAlign('center') }} className={`p-2 rounded transition-colors ${align === 'center' || !align ? 'bg-gray-200' : 'hover:bg-gray-100'}`}><AlignCenter className="w-4 h-4 text-gray-600" /></button>
-                    <button onClick={(e) => { e.stopPropagation(); handleAlign('right') }} className={`p-2 rounded transition-colors ${align === 'right' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}><AlignRight className="w-4 h-4 text-gray-600" /></button>
-                    <div className="w-px h-6 bg-gray-200 mx-0.5" />
-                  </>
-                )}
-                <button onClick={(e) => { e.stopPropagation(); handleUndo() }} className="p-2 hover:bg-gray-100 rounded transition-colors"><Undo2 className="w-4 h-4 text-gray-600" /></button>
-                <button onClick={(e) => { e.stopPropagation(); handleExportPNG() }} className="p-2 hover:bg-gray-100 rounded transition-colors"><Download className="w-4 h-4 text-gray-600" /></button>
-                <button onClick={(e) => { e.stopPropagation(); deleteNode() }} className="p-2 hover:bg-gray-100 rounded transition-colors"><Trash2 className="w-4 h-4 text-red-600" /></button>
-              </div>
-            )}
-            {showContextMenu && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowContextMenu(false)} />
-                <div className="absolute bg-white border border-gray-200 rounded-lg shadow-xl p-2 z-50 min-w-[160px]" style={{ left: contextMenuPos.x, top: contextMenuPos.y, maxWidth: '200px' }} onClick={(e) => e.stopPropagation()}>
-                  {isAbsolute && (
-                    <button onClick={() => { setMoveMode(!moveMode); setShowContextMenu(false) }} className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-gray-100 ${moveMode ? 'bg-blue-50 text-blue-700' : 'text-gray-700'}`}>
-                      <Move className="w-4 h-4" />
-                      <span>{moveMode ? 'Drawing Mode' : 'Move Mode'}</span>
-                    </button>
+          {/* Hover and Context Menus */}
+          {editor.isEditable && (
+            <>
+              {showHoverMenu && !isDragging && (
+                <div className="absolute bottom-2 right-2 bg-white border border-gray-200 rounded-lg shadow-lg p-1 flex gap-1 z-20 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                  {!isAbsolute && (
+                    <>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleAlign('left') }}
+                        className={`p-2 rounded transition-colors ${align === 'left' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+                        title={t?.alignLeft || 'Align left'}
+                      >
+                        <AlignLeft className="w-4 h-4 text-gray-600" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleAlign('center') }}
+                        className={`p-2 rounded transition-colors ${align === 'center' || !align ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+                        title={t?.alignCenter || 'Align center'}
+                      >
+                        <AlignCenter className="w-4 h-4 text-gray-600" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleAlign('right') }}
+                        className={`p-2 rounded transition-colors ${align === 'right' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+                        title={t?.alignRight || 'Align right'}
+                      >
+                        <AlignRight className="w-4 h-4 text-gray-600" />
+                      </button>
+                      <div className="w-px h-6 bg-gray-200 mx-0.5" />
+                    </>
                   )}
-                  <button onClick={() => { handleUndo(); setShowContextMenu(false) }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded hover:bg-gray-100"><Undo2 className="w-4 h-4" /><span>Undo Stroke</span></button>
-                  <button onClick={() => { handleExportPNG(); setShowContextMenu(false) }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded hover:bg-gray-100"><Download className="w-4 h-4" /><span>Export PNG</span></button>
-                  <button onClick={() => { deleteNode(); setShowContextMenu(false) }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 rounded hover:bg-red-50"><Trash2 className="w-4 h-4" /><span>Delete Drawing</span></button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleUndo() }}
+                    className="p-2 hover:bg-gray-100 rounded transition-colors"
+                    title={t?.undo || 'Undo stroke'}
+                  >
+                    <Undo2 className="w-4 h-4 text-gray-600" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleExportPNG() }}
+                    className="p-2 hover:bg-gray-100 rounded transition-colors"
+                    title={t?.export || 'Export PNG'}
+                  >
+                    <Download className="w-4 h-4 text-gray-600" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteNode()
+                    }}
+                    className="p-2 hover:bg-red-50 text-red-500 rounded transition-colors"
+                    title={t?.delete || 'Delete'}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-              </>
-            )}
-          </>
-        )}
-        */}
+              )}
+            </>
+          )}
         </div>
       </div>
     </NodeViewWrapper >

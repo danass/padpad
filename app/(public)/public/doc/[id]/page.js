@@ -64,6 +64,30 @@ const getDocumentData = cache(async (documentId) => {
       }
     }
 
+    // Prioritize IPFS if enabled
+    if (document.ipfs_enabled && document.ipfs_cid) {
+      try {
+        const gatewayUrl = `https://ipfs.filebase.io/ipfs/${document.ipfs_cid}`
+        const ipfsResponse = await fetch(gatewayUrl)
+        if (ipfsResponse.ok) {
+          const ipfsContent = await ipfsResponse.json()
+          if (snapshot) {
+            snapshot.content_json = ipfsContent
+          } else {
+            snapshot = {
+              document_id: documentId,
+              content_json: ipfsContent,
+              content_text: '',
+              created_at: new Date().toISOString()
+            }
+          }
+        }
+      } catch (ipfsError) {
+        console.error('Error fetching from IPFS for public doc:', ipfsError)
+        // Fallback to local snapshot if IPFS fails
+      }
+    }
+
     // Get content from snapshot
     let content = snapshot?.content_json || { type: 'doc', content: [] }
     if (typeof content === 'string') {

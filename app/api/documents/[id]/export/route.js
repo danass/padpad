@@ -52,6 +52,22 @@ export async function GET(request, { params }) {
       )
       if (snapshotResult.rows.length > 0) {
         content = snapshotResult.rows[0].content_json
+        if (typeof content === 'string') {
+          try { content = JSON.parse(content) } catch (e) { }
+        }
+
+        // Prioritize IPFS if enabled
+        if (document.ipfs_enabled && document.ipfs_cid) {
+          try {
+            const gatewayUrl = `https://ipfs.filebase.io/ipfs/${document.ipfs_cid}`
+            const ipfsResponse = await fetch(gatewayUrl)
+            if (ipfsResponse.ok) {
+              content = await ipfsResponse.json()
+            }
+          } catch (ipfsError) {
+            console.error('Error fetching from IPFS for export:', ipfsError)
+          }
+        }
       }
     }
 
