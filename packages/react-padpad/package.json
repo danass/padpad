@@ -1,0 +1,39 @@
+{
+    "name": "react-padpad",
+    "version": "0.1.0",
+    "description": "Embeddable React component for displaying Padpad posts and archives",
+    "main": "dist/react-padpad.cjs.js",
+    "module": "dist/react-padpad.esm.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite build --watch",
+        "prepublishOnly": "npm run build"
+    },
+    "keywords": [
+        "react",
+        "embed",
+        "padpad",
+        "textpad",
+        "blog",
+        "content"
+    ],
+    "author": "Daniel Assayag",
+    "license": "MIT",
+    "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-react": "^4.2.1",
+        "vite": "^5.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/danass/padpad.git",
+        "directory": "packages/react-padpad"
+    }
+}

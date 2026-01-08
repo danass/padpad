@@ -3,6 +3,17 @@ import { replayHistory } from '@/lib/editor/history-replay'
 
 export const dynamic = 'force-dynamic'
 
+// CORS headers for embeddable component
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+
+export async function OPTIONS() {
+  return new Response(null, { headers: corsHeaders })
+}
+
 export async function GET(request, { params }) {
   try {
     const { id } = await params
@@ -153,12 +164,15 @@ export async function GET(request, { params }) {
         archive_id: archiveId, // Use testament_username or short hash
         author_name: authorName, // Display name if available
       },
-      content,
+      snapshot: {
+        content_json: content,
+        created_at: snapshot?.created_at
+      },
       navigation: {
         prev: prevDoc ? { ...prevDoc, title: prevDoc.title || '' } : null,
         next: nextDoc ? { ...nextDoc, title: nextDoc.title || '' } : null
       }
-    })
+    }, { headers: corsHeaders })
   } catch (error) {
     console.error('Error fetching public document:', error)
     return Response.json({ error: error.message }, { status: 500 })

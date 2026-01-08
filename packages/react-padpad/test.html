@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Padpad Test</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+</head>
+<body>
+  <h1>React Padpad Embed Test</h1>
+  
+  <h2>Single Post</h2>
+  <div id="post-embed"></div>
+  
+  <h2>User Archive</h2>
+  <div id="archive-embed"></div>
+
+  <script type="module">
+    import { Padpad } from './packages/react-padpad/dist/react-padpad.esm.js'
+    
+    // Test single post
+    ReactDOM.render(
+      React.createElement(Padpad, { 
+        id: '09fcacc2-f3a8-48f5-a52d-f6bbd0efd292',
+        theme: 'light',
+        maxHeight: '600px'
+      }),
+      document.getElementById('post-embed')
+    )
+    
+    // Test archive
+    ReactDOM.render(
+      React.createElement(Padpad, { 
+        handle: 'hello',
+        theme: 'light'
+      }),
+      document.getElementById('archive-embed')
+    )
+  </script>
+</body>
+</html>
