@@ -321,7 +321,7 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
         <div ref={editorContainerRef} className="unified-editor">
             {/* Toolbar */}
             {showToolbar && editor && (
-                <div className="mb-4">
+                <>
                     <GoogleDocsToolbar
                         editor={editor}
                         onOpenIpfsBrowser={showIpfsBrowser ? () => setShowIpfsBrowserModal(true) : undefined}
@@ -331,7 +331,9 @@ const UnifiedEditor = forwardRef(function UnifiedEditor({
                         showSaveButton={showSaveButton}
                         saveButtonIconOnly={saveButtonIconOnly}
                     />
-                </div>
+                    {/* Spacer for fixed toolbar */}
+                    <div className="h-16 mb-4" />
+                </>
             )}
 
             {/* Editor Content */}
