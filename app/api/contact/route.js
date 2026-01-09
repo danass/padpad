@@ -33,13 +33,16 @@ export async function POST(request) {
 
         // Create transporter
         const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: parseInt(process.env.SMTP_PORT || '587'),
-            secure: false, // true for 465, false for other ports
+            host: process.env.SMTP_HOST || 'ssl0.ovh.net',
+            port: parseInt(process.env.SMTP_PORT || '465'),
+            secure: process.env.SMTP_SECURE === 'true' || process.env.SMTP_PORT === '465',
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS,
             },
+            tls: {
+                rejectUnauthorized: false
+            }
         })
 
         // Verify transporter configuration
@@ -55,7 +58,7 @@ export async function POST(request) {
 
         // Send email
         await transporter.sendMail({
-            from: `"TextPad Contact" <${process.env.SMTP_USER}>`,
+            from: `"TextPad Contact" <no-reply@textpad.cloud>`,
             to: process.env.CONTACT_EMAIL || 'daniel@textpad.cloud',
             replyTo: email,
             subject: `[TextPad Contact] Message from ${name}`,

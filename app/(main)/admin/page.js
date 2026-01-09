@@ -21,6 +21,31 @@ export default function AdminPage() {
   const [documentsPage, setDocumentsPage] = useState(1)
   const [documentsTotalPages, setDocumentsTotalPages] = useState(1)
   const [settingAdmin, setSettingAdmin] = useState(null)
+  // Search and sort state for all tabs
+  const [userSearch, setUserSearch] = useState('')
+  const [userSort, setUserSort] = useState({ field: 'last_activity', dir: 'desc' })
+  const [docSearch, setDocSearch] = useState('')
+  const [docSort, setDocSort] = useState({ field: 'updated_at', dir: 'desc' })
+  const [tempSearch, setTempSearch] = useState('')
+  const [tempSort, setTempSort] = useState({ field: 'created_at', dir: 'desc' })
+
+  // Sortable header component
+  const SortHeader = ({ label, field, sort, setSort }) => (
+    <th
+      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+      onClick={() => setSort(prev => ({
+        field,
+        dir: prev.field === field && prev.dir === 'asc' ? 'desc' : 'asc'
+      }))}
+    >
+      <div className="flex items-center gap-1">
+        {label}
+        {sort.field === field && (
+          <span className="text-gray-400">{sort.dir === 'asc' ? '↑' : '↓'}</span>
+        )}
+      </div>
+    </th>
+  )
 
   useEffect(() => {
     checkAdminStatus()
@@ -297,14 +322,34 @@ export default function AdminPage() {
             </div>
 
             <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t?.documentsByUser || 'Documents by User'}</h2>
-              <div className="space-y-2">
-                {stats.documentsByUser.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                    <div className="text-sm text-gray-900">{item.user_email || (t?.noUser || 'No user')}</div>
-                    <div className="text-sm font-medium text-gray-600">{item.count} {t?.documents || 'documents'}</div>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">{t?.documentsByUser || 'Documents by User'}</h2>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="text"
+                    placeholder="Search user..."
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black w-48"
+                  />
+                  <button
+                    onClick={() => setUserSort(prev => ({ field: 'count', dir: prev.dir === 'asc' ? 'desc' : 'asc' }))}
+                    className="text-sm text-gray-600 hover:text-black"
+                  >
+                    Sort {userSort.dir === 'asc' ? '↑' : '↓'}
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                {stats.documentsByUser
+                  .filter(item => (item.user_email || '').toLowerCase().includes(userSearch.toLowerCase()))
+                  .sort((a, b) => (userSort.dir === 'asc' ? 1 : -1) * (a.count - b.count))
+                  .map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                      <div className="text-sm text-gray-900 truncate pr-4">{item.user_email || (t?.noUser || 'No user')}</div>
+                      <div className="text-sm font-medium text-gray-600 shrink-0">{item.count} {t?.documents || 'docs'}</div>
+                    </div>
+                  ))}
               </div>
             </div>
           </>
@@ -314,69 +359,102 @@ export default function AdminPage() {
         {activeTab === 'documents' && (
           <div>
             <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              {/* Search */}
+              <div className="p-4 border-b border-gray-200 flex flex-wrap gap-4 items-center">
+                <input
+                  type="text"
+                  placeholder="Search by title or email..."
+                  value={docSearch}
+                  onChange={(e) => setDocSearch(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black w-64"
+                />
+                <span className="text-sm text-gray-500">
+                  {documents.filter(d =>
+                    d.title?.toLowerCase().includes(docSearch.toLowerCase()) ||
+                    d.user_email?.toLowerCase().includes(docSearch.toLowerCase())
+                  ).length} documents
+                </span>
+              </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.title || 'Title'}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.user || 'User'}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.created || 'Created'}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.updated || 'Updated'}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.snapshots || 'Snapshots'}</th>
+                      <SortHeader label={t?.title || 'Title'} field="title" sort={docSort} setSort={setDocSort} />
+                      <SortHeader label={t?.user || 'User'} field="user_email" sort={docSort} setSort={setDocSort} />
+                      <SortHeader label={t?.created || 'Created'} field="created_at" sort={docSort} setSort={setDocSort} />
+                      <SortHeader label={t?.updated || 'Updated'} field="updated_at" sort={docSort} setSort={setDocSort} />
+                      <SortHeader label={t?.snapshots || 'Snapshots'} field="snapshot_count" sort={docSort} setSort={setDocSort} />
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.events || 'Events'}</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.publicLabel || 'Public'}</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t?.actions || 'Actions'}</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {documents.map((doc) => (
-                      <tr key={doc.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <Link
-                            href={`/doc/${doc.id}`}
-                            className="text-sm font-medium text-gray-900 hover:text-blue-600 hover:underline"
-                          >
-                            {doc.title}
-                          </Link>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">{doc.user_email || (t?.noUser || 'No user')}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">
-                            {new Date(doc.created_at).toLocaleDateString()}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">
-                            {new Date(doc.updated_at).toLocaleDateString()}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">{doc.snapshot_count}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">{doc.event_count}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm">
-                            {doc.is_public ? (
-                              <span className="text-green-600">Yes</span>
-                            ) : (
-                              <span className="text-gray-400">No</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <Link
-                            href={`/doc/${doc.id}`}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            View
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
+                    {documents
+                      .filter(d =>
+                        d.title?.toLowerCase().includes(docSearch.toLowerCase()) ||
+                        d.user_email?.toLowerCase().includes(docSearch.toLowerCase())
+                      )
+                      .sort((a, b) => {
+                        const field = docSort.field
+                        const dir = docSort.dir === 'asc' ? 1 : -1
+                        if (field === 'title' || field === 'user_email') return dir * (a[field] || '').localeCompare(b[field] || '')
+                        if (field === 'snapshot_count') return dir * ((a[field] || 0) - (b[field] || 0))
+                        if (field === 'created_at' || field === 'updated_at') {
+                          const aDate = a[field] ? new Date(a[field]).getTime() : 0
+                          const bDate = b[field] ? new Date(b[field]).getTime() : 0
+                          return dir * (aDate - bDate)
+                        }
+                        return 0
+                      })
+                      .map((doc) => (
+                        <tr key={doc.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <Link
+                              href={`/doc/${doc.id}`}
+                              className="text-sm font-medium text-gray-900 hover:text-blue-600 hover:underline"
+                            >
+                              {doc.title}
+                            </Link>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">{doc.user_email || (t?.noUser || 'No user')}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">
+                              {new Date(doc.created_at).toLocaleDateString()}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">
+                              {new Date(doc.updated_at).toLocaleDateString()}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">{doc.snapshot_count}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">{doc.event_count}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm">
+                              {doc.is_public ? (
+                                <span className="text-green-600">Yes</span>
+                              ) : (
+                                <span className="text-gray-400">No</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <Link
+                              href={`/doc/${doc.id}`}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              View
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
@@ -410,92 +488,119 @@ export default function AdminPage() {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            {/* Search */}
+            <div className="p-4 border-b border-gray-200 flex flex-wrap gap-4 items-center">
+              <input
+                type="text"
+                placeholder="Search by email..."
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black w-64"
+              />
+              <span className="text-sm text-gray-500">
+                {users.filter(u => u.email.toLowerCase().includes(userSearch.toLowerCase())).length} users
+              </span>
+            </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Documents</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">First Created</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Activity</th>
+                    <SortHeader label="Email" field="email" sort={userSort} setSort={setUserSort} />
+                    <SortHeader label="Documents" field="document_count" sort={userSort} setSort={setUserSort} />
+                    <SortHeader label="First Created" field="first_created" sort={userSort} setSort={setUserSort} />
+                    <SortHeader label="Last Activity" field="last_activity" sort={userSort} setSort={setUserSort} />
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
-                    <tr key={user.email}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{user.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">{user.document_count}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">
-                          {user.first_created ? new Date(user.first_created).toLocaleDateString() : '-'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">
-                          {user.last_activity ? new Date(user.last_activity).toLocaleDateString() : '-'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <select
-                          value={user.isAdmin ? 'admin' : (user.role === 'curator' ? 'curator' : 'user')}
-                          onChange={(e) => {
-                            const newRole = e.target.value
-                            handleUpdateUser(user.email, {
-                              isAdmin: newRole === 'admin',
-                              role: newRole === 'admin' ? 'admin' : (newRole === 'curator' ? 'curator' : 'user')
-                            })
-                          }}
-                          disabled={settingAdmin === user.email}
-                          className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-black disabled:opacity-50"
-                        >
-                          <option value="user">User</option>
-                          <option value="curator">Curator</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                        {settingAdmin === user.email && <span className="ml-2 text-xs text-gray-400">Updating...</span>}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {user.isSuspended ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded">Suspended</span>
-                            <button
-                              onClick={() => handleSuspendUser(user.email, false)}
-                              disabled={settingAdmin === user.email}
-                              className="text-xs text-blue-600 hover:underline disabled:opacity-50"
-                            >
-                              Unsuspend
-                            </button>
+                  {users
+                    .filter(u => u.email.toLowerCase().includes(userSearch.toLowerCase()))
+                    .sort((a, b) => {
+                      const field = userSort.field
+                      const dir = userSort.dir === 'asc' ? 1 : -1
+                      if (field === 'email') return dir * a.email.localeCompare(b.email)
+                      if (field === 'document_count') return dir * ((a.document_count || 0) - (b.document_count || 0))
+                      if (field === 'first_created' || field === 'last_activity') {
+                        const aDate = a[field] ? new Date(a[field]).getTime() : 0
+                        const bDate = b[field] ? new Date(b[field]).getTime() : 0
+                        return dir * (aDate - bDate)
+                      }
+                      return 0
+                    })
+                    .map((user) => (
+                      <tr key={user.email}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{user.email}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-600">{user.document_count}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-600">
+                            {user.first_created ? new Date(user.first_created).toLocaleDateString() : '-'}
                           </div>
-                        ) : (
-                          <button
-                            onClick={() => handleSuspendUser(user.email, true)}
-                            disabled={settingAdmin === user.email || user.isAdmin}
-                            className="text-xs text-red-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={user.isAdmin ? 'Cannot suspend admins' : 'Suspend this user'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-600">
+                            {user.last_activity ? new Date(user.last_activity).toLocaleDateString() : '-'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <select
+                            value={user.isAdmin ? 'admin' : (user.role === 'curator' ? 'curator' : 'user')}
+                            onChange={(e) => {
+                              const newRole = e.target.value
+                              handleUpdateUser(user.email, {
+                                isAdmin: newRole === 'admin',
+                                role: newRole === 'admin' ? 'admin' : (newRole === 'curator' ? 'curator' : 'user')
+                              })
+                            }}
+                            disabled={settingAdmin === user.email}
+                            className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-black disabled:opacity-50"
                           >
-                            Suspend
+                            <option value="user">User</option>
+                            <option value="curator">Curator</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                          {settingAdmin === user.email && <span className="ml-2 text-xs text-gray-400">Updating...</span>}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {user.isSuspended ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded">Suspended</span>
+                              <button
+                                onClick={() => handleSuspendUser(user.email, false)}
+                                disabled={settingAdmin === user.email}
+                                className="text-xs text-blue-600 hover:underline disabled:opacity-50"
+                              >
+                                Unsuspend
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleSuspendUser(user.email, true)}
+                              disabled={settingAdmin === user.email || user.isAdmin}
+                              className="text-xs text-red-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                              title={user.isAdmin ? 'Cannot suspend admins' : 'Suspend this user'}
+                            >
+                              Suspend
+                            </button>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => handleDeleteUser(user.email)}
+                            disabled={settingAdmin === user.email || user.isAdmin}
+                            className="text-xs text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={user.isAdmin ? 'Cannot delete admins' : 'Permanently delete user and all data'}
+                          >
+                            Delete
                           </button>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => handleDeleteUser(user.email)}
-                          disabled={settingAdmin === user.email || user.isAdmin}
-                          className="text-xs text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                          title={user.isAdmin ? 'Cannot delete admins' : 'Permanently delete user and all data'}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -505,20 +610,37 @@ export default function AdminPage() {
         {/* Temp Pads Tab */}
         {activeTab === 'temp' && (
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Temporary Documents</h2>
-              <p className="text-sm text-gray-500 mt-1">Disposable documents that expire after 48 hours</p>
+            <div className="p-4 border-b border-gray-200 flex flex-wrap gap-4 items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Temporary Documents</h2>
+                <p className="text-sm text-gray-500">Disposable documents that expire after 48 hours</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <input
+                  type="text"
+                  placeholder="Search by title or ID..."
+                  value={tempSearch}
+                  onChange={(e) => setTempSearch(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black w-64"
+                />
+                <span className="text-sm text-gray-500">
+                  {tempDocs.filter(d =>
+                    d.title?.toLowerCase().includes(tempSearch.toLowerCase()) ||
+                    d.id.toLowerCase().includes(tempSearch.toLowerCase())
+                  ).length} pads
+                </span>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time Left</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <SortHeader label="ID" field="id" sort={tempSort} setSort={setTempSort} />
+                    <SortHeader label="Title" field="title" sort={tempSort} setSort={setTempSort} />
+                    <SortHeader label="Created" field="created_at" sort={tempSort} setSort={setTempSort} />
+                    <SortHeader label="Expires" field="expires_at" sort={tempSort} setSort={setTempSort} />
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Left</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -529,48 +651,64 @@ export default function AdminPage() {
                       </td>
                     </tr>
                   ) : (
-                    tempDocs.map((doc) => {
-                      const expiresAt = new Date(doc.expires_at)
-                      const now = new Date()
-                      const timeLeft = Math.max(0, expiresAt - now)
-                      const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60))
-                      const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60))
-
-                      return (
-                        <tr key={doc.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-xs font-mono text-gray-600">{doc.id.substring(0, 8)}...</div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900 max-w-xs truncate">{doc.title || 'Untitled'}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-600">
-                              {new Date(doc.created_at).toLocaleString()}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-600">
-                              {expiresAt.toLocaleString()}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className={`text-sm font-medium ${hoursLeft < 6 ? 'text-red-600' : 'text-gray-900'}`}>
-                              {hoursLeft}h {minutesLeft}m
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <Link
-                              href={`/public/temp/${doc.id}`}
-                              className="text-sm text-blue-600 hover:text-blue-800"
-                              target="_blank"
-                            >
-                              View
-                            </Link>
-                          </td>
-                        </tr>
+                    tempDocs
+                      .filter(d =>
+                        d.title?.toLowerCase().includes(tempSearch.toLowerCase()) ||
+                        d.id.toLowerCase().includes(tempSearch.toLowerCase())
                       )
-                    })
+                      .sort((a, b) => {
+                        const field = tempSort.field
+                        const dir = tempSort.dir === 'asc' ? 1 : -1
+                        if (field === 'id' || field === 'title') return dir * (a[field] || '').localeCompare(b[field] || '')
+                        if (field === 'created_at' || field === 'expires_at') {
+                          const aDate = a[field] ? new Date(a[field]).getTime() : 0
+                          const bDate = b[field] ? new Date(b[field]).getTime() : 0
+                          return dir * (aDate - bDate)
+                        }
+                        return 0
+                      })
+                      .map((doc) => {
+                        const expiresAt = new Date(doc.expires_at)
+                        const now = new Date()
+                        const timeLeft = Math.max(0, expiresAt - now)
+                        const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60))
+                        const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60))
+
+                        return (
+                          <tr key={doc.id}>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-xs font-mono text-gray-600">{doc.id.substring(0, 8)}...</div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-900 max-w-xs truncate">{doc.title || 'Untitled'}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-600">
+                                {new Date(doc.created_at).toLocaleString()}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-600">
+                                {expiresAt.toLocaleString()}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className={`text-sm font-medium ${hoursLeft < 6 ? 'text-red-600' : 'text-gray-900'}`}>
+                                {hoursLeft}h {minutesLeft}m
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <Link
+                                href={`/public/temp/${doc.id}`}
+                                className="text-sm text-blue-600 hover:text-blue-800"
+                                target="_blank"
+                              >
+                                View
+                              </Link>
+                            </td>
+                          </tr>
+                        )
+                      })
                   )}
                 </tbody>
               </table>
