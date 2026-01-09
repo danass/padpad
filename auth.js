@@ -30,6 +30,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       try {
         const userId = user.email || user.id
 
+        // Check if user is suspended - block login
+        const suspendedCheck = await sql`SELECT suspended_at FROM users WHERE id = ${userId}`
+        if (suspendedCheck.rowCount > 0 && suspendedCheck.rows[0].suspended_at) {
+          return '/auth/suspended'
+        }
+
         // Generate random archive_id (NOT based on email for privacy)
         const archiveId = generateArchiveId()
 

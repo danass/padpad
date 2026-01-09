@@ -11,6 +11,19 @@ export default function MigratePage() {
   const [adminEmail, setAdminEmail] = useState('')
   const [adminsExist, setAdminsExist] = useState(false)
   const [checking, setChecking] = useState(true)
+  const [schemaStatus, setSchemaStatus] = useState(null)
+
+  const checkSchema = async () => {
+    try {
+      const response = await fetch('/api/migrate/check')
+      if (response.ok) {
+        const data = await response.json()
+        setSchemaStatus(data)
+      }
+    } catch (error) {
+      console.error('Error checking schema:', error)
+    }
+  }
 
   const runFullMigration = async () => {
     setLoading(true)
@@ -33,6 +46,9 @@ export default function MigratePage() {
           featured: featuredData
         }
       })
+
+      // Re-check schema after migration
+      await checkSchema()
     } catch (error) {
       setResult({ success: false, error: error.message })
     } finally {
@@ -87,7 +103,11 @@ export default function MigratePage() {
 
   useEffect(() => {
     checkAdminsExist()
+    checkSchema()
   }, [])
+
+  // Determine if we should show the migration button
+  const isFullyMigrated = schemaStatus?.isFullyMigrated === true
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-8">
@@ -101,8 +121,8 @@ export default function MigratePage() {
           Creates all tables and indexes. Safe to run multiple times.
         </p>
 
-        {/* Migration Button - hide after success, show success message instead */}
-        {result?.success ? (
+        {/* Migration Button - hide if already fully migrated OR after successful run */}
+        {isFullyMigrated || result?.success ? (
           <div className="w-full px-6 py-3 bg-green-100 text-green-700 rounded-lg text-center font-medium mb-6">
             ✓ Database ready!
           </div>

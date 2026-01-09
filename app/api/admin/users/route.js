@@ -14,18 +14,20 @@ export async function GET() {
       `SELECT 
          u.id as email,
          u.role,
+         u.suspended_at,
          COUNT(DISTINCT d.id) as document_count,
          MAX(d.updated_at) as last_activity,
          MIN(d.created_at) as first_created
         FROM users u
         LEFT JOIN documents d ON u.id = d.user_id
-        GROUP BY u.id, u.role
+        GROUP BY u.id, u.role, u.suspended_at
         ORDER BY document_count DESC`
     )
 
     const users = result.rows.map(user => ({
       ...user,
-      isAdmin: user.role === 'admin'
+      isAdmin: user.role === 'admin',
+      isSuspended: !!user.suspended_at
     }))
 
     return Response.json({ users })

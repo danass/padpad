@@ -156,7 +156,11 @@ async function runMigrations() {
 
       // Add role column to users
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user'`,
-      `CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)`
+      `CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)`,
+
+      // Add suspension columns to users
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS suspended_at TIMESTAMP`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS suspension_reason TEXT`,
     ]
 
     // Run all migrations

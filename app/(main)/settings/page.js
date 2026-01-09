@@ -574,6 +574,52 @@ export default function SettingsPage() {
               )}
             </div>
           </section>
+
+          {/* Data & Privacy Section */}
+          <section className="bg-red-50/30 rounded-[2.5rem] p-8 md:p-12 border border-red-100 shadow-sm transition-all">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight underline decoration-red-400 decoration-4 underline-offset-4 inline-block">Data & Privacy</h2>
+            <p className="text-gray-600 mb-8 max-w-2xl leading-relaxed">
+              Download all your documents and data. Your export includes all documents in Markdown and JSON format.
+            </p>
+
+            <button
+              onClick={async () => {
+                const btn = document.getElementById('download-all-btn')
+                btn.disabled = true
+                btn.textContent = 'Preparing...'
+                try {
+                  const response = await fetch('/api/users/export-all')
+                  if (response.ok) {
+                    const blob = await response.blob()
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `textpad-export-${new Date().toISOString().split('T')[0]}.zip`
+                    document.body.appendChild(a)
+                    a.click()
+                    document.body.removeChild(a)
+                    URL.revokeObjectURL(url)
+                    showToast('Download started', 'success')
+                  } else {
+                    const data = await response.json()
+                    showToast(data.error || 'Failed to export', 'error')
+                  }
+                } catch (error) {
+                  showToast('Failed to export data', 'error')
+                } finally {
+                  btn.disabled = false
+                  btn.textContent = 'Download All My Data'
+                }
+              }}
+              id="download-all-btn"
+              className="w-full md:w-auto px-10 py-4 bg-gray-900 text-white font-medium rounded-2xl hover:bg-black transition-all shadow-lg hover:shadow-gray-300 flex items-center justify-center gap-3"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download All My Data
+            </button>
+          </section>
         </div>
 
         {/* Add Provider Modal - THEMED */}

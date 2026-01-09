@@ -240,6 +240,34 @@ export async function POST(request, { params }) {
       [snapshotId, content_text, word_count, char_count, id, ...ipfsValues]
     )
 
+    // Enforce 10 snapshot limit (keep oldest + 9 most recent)
+    const countResult = await sql.query(
+      'SELECT COUNT(*) FROM document_snapshots WHERE document_id = $1',
+      [id]
+    )
+    const snapshotCount = parseInt(countResult.rows[0].count)
+
+    if (snapshotCount > 10) {
+      // Get the oldest snapshot ID to preserve
+      const oldestResult = await sql.query(
+        `SELECT id FROM document_snapshots WHERE document_id = $1 ORDER BY created_at ASC LIMIT 1`,
+        [id]
+      )
+      const oldestId = oldestResult.rows[0].id
+
+      // Delete the 2nd oldest snapshot (preserving the oldest)
+      await sql.query(
+        `DELETE FROM document_snapshots 
+         WHERE id = (
+           SELECT id FROM document_snapshots 
+           WHERE document_id = $1 AND id != $2 
+           ORDER BY created_at ASC 
+           LIMIT 1
+         )`,
+        [id, oldestId]
+      )
+    }
+
     return Response.json({ snapshot: snapshotResult.rows[0] }, { status: 201 })
   } catch (error) {
     console.error('Error creating snapshot:', error)

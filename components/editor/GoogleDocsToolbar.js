@@ -740,7 +740,7 @@ export default function GoogleDocsToolbar({
   ]
 
   return (
-    <div className="flex items-center gap-1 md:gap-1 p-2 md:p-1.5 bg-white/95 backdrop-blur-xl border border-gray-100 overflow-x-auto flex-wrap sticky top-0 z-[60] rounded-b-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] font-['DM_Sans',sans-serif]">
+    <div className="flex items-center gap-1 md:gap-1 p-2 md:p-1.5 bg-white/95 backdrop-blur-xl border border-gray-100 overflow-x-auto flex-wrap  z-[60]  rounded-b-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] font-['DM_Sans',sans-serif]">
       {/* Font Family with navigation */}
       <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 p-0.5 overflow-hidden">
         <button

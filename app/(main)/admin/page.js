@@ -144,6 +144,74 @@ export default function AdminPage() {
     }
   }
 
+  const handleSuspendUser = async (email, suspend) => {
+    const action = suspend ? 'suspend' : 'unsuspend'
+    if (!confirm(`Are you sure you want to ${action} ${email}?${suspend ? ' They will receive an email notification.' : ''}`)) {
+      return
+    }
+
+    setSettingAdmin(email)
+    try {
+      const response = await fetch(`/api/admin/users/${encodeURIComponent(email)}/suspend`, {
+        method: suspend ? 'POST' : 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'Account suspended by administrator' })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (suspend && data.emailSent) {
+          alert(`User suspended. Email sent. ${data.documentsUnpublished} documents unpublished.`)
+        } else if (suspend) {
+          alert(`User suspended. Email failed to send. ${data.documentsUnpublished} documents unpublished.`)
+        }
+        await loadUsers()
+      } else {
+        const data = await response.json()
+        alert(data.error || `Failed to ${action} user`)
+      }
+    } catch (error) {
+      console.error(`Error ${action}ing user:`, error)
+      alert(`Failed to ${action} user`)
+    } finally {
+      setSettingAdmin(null)
+    }
+  }
+
+  const handleDeleteUser = async (email) => {
+    if (!confirm(`⚠️ PERMANENTLY DELETE ${email}?\n\nThis will delete:\n• All documents\n• All snapshots\n• All folders\n\nThis action CANNOT be undone!`)) {
+      return
+    }
+
+    // Double confirm
+    const confirmText = prompt(`Type the email "${email}" to confirm deletion:`)
+    if (confirmText !== email) {
+      alert('Deletion cancelled - email did not match')
+      return
+    }
+
+    setSettingAdmin(email)
+    try {
+      const response = await fetch(`/api/admin/users/${encodeURIComponent(email)}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(`User deleted.\n\nRemoved:\n• ${data.deleted.documents} documents\n• ${data.deleted.snapshots} snapshots\n• ${data.deleted.folders} folders`)
+        await loadUsers()
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to delete user')
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      alert('Failed to delete user')
+    } finally {
+      setSettingAdmin(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -264,7 +332,12 @@ export default function AdminPage() {
                     {documents.map((doc) => (
                       <tr key={doc.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{doc.title}</div>
+                          <Link
+                            href={`/doc/${doc.id}`}
+                            className="text-sm font-medium text-gray-900 hover:text-blue-600 hover:underline"
+                          >
+                            {doc.title}
+                          </Link>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-600">{doc.user_email || (t?.noUser || 'No user')}</div>
@@ -346,6 +419,8 @@ export default function AdminPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">First Created</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Activity</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -385,6 +460,39 @@ export default function AdminPage() {
                           <option value="admin">Admin</option>
                         </select>
                         {settingAdmin === user.email && <span className="ml-2 text-xs text-gray-400">Updating...</span>}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {user.isSuspended ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded">Suspended</span>
+                            <button
+                              onClick={() => handleSuspendUser(user.email, false)}
+                              disabled={settingAdmin === user.email}
+                              className="text-xs text-blue-600 hover:underline disabled:opacity-50"
+                            >
+                              Unsuspend
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleSuspendUser(user.email, true)}
+                            disabled={settingAdmin === user.email || user.isAdmin}
+                            className="text-xs text-red-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={user.isAdmin ? 'Cannot suspend admins' : 'Suspend this user'}
+                          >
+                            Suspend
+                          </button>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleDeleteUser(user.email)}
+                          disabled={settingAdmin === user.email || user.isAdmin}
+                          className="text-xs text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={user.isAdmin ? 'Cannot delete admins' : 'Permanently delete user and all data'}
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}
