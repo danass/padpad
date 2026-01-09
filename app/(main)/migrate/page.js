@@ -3,17 +3,21 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 
 export default function MigratePage() {
   const { data: session, status } = useSession() || {}
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [adminEmail, setAdminEmail] = useState('')
   const [adminsExist, setAdminsExist] = useState(false)
   const [checking, setChecking] = useState(true)
   const [schemaStatus, setSchemaStatus] = useState(null)
+  const [schemaChecking, setSchemaChecking] = useState(true)
 
   const checkSchema = async () => {
+    setSchemaChecking(true)
     try {
       const response = await fetch('/api/migrate/check')
       if (response.ok) {
@@ -22,6 +26,8 @@ export default function MigratePage() {
       }
     } catch (error) {
       console.error('Error checking schema:', error)
+    } finally {
+      setSchemaChecking(false)
     }
   }
 
@@ -106,8 +112,39 @@ export default function MigratePage() {
     checkSchema()
   }, [])
 
+  // Redirect non-admins (but allow access if no admins exist yet for initial setup)
+  useEffect(() => {
+    if (status === 'loading' || checking) return
+
+    // If admins exist and user is not logged in or not admin, redirect
+    if (adminsExist) {
+      if (status === 'unauthenticated') {
+        router.replace('/auth/signin?callbackUrl=/migrate')
+        return
+      }
+      if (session && !session.user?.isAdmin) {
+        router.replace('/')
+        return
+      }
+    }
+  }, [status, session, adminsExist, checking, router])
+
   // Determine if we should show the migration button
   const isFullyMigrated = schemaStatus?.isFullyMigrated === true
+
+  // Show loading while checking auth
+  if (status === 'loading' || checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    )
+  }
+
+  // Block non-admins if admins exist
+  if (adminsExist && (!session || !session.user?.isAdmin)) {
+    return null
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-8">
@@ -121,8 +158,13 @@ export default function MigratePage() {
           Creates all tables and indexes. Safe to run multiple times.
         </p>
 
-        {/* Migration Button - hide if already fully migrated OR after successful run */}
-        {isFullyMigrated || result?.success ? (
+        {/* Migration Button - show loading during check, hide if not needed */}
+        {schemaChecking ? (
+          <div className="w-full px-6 py-3 bg-gray-100 text-gray-500 rounded-lg text-center font-medium mb-6 flex items-center justify-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
+            Checking...
+          </div>
+        ) : isFullyMigrated || result?.success ? (
           <div className="w-full px-6 py-3 bg-green-100 text-green-700 rounded-lg text-center font-medium mb-6">
             ✓ Database ready!
           </div>
@@ -181,6 +223,6 @@ export default function MigratePage() {
           </a>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
