@@ -23,9 +23,11 @@ export async function GET(request) {
         d.created_at,
         d.updated_at,
         d.is_public,
-        COUNT(DISTINCT ds.id) as snapshot_count
+        COUNT(DISTINCT ds.id) as snapshot_count,
+        COUNT(DISTINCT de.id) as event_count
        FROM documents d
        LEFT JOIN document_snapshots ds ON ds.document_id = d.id
+       LEFT JOIN document_events de ON de.document_id = d.id
        GROUP BY d.id, d.title, d.user_id, d.created_at, d.updated_at, d.is_public
        ORDER BY d.updated_at DESC
        LIMIT $1 OFFSET $2`,

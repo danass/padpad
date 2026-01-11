@@ -70,31 +70,20 @@ export default function AdminPage() {
     }
   }, [isAdmin, activeTab])
 
-  const checkAdminStatus = async () => {
+  const checkAdminStatus = () => {
     if (!session?.user?.email) {
       setLoading(false)
       return
     }
 
-    try {
-      const response = await fetch('/api/admin/check')
-      if (response.ok) {
-        const data = await response.json()
-        setIsAdmin(data.isAdmin)
-        if (!data.isAdmin) {
-          router.push('/drive')
-        }
-      } else {
-        setIsAdmin(false)
-        router.push('/drive')
-      }
-    } catch (error) {
-      console.error('Error checking admin status:', error)
-      setIsAdmin(false)
+    // Use admin status from session (no API call needed!)
+    const adminStatus = session.user.isAdmin || false
+    setIsAdmin(adminStatus)
+
+    if (!adminStatus) {
       router.push('/drive')
-    } finally {
-      setLoading(false)
     }
+    setLoading(false)
   }
 
   const loadStats = async () => {
@@ -413,6 +402,7 @@ export default function AdminPage() {
                             <Link
                               href={`/doc/${doc.id}`}
                               className="text-sm font-medium text-gray-900 hover:text-blue-600 hover:underline"
+                              prefetch={false}
                             >
                               {doc.title}
                             </Link>
@@ -449,6 +439,7 @@ export default function AdminPage() {
                             <Link
                               href={`/doc/${doc.id}`}
                               className="text-blue-600 hover:text-blue-800"
+                              prefetch={false}
                             >
                               View
                             </Link>

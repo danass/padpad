@@ -68,7 +68,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
       return session
     },
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, account, profile, trigger }) {
       if (user) {
         // Initial sign in - fetch role from DB
         try {
@@ -79,9 +79,27 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           } else {
             token.role = 'user'
           }
+          token.roleCheckedAt = Date.now()
         } catch (error) {
           console.error('Error fetching user role for JWT:', error)
           token.role = 'user'
+        }
+      } else {
+        // Refresh role from DB every 5 minutes to catch admin status changes
+        const now = Date.now()
+        const fiveMinutes = 5 * 60 * 1000
+        if (!token.roleCheckedAt || (now - token.roleCheckedAt) > fiveMinutes) {
+          try {
+            const userId = token.email || token.sub
+            const res = await sql`SELECT role FROM users WHERE id = ${userId}`
+            if (res.rowCount > 0) {
+              token.role = res.rows[0].role
+            }
+            token.roleCheckedAt = now
+          } catch (error) {
+            console.error('Error refreshing user role:', error)
+            // Keep existing role on error
+          }
         }
       }
       if (account) {
