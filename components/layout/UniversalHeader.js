@@ -241,7 +241,7 @@ export default function UniversalHeader() {
                                         </button>
 
                                         {showUserMenu && (
-                                            <div className="absolute right-0 mt-2 w-48 md:w-56 bg-white border border-gray-200 rounded-md shadow-lg z-20 py-1">
+                                            <div className="absolute right-0 mt-2 w-48 md:w-56 bg-white border border-gray-200 rounded-md shadow-lg z-[200] py-1">
                                                 <Link href="/settings" title={t?.settings || 'Settings'} onClick={() => setShowUserMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{t?.settings || 'Settings'}</Link>
                                                 {isAdmin && <Link href="/admin" title={t?.adminPanel || 'Admin Dashboard'} onClick={() => setShowUserMenu(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{t?.admin || 'Admin'}</Link>}
                                                 <div className="border-t border-gray-200 my-1" />
