@@ -186,7 +186,7 @@ export default function Tabs() {
             : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
         >
-          <span className="whitespace-nowrap">{tab.title || 'Untitled'}</span>
+          <span className="whitespace-nowrap max-w-[200px] overflow-hidden text-ellipsis block">{tab.title || 'Untitled'}</span>
           <button
             onClick={(e) => closeTab(e, tab.id)}
             className="ml-1 p-0.5 rounded hover:bg-gray-200 transition-colors"
