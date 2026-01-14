@@ -152,7 +152,26 @@ export default function VideoComponent({ node, updateAttributes, deleteNode, edi
                             }
                         }}
                         onError={(e) => {
-                            console.error('Video error:', e)
+                            const video = e.target
+                            const error = video.error
+
+                            // Ignore errors during initial mount when element isn't ready
+                            if (!error || !error.code) {
+                                return
+                            }
+
+                            console.error('Video error details:', {
+                                src: src,
+                                errorCode: error.code,
+                                errorMessage: error.message,
+                                networkState: video.networkState,
+                                readyState: video.readyState,
+                                // Error codes: 1=ABORTED, 2=NETWORK, 3=DECODE, 4=SRC_NOT_SUPPORTED
+                                errorType: error.code === 1 ? 'MEDIA_ERR_ABORTED' :
+                                    error.code === 2 ? 'MEDIA_ERR_NETWORK' :
+                                        error.code === 3 ? 'MEDIA_ERR_DECODE' :
+                                            error.code === 4 ? 'MEDIA_ERR_SRC_NOT_SUPPORTED' : 'UNKNOWN'
+                            })
                         }}
                     >
                         <source src={src} type={(() => {
